@@ -21,9 +21,9 @@ namespace onmt
 
   const std::string BPE::end_of_word = "</w>";
 
-  BPE::BPE(const std::string& model)
+  BPE::BPE(const std::string& model_path)
   {
-    std::ifstream in(model.c_str());
+    std::ifstream in(model_path.c_str());
     std::string line;
 
     int i = 0;

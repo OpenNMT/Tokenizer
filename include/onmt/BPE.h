@@ -10,7 +10,7 @@ namespace onmt
   class BPE
   {
   public:
-    BPE(const std::string& model);
+    BPE(const std::string& model_path);
 
     std::vector<std::string> encode(const std::string& str) const;
 

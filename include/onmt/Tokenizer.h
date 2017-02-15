@@ -21,7 +21,7 @@ namespace onmt
     static const std::string joiner_marker;
 
     Tokenizer(Mode mode = Mode::Conservative,
-              const std::string& bpe_model = "",
+              const std::string& bpe_model_path = "",
               bool case_feature = false,
               bool joiner_annotate = false,
               bool joiner_new = false,

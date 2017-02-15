@@ -8,13 +8,13 @@ namespace onmt
   const std::string Tokenizer::joiner_marker("￭");
 
   Tokenizer::Tokenizer(Mode mode,
-                       const std::string& bpe_model,
+                       const std::string& bpe_model_path,
                        bool case_feature,
                        bool joiner_annotate,
                        bool joiner_new,
                        const std::string& joiner)
     : _mode(mode)
-    , _bpe(bpe_model.empty() ? nullptr : new BPE(bpe_model))
+    , _bpe(bpe_model_path.empty() ? nullptr : new BPE(bpe_model_path))
     , _case_feature(case_feature)
     , _joiner_annotate(joiner_annotate)
     , _joiner_new(joiner_new)
