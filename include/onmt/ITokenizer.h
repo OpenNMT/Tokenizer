@@ -20,6 +20,7 @@ namespace onmt
 
     virtual std::string detokenize(const std::vector<std::string>& words,
                                    const std::vector<std::vector<std::string> >& features) = 0;
+    virtual std::string detokenize(const std::vector<std::string>& words);
 
     // Tokenize and use spaces as token separators.
     virtual std::string tokenize(const std::string& text);

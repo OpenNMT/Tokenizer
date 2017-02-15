@@ -13,6 +13,12 @@ namespace onmt
     tokenize(text, words, features);
   }
 
+  std::string ITokenizer::detokenize(const std::vector<std::string>& words)
+  {
+    std::vector<std::vector<std::string> > features;
+    return detokenize(words, features);
+  }
+
   std::string ITokenizer::tokenize(const std::string& text)
   {
     std::vector<std::string> words;
