@@ -12,7 +12,6 @@ endif()
 set(INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
-include_directories(${INCLUDE_DIRECTORIES})
 
 add_library(${PROJECT_NAME} SHARED
   src/BPE.cc
