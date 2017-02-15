@@ -16,6 +16,8 @@ namespace onmt
     virtual void tokenize(const std::string& text,
                           std::vector<std::string>& words,
                           std::vector<std::vector<std::string> >& features) = 0;
+    virtual void tokenize(const std::string& text, std::vector<std::string>& words);
+
     virtual std::string detokenize(const std::vector<std::string>& words,
                                    const std::vector<std::vector<std::string> >& features) = 0;
 
