@@ -1,6 +1,7 @@
 #include "onmt/Tokenizer.h"
 
 #include "onmt/CaseModifier.h"
+#include "onmt/unicode/Unicode.h"
 
 namespace onmt
 {

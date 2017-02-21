@@ -1,7 +1,45 @@
 #include "onmt/CaseModifier.h"
 
+#include "onmt/unicode/Unicode.h"
+
 namespace onmt
 {
+
+  static CaseModifier::Type update_type(CaseModifier::Type current, unicode::_type_letter type)
+  {
+    switch (current)
+    {
+    case CaseModifier::Type::None:
+      if (type == unicode::_letter_lower)
+        return CaseModifier::Type::Lowercase;
+      if (type == unicode::_letter_upper)
+        return CaseModifier::Type::CapitalizedFirst;
+      break;
+    case CaseModifier::Type::Lowercase:
+      if (type == unicode::_letter_upper)
+        return CaseModifier::Type::Mixed;
+      break;
+    case CaseModifier::Type::CapitalizedFirst:
+      if (type == unicode::_letter_lower)
+        return CaseModifier::Type::Capitalized;
+      if (type == unicode::_letter_upper)
+        return CaseModifier::Type::Uppercase;
+      break;
+    case CaseModifier::Type::Capitalized:
+      if (type == unicode::_letter_upper)
+        return CaseModifier::Type::Mixed;
+      break;
+    case CaseModifier::Type::Uppercase:
+      if (type == unicode::_letter_lower)
+        return CaseModifier::Type::Mixed;
+      break;
+    default:
+      break;
+    }
+
+    return current;
+  }
+
 
   std::pair<std::string, char> CaseModifier::extract_case(const std::string& token)
   {
@@ -61,41 +99,6 @@ namespace onmt
     }
 
     return new_token;
-  }
-
-  CaseModifier::Type CaseModifier::update_type(Type current, unicode::_type_letter type)
-  {
-    switch (current)
-    {
-    case Type::None:
-      if (type == unicode::_letter_lower)
-        return Type::Lowercase;
-      if (type == unicode::_letter_upper)
-        return Type::CapitalizedFirst;
-      break;
-    case Type::Lowercase:
-      if (type == unicode::_letter_upper)
-        return Type::Mixed;
-      break;
-    case Type::CapitalizedFirst:
-      if (type == unicode::_letter_lower)
-        return Type::Capitalized;
-      if (type == unicode::_letter_upper)
-        return Type::Uppercase;
-      break;
-    case Type::Capitalized:
-      if (type == unicode::_letter_upper)
-        return Type::Mixed;
-      break;
-    case Type::Uppercase:
-      if (type == unicode::_letter_lower)
-        return Type::Mixed;
-      break;
-    default:
-      break;
-    }
-
-    return current;
   }
 
   char CaseModifier::type_to_char(Type type)
