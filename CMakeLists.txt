@@ -43,4 +43,5 @@ install(
   )
 install(
   FILES ${PUBLIC_HEADERS}
-  DESTINATION include/onmt/)
+  DESTINATION include/onmt/
+  )
