@@ -19,3 +19,8 @@ target_link_libraries(detokenize
   ${PROJECT_NAME}
   ${Boost_LIBRARIES}
   )
+
+install(
+  TARGETS tokenize detokenize
+  DESTINATION bin/
+  )

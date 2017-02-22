@@ -12,6 +12,13 @@ endif()
 set(INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
+set(PUBLIC_HEADERS
+  include/onmt/ITokenizer.h
+  include/onmt/Tokenizer.h
+  include/onmt/BPE.h
+  include/onmt/CaseModifier.h
+  include/onmt/SpaceTokenizer.h
+  )
 
 add_library(${PROJECT_NAME} SHARED
   src/BPE.cc
@@ -29,3 +36,11 @@ if (NOT LIB_ONLY)
   add_subdirectory(cli)
   add_subdirectory(test)
 endif()
+
+install(
+  TARGETS ${PROJECT_NAME}
+  LIBRARY DESTINATION lib/
+  )
+install(
+  FILES ${PUBLIC_HEADERS}
+  DESTINATION include/onmt/)
