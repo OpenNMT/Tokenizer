@@ -25,7 +25,8 @@ namespace onmt
               bool case_feature = false,
               bool joiner_annotate = false,
               bool joiner_new = false,
-              const std::string& joiner = joiner_marker);
+              const std::string& joiner = joiner_marker,
+              bool with_separators = false);
     Tokenizer(bool case_feature = false,
               const std::string& joiner = joiner_marker);
 
@@ -43,6 +44,7 @@ namespace onmt
     bool _joiner_annotate;
     bool _joiner_new;
     std::string _joiner;
+    bool _with_separators;
 
     std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens);
 

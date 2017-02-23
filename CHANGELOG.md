@@ -3,6 +3,7 @@
 ### New features
 
 * Add CMake install rule
+* Add API option to include separators
 
 ### Fixes and improvements
 

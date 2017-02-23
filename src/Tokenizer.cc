@@ -13,13 +13,15 @@ namespace onmt
                        bool case_feature,
                        bool joiner_annotate,
                        bool joiner_new,
-                       const std::string& joiner)
+                       const std::string& joiner,
+                       bool with_separators)
     : _mode(mode)
     , _bpe(bpe_model_path.empty() ? nullptr : new BPE(bpe_model_path))
     , _case_feature(case_feature)
     , _joiner_annotate(joiner_annotate)
     , _joiner_new(joiner_new)
     , _joiner(joiner)
+    , _with_separators(with_separators)
   {
   }
 
@@ -93,16 +95,28 @@ namespace onmt
           token.clear();
         }
 
-        if (v == 0x200D && _joiner_annotate)
+        if (v == 0x200D) // Zero-Width joiner.
         {
-          if (_joiner_new && !words.empty())
-            words.push_back(_joiner);
-          else
+          if (_joiner_annotate)
           {
-            if (other || (number && unicode::is_letter(next_v, type_letter)))
-              words.back() += _joiner;
+            if (_joiner_new && !words.empty())
+              words.push_back(_joiner);
             else
-              token = _joiner;
+            {
+              if (other || (number && unicode::is_letter(next_v, type_letter)))
+                words.back() += _joiner;
+              else
+                token = _joiner;
+            }
+          }
+        }
+        else if (_with_separators)
+        {
+          token += c;
+          if (!unicode::is_separator(next_v))
+          {
+            words.push_back(token);
+            token.clear();
           }
         }
 
