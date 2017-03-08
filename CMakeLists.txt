@@ -41,6 +41,7 @@ endif()
 
 install(
   TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib/
   LIBRARY DESTINATION lib/
   )
 install(
