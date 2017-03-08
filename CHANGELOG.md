@@ -4,6 +4,7 @@
 
 * Add CMake install rule
 * Add API option to include separators
+* Add static library compilation support
 
 ### Fixes and improvements
 
