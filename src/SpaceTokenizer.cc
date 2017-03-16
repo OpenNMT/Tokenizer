@@ -21,6 +21,9 @@ namespace onmt
 
     for (const auto& chunk: chunks)
     {
+      if (chunk.empty())
+        continue;
+
       std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
 
       words.push_back(fields[0]);
