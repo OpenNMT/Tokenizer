@@ -201,6 +201,13 @@ namespace onmt
       return (u >= 9 and u <= 13) or _find_codepoint(u, unidata_Number);
     }
 
+    bool is_mark(code_point_t u)
+    {
+      if (!u)
+        return false;
+      return _find_codepoint(u, unidata_Mark);
+    }
+
     // convert unicode character to lowercase form if defined in unicodedata
     code_point_t get_lower(code_point_t u)
     {

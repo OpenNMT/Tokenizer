@@ -135,6 +135,12 @@ namespace onmt
           cur_letter = unicode::is_letter(v, type_letter);
           cur_number = unicode::is_number(v);
 
+          if (unicode::is_mark(v)) {
+            // if we have a mark, we keep type of previous character
+            cur_letter = letter;
+            cur_number = number;
+          }
+
           if (_mode == Mode::Conservative)
           {
             if (unicode::is_number(v)

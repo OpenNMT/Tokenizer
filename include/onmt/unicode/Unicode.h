@@ -33,6 +33,7 @@ namespace onmt
     bool is_separator(code_point_t u);
     bool is_letter(code_point_t u, _type_letter &tl);
     bool is_number(code_point_t u);
+    bool is_mark(code_point_t u);
 
     code_point_t get_upper(code_point_t u);
     code_point_t get_lower(code_point_t u);
