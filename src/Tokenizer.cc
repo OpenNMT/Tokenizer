@@ -14,7 +14,8 @@ namespace onmt
                        bool joiner_annotate,
                        bool joiner_new,
                        const std::string& joiner,
-                       bool with_separators)
+                       bool with_separators,
+                       bool segment_case)
     : _mode(mode)
     , _bpe(bpe_model_path.empty() ? nullptr : new BPE(bpe_model_path))
     , _case_feature(case_feature)
@@ -22,6 +23,7 @@ namespace onmt
     , _joiner_new(joiner_new)
     , _joiner(joiner)
     , _with_separators(with_separators)
+    , _segment_case(segment_case)
   {
   }
 
@@ -151,8 +153,8 @@ namespace onmt
           if (cur_letter)
           {
             if ((!letter && !space) ||
-                (_mode == Mode::Aggressive && letter && ((type_letter == unicode::_letter_upper && !uppercase) ||
-                                                        (type_letter == unicode::_letter_lower && uppercase_sequnce))))
+                (_segment_case && letter && ((type_letter == unicode::_letter_upper && !uppercase) ||
+                                             (type_letter == unicode::_letter_lower && uppercase_sequnce))))
             {
               if (_joiner_annotate && !_joiner_new)
                 token += _joiner;

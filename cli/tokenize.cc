@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
     ("joiner", po::value<std::string>()->default_value(onmt::Tokenizer::joiner_marker), "character used to annotate joiners")
     ("joiner_new", po::bool_switch()->default_value(false), "in joiner_annotate mode, 'joiner' is an independent token")
     ("case_feature", po::bool_switch()->default_value(false), "lowercase corpus and generate case feature")
+    ("segment_case", po::bool_switch()->default_value(false), "Segment case feature, splits AbC to Ab C to be able to restore case")
     ("bpe_model", po::value<std::string>()->default_value(""), "path to the BPE model")
     ;
 
@@ -36,7 +37,9 @@ int main(int argc, char* argv[])
                                                     vm["case_feature"].as<bool>(),
                                                     vm["joiner_annotate"].as<bool>(),
                                                     vm["joiner_new"].as<bool>(),
-                                                    vm["joiner"].as<std::string>());
+                                                    vm["joiner"].as<std::string>(),
+                                                    false,
+                                                    vm["segment_case"].as<bool>());
 
   std::string line;
 
