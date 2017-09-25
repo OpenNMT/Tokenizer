@@ -171,7 +171,7 @@ namespace onmt
                 words.push_back(_joiner);
               else
                 words.back() += _joiner;
-              uppercase = false;
+              uppercase = (type_letter == unicode::_letter_upper);
               uppercase_sequnce = false;
             } else {
               uppercase_sequnce = (type_letter == unicode::_letter_upper) & uppercase;
