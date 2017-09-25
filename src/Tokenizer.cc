@@ -162,7 +162,7 @@ namespace onmt
               if (_joiner_annotate && _joiner_new)
                 words.push_back(_joiner);
               token.clear();
-              uppercase = false;
+              uppercase = (type_letter == unicode::_letter_upper);
               uppercase_sequnce = false;
             }
             else if (other && _joiner_annotate && token.empty())
