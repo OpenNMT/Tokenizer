@@ -75,6 +75,8 @@ namespace onmt
     std::string token;
 
     bool letter = false;
+    bool uppercase = false;
+    bool uppercase_sequnce = false;
     bool number = false;
     bool other = false;
     bool space = true;
@@ -121,6 +123,8 @@ namespace onmt
         }
 
         letter = false;
+        uppercase = false;
+        uppercase_sequnce = false;
         number = false;
         other = false;
         space = true;
@@ -146,7 +150,9 @@ namespace onmt
 
           if (cur_letter)
           {
-            if (!letter && !space)
+            if ((!letter && !space) ||
+                (_mode == Mode::Aggressive && letter && ((type_letter == unicode::_letter_upper && !uppercase) ||
+                                                        (type_letter == unicode::_letter_lower && uppercase_sequnce))))
             {
               if (_joiner_annotate && !_joiner_new)
                 token += _joiner;
@@ -154,6 +160,8 @@ namespace onmt
               if (_joiner_annotate && _joiner_new)
                 words.push_back(_joiner);
               token.clear();
+              uppercase = false;
+              uppercase_sequnce = false;
             }
             else if (other && _joiner_annotate && token.empty())
             {
@@ -161,6 +169,11 @@ namespace onmt
                 words.push_back(_joiner);
               else
                 words.back() += _joiner;
+              uppercase = false;
+              uppercase_sequnce = false;
+            } else {
+              uppercase_sequnce = (type_letter == unicode::_letter_upper) & uppercase;
+              uppercase = (type_letter == unicode::_letter_upper);
             }
 
             token += c;
@@ -192,6 +205,8 @@ namespace onmt
 
             token += c;
             letter = false;
+            uppercase = false;
+            uppercase_sequnce = false;
             number = true;
             other = false;
             space = false;
@@ -219,6 +234,8 @@ namespace onmt
             words.push_back(token);
             token.clear();
             letter = false;
+            uppercase = false;
+            uppercase_sequnce = false;
             number = false;
             other = true;
             space = true;
