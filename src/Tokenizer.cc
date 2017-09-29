@@ -78,7 +78,7 @@ namespace onmt
 
     bool letter = false;
     bool uppercase = false;
-    bool uppercase_sequnce = false;
+    bool uppercase_sequence = false;
     bool number = false;
     bool other = false;
     bool space = true;
@@ -126,7 +126,7 @@ namespace onmt
 
         letter = false;
         uppercase = false;
-        uppercase_sequnce = false;
+        uppercase_sequence = false;
         number = false;
         other = false;
         space = true;
@@ -154,7 +154,7 @@ namespace onmt
           {
             if ((!letter && !space) ||
                 (_segment_case && letter && ((type_letter == unicode::_letter_upper && !uppercase) ||
-                                             (type_letter == unicode::_letter_lower && uppercase_sequnce))))
+                                             (type_letter == unicode::_letter_lower && uppercase_sequence))))
             {
               if (_joiner_annotate && !_joiner_new)
                 token += _joiner;
@@ -163,7 +163,7 @@ namespace onmt
                 words.push_back(_joiner);
               token.clear();
               uppercase = (type_letter == unicode::_letter_upper);
-              uppercase_sequnce = false;
+              uppercase_sequence = false;
             }
             else if (other && _joiner_annotate && token.empty())
             {
@@ -172,9 +172,9 @@ namespace onmt
               else
                 words.back() += _joiner;
               uppercase = (type_letter == unicode::_letter_upper);
-              uppercase_sequnce = false;
+              uppercase_sequence = false;
             } else {
-              uppercase_sequnce = (type_letter == unicode::_letter_upper) & uppercase;
+              uppercase_sequence = (type_letter == unicode::_letter_upper) & uppercase;
               uppercase = (type_letter == unicode::_letter_upper);
             }
 
@@ -208,7 +208,7 @@ namespace onmt
             token += c;
             letter = false;
             uppercase = false;
-            uppercase_sequnce = false;
+            uppercase_sequence = false;
             number = true;
             other = false;
             space = false;
@@ -237,7 +237,7 @@ namespace onmt
             token.clear();
             letter = false;
             uppercase = false;
-            uppercase_sequnce = false;
+            uppercase_sequence = false;
             number = false;
             other = true;
             space = true;
