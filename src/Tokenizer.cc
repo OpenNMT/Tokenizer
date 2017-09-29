@@ -14,7 +14,8 @@ namespace onmt
                        bool joiner_annotate,
                        bool joiner_new,
                        const std::string& joiner,
-                       bool with_separators)
+                       bool with_separators,
+                       bool segment_case)
     : _mode(mode)
     , _bpe(bpe_model_path.empty() ? nullptr : new BPE(bpe_model_path))
     , _case_feature(case_feature)
@@ -22,6 +23,7 @@ namespace onmt
     , _joiner_new(joiner_new)
     , _joiner(joiner)
     , _with_separators(with_separators)
+    , _segment_case(segment_case)
   {
   }
 
@@ -75,6 +77,8 @@ namespace onmt
     std::string token;
 
     bool letter = false;
+    bool uppercase = false;
+    bool uppercase_sequence = false;
     bool number = false;
     bool other = false;
     bool space = true;
@@ -121,6 +125,8 @@ namespace onmt
         }
 
         letter = false;
+        uppercase = false;
+        uppercase_sequence = false;
         number = false;
         other = false;
         space = true;
@@ -152,7 +158,9 @@ namespace onmt
 
           if (cur_letter)
           {
-            if (!letter && !space)
+            if ((!letter && !space) ||
+                (_segment_case && letter && ((type_letter == unicode::_letter_upper && !uppercase) ||
+                                             (type_letter == unicode::_letter_lower && uppercase_sequence))))
             {
               if (_joiner_annotate && !_joiner_new)
                 token += _joiner;
@@ -160,6 +168,8 @@ namespace onmt
               if (_joiner_annotate && _joiner_new)
                 words.push_back(_joiner);
               token.clear();
+              uppercase = (type_letter == unicode::_letter_upper);
+              uppercase_sequence = false;
             }
             else if (other && _joiner_annotate && token.empty())
             {
@@ -167,6 +177,11 @@ namespace onmt
                 words.push_back(_joiner);
               else
                 words.back() += _joiner;
+              uppercase = (type_letter == unicode::_letter_upper);
+              uppercase_sequence = false;
+            } else {
+              uppercase_sequence = (type_letter == unicode::_letter_upper) & uppercase;
+              uppercase = (type_letter == unicode::_letter_upper);
             }
 
             token += c;
@@ -198,6 +213,8 @@ namespace onmt
 
             token += c;
             letter = false;
+            uppercase = false;
+            uppercase_sequence = false;
             number = true;
             other = false;
             space = false;
@@ -225,6 +242,8 @@ namespace onmt
             words.push_back(token);
             token.clear();
             letter = false;
+            uppercase = false;
+            uppercase_sequence = false;
             number = false;
             other = true;
             space = true;
