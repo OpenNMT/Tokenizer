@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### New features
+
+* Add flag to cache BPE models for future instances
+
 ### Fixes and improvements
 
 * Fix `SpaceTokenizer` crash with leading or trailing spaces

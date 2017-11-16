@@ -6,6 +6,8 @@
 namespace onmt
 {
 
+  std::unordered_map<std::string, BPE*> bpe_cache;
+  std::mutex bpe_cache_mutex;
   const std::string Tokenizer::joiner_marker("￭");
   const std::map<std::string, std::string> substitutes = {
                                                       { "￭", "■" },
@@ -23,6 +25,19 @@ namespace onmt
     { "space", onmt::Tokenizer::Mode::Space }
   };
 
+  static BPE* load_bpe(const std::string& bpe_model_path)
+  {
+    std::lock_guard<std::mutex> lock(bpe_cache_mutex);
+
+    auto it = bpe_cache.find(bpe_model_path);
+    if (it != bpe_cache.end())
+      return it->second;
+
+    BPE* bpe = new BPE(bpe_model_path);
+    bpe_cache[bpe_model_path] = bpe;
+    return bpe;
+  }
+
   Tokenizer::Tokenizer(Mode mode,
                        const std::string& bpe_model_path,
                        bool case_feature,
@@ -31,9 +46,10 @@ namespace onmt
                        const std::string& joiner,
                        bool with_separators,
                        bool segment_case,
-                       bool segment_numbers)
+                       bool segment_numbers,
+                       bool cache_bpe_model)
     : _mode(mode)
-    , _bpe(bpe_model_path.empty() ? nullptr : new BPE(bpe_model_path))
+    , _bpe(nullptr)
     , _case_feature(case_feature)
     , _joiner_annotate(joiner_annotate)
     , _joiner_new(joiner_new)
@@ -41,7 +57,15 @@ namespace onmt
     , _with_separators(with_separators)
     , _segment_case(segment_case)
     , _segment_numbers(segment_numbers)
+    , _cache_bpe_model(cache_bpe_model)
   {
+    if (!bpe_model_path.empty())
+    {
+      if (cache_bpe_model)
+        _bpe = load_bpe(bpe_model_path);
+      else
+        _bpe = new BPE(bpe_model_path);
+    }
   }
 
   Tokenizer::Tokenizer(bool case_feature,
@@ -50,6 +74,12 @@ namespace onmt
     , _case_feature(case_feature)
     , _joiner(joiner)
   {
+  }
+
+  Tokenizer::~Tokenizer()
+  {
+    if (!_cache_bpe_model)
+      delete _bpe;
   }
 
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,

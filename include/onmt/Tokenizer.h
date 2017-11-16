@@ -1,6 +1,7 @@
 #pragma once
 
-#include <memory>
+#include <mutex>
+#include <unordered_map>
 
 #include "onmt/ITokenizer.h"
 #include "onmt/BPE.h"
@@ -19,6 +20,8 @@ namespace onmt
       Space
     };
 
+    static std::unordered_map<std::string, BPE*> bpe_cache;
+    static std::mutex bpe_cache_mutex;
     static const std::string joiner_marker;
     static const std::unordered_map<std::string, onmt::Tokenizer::Mode> mapMode;
 
@@ -30,9 +33,11 @@ namespace onmt
               const std::string& joiner = joiner_marker,
               bool with_separators = false,
               bool segment_case = false,
-              bool segment_numbers = false);
+              bool segment_numbers = false,
+              bool cache_bpe_model = false);
     Tokenizer(bool case_feature = false,
               const std::string& joiner = joiner_marker);
+    ~Tokenizer();
 
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
@@ -43,7 +48,7 @@ namespace onmt
 
   private:
     Mode _mode;
-    std::unique_ptr<BPE> _bpe;
+    BPE* _bpe;
     bool _case_feature;
     bool _joiner_annotate;
     bool _joiner_new;
@@ -51,6 +56,7 @@ namespace onmt
     bool _with_separators;
     bool _segment_case;
     bool _segment_numbers;
+    bool _cache_bpe_model;
 
     std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens);
 
