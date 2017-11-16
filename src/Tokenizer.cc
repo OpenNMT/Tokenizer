@@ -149,7 +149,7 @@ namespace onmt
 
           if (_mode == Mode::Conservative)
           {
-            if (unicode::is_number(v)
+            if (cur_number
                 || (c == "-" && letter)
                 || (c == "_")
                 || (letter && (c == "." || c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))

@@ -198,7 +198,7 @@ namespace onmt
     {
       if (!u)
         return false;
-      return (u >= 9 and u <= 13) or _find_codepoint(u, unidata_Number);
+      return _find_codepoint(u, unidata_Number);
     }
 
     bool is_mark(code_point_t u)
