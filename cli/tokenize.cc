@@ -10,14 +10,15 @@ int main(int argc, char* argv[])
 {
   po::options_description desc("Tokenization");
   desc.add_options()
-    ("help", "display available options")
-    ("mode", po::value<std::string>()->default_value("conservative"), "Define how aggressive should the tokenization be: 'aggressive' only keeps sequences of letters/numbers, 'conservative' allows mix of alphanumeric as in: '2,000', 'E65', 'soft-landing'")
-    ("joiner_annotate", po::bool_switch()->default_value(false), "include joiner annotation using 'joiner' character")
+    ("help,h", "display available options")
+    ("mode,m", po::value<std::string>()->default_value("conservative"), "Define how aggressive should the tokenization be: 'aggressive' only keeps sequences of letters/numbers, 'conservative' allows mix of alphanumeric as in: '2,000', 'E65', 'soft-landing'")
+    ("joiner_annotate,j", po::bool_switch()->default_value(false), "include joiner annotation using 'joiner' character")
     ("joiner", po::value<std::string>()->default_value(onmt::Tokenizer::joiner_marker), "character used to annotate joiners")
     ("joiner_new", po::bool_switch()->default_value(false), "in joiner_annotate mode, 'joiner' is an independent token")
-    ("case_feature", po::bool_switch()->default_value(false), "lowercase corpus and generate case feature")
+    ("case_feature,c", po::bool_switch()->default_value(false), "lowercase corpus and generate case feature")
     ("segment_case", po::bool_switch()->default_value(false), "Segment case feature, splits AbC to Ab C to be able to restore case")
-    ("bpe_model", po::value<std::string>()->default_value(""), "path to the BPE model")
+    ("segment_numbers", po::bool_switch()->default_value(false), "Segment numbers into single digits")
+    ("bpe_model,bpe", po::value<std::string>()->default_value(""), "path to the BPE model")
     ;
 
   po::variables_map vm;
@@ -30,16 +31,15 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  onmt::ITokenizer* tokenizer = new onmt::Tokenizer(vm["mode"].as<std::string>() == "aggressive"
-                                                    ? onmt::Tokenizer::Mode::Aggressive
-                                                    : onmt::Tokenizer::Mode::Conservative,
+  onmt::ITokenizer* tokenizer = new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
                                                     vm["bpe_model"].as<std::string>(),
                                                     vm["case_feature"].as<bool>(),
                                                     vm["joiner_annotate"].as<bool>(),
                                                     vm["joiner_new"].as<bool>(),
                                                     vm["joiner"].as<std::string>(),
                                                     false,
-                                                    vm["segment_case"].as<bool>());
+                                                    vm["segment_case"].as<bool>(),
+                                                    vm["segment_numbers"].as<bool>());
 
   std::string line;
 

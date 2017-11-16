@@ -15,10 +15,12 @@ namespace onmt
     enum class Mode
     {
       Conservative,
-      Aggressive
+      Aggressive,
+      Space
     };
 
     static const std::string joiner_marker;
+    static const std::unordered_map<std::string, onmt::Tokenizer::Mode> mapMode;
 
     Tokenizer(Mode mode = Mode::Conservative,
               const std::string& bpe_model_path = "",
@@ -27,7 +29,8 @@ namespace onmt
               bool joiner_new = false,
               const std::string& joiner = joiner_marker,
               bool with_separators = false,
-              bool segment_case = false);
+              bool segment_case = false,
+              bool segment_numbers = false);
     Tokenizer(bool case_feature = false,
               const std::string& joiner = joiner_marker);
 
@@ -47,6 +50,7 @@ namespace onmt
     std::string _joiner;
     bool _with_separators;
     bool _segment_case;
+    bool _segment_numbers;
 
     std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens);
 

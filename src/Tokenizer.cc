@@ -7,6 +7,21 @@ namespace onmt
 {
 
   const std::string Tokenizer::joiner_marker("￭");
+  const std::map<std::string, std::string> substitutes = {
+                                                      { "￭", "■" },
+                                                      { "￨", "│" },
+                                                      { "％", "%" },
+                                                      { "＃", "#" },
+                                                      { "：", ":" }};
+  const std::string ph_marker_open = "｟";
+  const std::string ph_marker_close = "｠";
+  const std::string protected_character = "％";
+
+  const std::unordered_map<std::string, onmt::Tokenizer::Mode> Tokenizer::mapMode = {
+    { "aggressive", onmt::Tokenizer::Mode::Aggressive },
+    { "conservative", onmt::Tokenizer::Mode::Conservative },
+    { "space", onmt::Tokenizer::Mode::Space }
+  };
 
   Tokenizer::Tokenizer(Mode mode,
                        const std::string& bpe_model_path,
@@ -15,7 +30,8 @@ namespace onmt
                        bool joiner_new,
                        const std::string& joiner,
                        bool with_separators,
-                       bool segment_case)
+                       bool segment_case,
+                       bool segment_numbers)
     : _mode(mode)
     , _bpe(bpe_model_path.empty() ? nullptr : new BPE(bpe_model_path))
     , _case_feature(case_feature)
@@ -24,6 +40,7 @@ namespace onmt
     , _joiner(joiner)
     , _with_separators(with_separators)
     , _segment_case(segment_case)
+    , _segment_numbers(segment_numbers)
   {
   }
 
@@ -69,191 +86,264 @@ namespace onmt
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features)
   {
-    std::vector<std::string> chars;
-    std::vector<unicode::code_point_t> code_points;
-
-    unicode::explode_utf8(text, chars, code_points);
-
-    std::string token;
-
-    bool letter = false;
-    bool uppercase = false;
-    bool uppercase_sequence = false;
-    bool number = false;
-    bool other = false;
-    bool space = true;
-
-    unicode::_type_letter type_letter;
-
-    for (size_t i = 0; i < chars.size(); ++i)
-    {
-      const std::string& c = chars[i];
-      unicode::code_point_t v = code_points[i];
-      unicode::code_point_t next_v = i + 1 < code_points.size() ? code_points[i + 1] : 0;
-
-      if (unicode::is_separator(v))
+    if (_mode == Mode::Space) {
+      std::vector<std::string> chunks = unicode::split_utf8(text, " ");
+      for (const auto& chunk: chunks)
       {
-        if (!space)
+        if (chunk.empty())
+          continue;
+
+        std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
+
+        words.push_back(fields[0]);
+
+        for (size_t i = 1; i < fields.size(); ++i)
         {
-          words.push_back(token);
-          token.clear();
-        }
-
-        if (v == 0x200D) // Zero-Width joiner.
-        {
-          if (_joiner_annotate)
-          {
-            if (_joiner_new && !words.empty())
-              words.push_back(_joiner);
-            else
-            {
-              if (other || (number && unicode::is_letter(next_v, type_letter)))
-                words.back() += _joiner;
-              else
-                token = _joiner;
-            }
-          }
-        }
-        else if (_with_separators)
-        {
-          token += c;
-          if (!unicode::is_separator(next_v))
-          {
-            words.push_back(token);
-            token.clear();
-          }
-        }
-
-        letter = false;
-        uppercase = false;
-        uppercase_sequence = false;
-        number = false;
-        other = false;
-        space = true;
-      }
-      else
-      {
-        bool cur_letter = false;
-        bool cur_number = false;
-
-        if (v > 32 and v != 0xFEFF)
-        {
-          cur_letter = unicode::is_letter(v, type_letter);
-          cur_number = unicode::is_number(v);
-
-          if (unicode::is_mark(v)) {
-            // if we have a mark, we keep type of previous character
-            cur_letter = letter;
-            cur_number = number;
-          }
-
-          if (_mode == Mode::Conservative)
-          {
-            if (cur_number
-                || (c == "-" && letter)
-                || (c == "_")
-                || (letter && (c == "." || c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))
-              cur_letter = true;
-          }
-
-          if (cur_letter)
-          {
-            if ((!letter && !space) ||
-                (_segment_case && letter && ((type_letter == unicode::_letter_upper && !uppercase) ||
-                                             (type_letter == unicode::_letter_lower && uppercase_sequence))))
-            {
-              if (_joiner_annotate && !_joiner_new)
-                token += _joiner;
-              words.push_back(token);
-              if (_joiner_annotate && _joiner_new)
-                words.push_back(_joiner);
-              token.clear();
-              uppercase = (type_letter == unicode::_letter_upper);
-              uppercase_sequence = false;
-            }
-            else if (other && _joiner_annotate && token.empty())
-            {
-              if (_joiner_new)
-                words.push_back(_joiner);
-              else
-                words.back() += _joiner;
-              uppercase = (type_letter == unicode::_letter_upper);
-              uppercase_sequence = false;
-            } else {
-              uppercase_sequence = (type_letter == unicode::_letter_upper) & uppercase;
-              uppercase = (type_letter == unicode::_letter_upper);
-            }
-
-            token += c;
-            letter = true;
-            number = false;
-            other = false;
-            space = false;
-          }
-          else if (cur_number)
-          {
-            if (!number && !space)
-            {
-              if (_joiner_annotate && !_joiner_new && !letter)
-                token += _joiner;
-              words.push_back(token);
-              if (_joiner_annotate && _joiner_new)
-                words.push_back(_joiner);
-              token.clear();
-              if (_joiner_annotate && !_joiner_new && letter)
-                token += _joiner;
-            }
-            else if (other && _joiner_annotate)
-            {
-              if (_joiner_new)
-                words.push_back(_joiner);
-              else
-                token = _joiner;
-            }
-
-            token += c;
-            letter = false;
-            uppercase = false;
-            uppercase_sequence = false;
-            number = true;
-            other = false;
-            space = false;
-          }
+          if (features.size() < i)
+            features.emplace_back(1, fields[i]);
           else
-          {
-            if (!space)
-            {
-              words.push_back(token);
-              if (_joiner_annotate && _joiner_new)
-                words.push_back(_joiner);
-              token.clear();
-              if (_joiner_annotate && !_joiner_new)
-                token += _joiner;
-            }
-            else if (other && _joiner_annotate)
-            {
-              if (_joiner_new)
-                words.push_back(_joiner);
-              else
-                token = _joiner;
-            }
-
-            token += c;
-            words.push_back(token);
-            token.clear();
-            letter = false;
-            uppercase = false;
-            uppercase_sequence = false;
-            number = false;
-            other = true;
-            space = true;
-          }
+            features[i - 1].push_back(fields[i]);
         }
       }
     }
+    else {
+      std::vector<std::string> chars;
+      std::vector<unicode::code_point_t> code_points;
 
-    if (!token.empty())
-      words.push_back(token);
+      unicode::explode_utf8(text, chars, code_points);
+
+      std::string token;
+
+      bool letter = false;
+      bool uppercase = false;
+      bool uppercase_sequence = false;
+      bool number = false;
+      bool other = false;
+      bool space = true;
+      bool placeholder = false;
+      std::string prev_alphabet;
+
+      unicode::_type_letter type_letter;
+
+      for (size_t i = 0; i < chars.size(); ++i)
+      {
+        std::string c = chars[i];
+        unicode::code_point_t v = code_points[i];
+        unicode::code_point_t next_v = i + 1 < code_points.size() ? code_points[i + 1] : 0;
+        bool isSeparator = unicode::is_separator(v);
+
+        if (placeholder) {
+            if (c == ph_marker_close) {
+              token = token + c;
+              letter = true;
+              prev_alphabet = "placeholder";
+              placeholder = false;
+              space = false;
+            } else {
+              if (isSeparator) {
+                char buffer[10];
+                sprintf(buffer, "%04x", v);
+                c = protected_character + buffer;
+              }
+              token += c;
+            }
+          }
+          else if (c == ph_marker_open) {
+            std::string initc;
+            if (!space) {
+              if (_joiner_annotate && !_joiner_new) {
+                if ((letter && prev_alphabet != "placeholder") || number)
+                  initc = _joiner;
+                else
+                  token += _joiner;
+              }
+              words.push_back(token);
+              token = initc;
+              if (_joiner_annotate && _joiner_new)
+                words.push_back(_joiner);
+            } else if (other) {
+              if (_joiner_annotate && token.length() == 0) {
+                if (_joiner_new) words.push_back(_joiner);
+                else words[words.size()-1] += _joiner;
+              }
+            }
+            token += c;
+            placeholder = true;
+        }
+        else if (isSeparator)
+        {
+          if (!space)
+          {
+            words.push_back(token);
+            token.clear();
+          }
+
+          if (v == 0x200D) // Zero-Width joiner.
+          {
+            if (_joiner_annotate)
+            {
+              if (_joiner_new && !words.empty())
+                words.push_back(_joiner);
+              else
+              {
+                if (other || (number && unicode::is_letter(next_v, type_letter)))
+                  words.back() += _joiner;
+                else
+                  token = _joiner;
+              }
+            }
+          }
+          else if (_with_separators)
+          {
+            token += c;
+            if (!unicode::is_separator(next_v))
+            {
+              words.push_back(token);
+              token.clear();
+            }
+          }
+
+          letter = false;
+          uppercase = false;
+          uppercase_sequence = false;
+          number = false;
+          other = false;
+          space = true;
+        }
+        else
+        {
+          bool cur_letter = false;
+          bool cur_number = false;
+          // skip special characters and BOM
+          if (v > 32 and v != 0xFEFF)
+          {
+            if (substitutes.find(c)!=substitutes.end())
+              c = substitutes.at(c);
+            cur_letter = unicode::is_letter(v, type_letter);
+            cur_number = unicode::is_number(v);
+
+            if (unicode::is_mark(v)) {
+              // if we have a mark, we keep type of previous character
+              cur_letter = letter;
+              cur_number = number;
+            }
+
+            if (_mode == Mode::Conservative)
+            {
+              if (cur_number
+                  || (c == "-" && letter)
+                  || (c == "_")
+                  || (letter && (c == "." || c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))
+                cur_letter = true;
+            }
+
+            if (cur_letter)
+            {
+              if ((!letter && !space) ||
+                  (letter && !unicode::is_mark(v) &&
+                    (prev_alphabet == "placeholder" ||
+                     (_segment_case && letter && ((type_letter == unicode::_letter_upper && !uppercase) ||
+                                                  (type_letter == unicode::_letter_lower && uppercase_sequence))))))
+              {
+                if (_joiner_annotate && !_joiner_new)
+                  token += _joiner;
+                words.push_back(token);
+                if (_joiner_annotate && _joiner_new)
+                  words.push_back(_joiner);
+                token.clear();
+                uppercase = (type_letter == unicode::_letter_upper);
+                uppercase_sequence = false;
+              }
+              else if (other && _joiner_annotate && token.empty())
+              {
+                if (_joiner_new)
+                  words.push_back(_joiner);
+                else
+                  words.back() += _joiner;
+                uppercase = (type_letter == unicode::_letter_upper);
+                uppercase_sequence = false;
+              } else {
+                uppercase_sequence = (type_letter == unicode::_letter_upper) & uppercase;
+                uppercase = (type_letter == unicode::_letter_upper);
+              }
+
+              token += c;
+              letter = true;
+              number = false;
+              other = false;
+              space = false;
+              prev_alphabet = "letter";
+            }
+            else if (cur_number)
+            {
+              if (letter || (number && _segment_numbers) || (!number && !space))
+              {
+                bool addjoiner = false;
+                if (_joiner_annotate) {
+                  if (_joiner_new) addjoiner = true;
+                  else {
+                    if (!letter or prev_alphabet == "placeholder")
+                      token += _joiner;
+                    else
+                      c = _joiner + c;
+                  }
+                }
+                words.push_back(token);
+                if (addjoiner) words.push_back(_joiner);
+                token.clear();
+              }
+              else if (other && _joiner_annotate)
+              {
+                if (_joiner_new)
+                  words.push_back(_joiner);
+                else
+                  words[words.size()-1] += _joiner;
+              }
+
+              token += c;
+              letter = false;
+              uppercase = false;
+              uppercase_sequence = false;
+              number = true;
+              other = false;
+              space = false;
+            }
+            else
+            {
+              if (!space)
+              {
+                words.push_back(token);
+                if (_joiner_annotate && _joiner_new)
+                  words.push_back(_joiner);
+                token.clear();
+                if (_joiner_annotate && !_joiner_new)
+                  token += _joiner;
+              }
+              else if (other && _joiner_annotate)
+              {
+                if (_joiner_new)
+                  words.push_back(_joiner);
+                else
+                  token = _joiner;
+              }
+
+              token += c;
+              words.push_back(token);
+              token.clear();
+              letter = false;
+              uppercase = false;
+              uppercase_sequence = false;
+              number = false;
+              other = true;
+              space = true;
+            }
+          }
+        }
+      }
+
+      if (!token.empty())
+        words.push_back(token);
+    }
 
     if (_bpe)
       words = bpe_segment(words);
