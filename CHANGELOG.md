@@ -3,6 +3,7 @@
 ### Fixes and improvements
 
 * Fix `SpaceTokenizer` crash with leading or trailing spaces
+* Fix incorrect tokenization around tabulation character (#5)
 
 ## [v0.2.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v0.2.0) (2017-03-08)
 
