@@ -371,6 +371,11 @@ namespace onmt
     {
       std::string token = tokens[i];
 
+      if (token.find(ph_marker_open) != std::string::npos) {
+        segments.push_back(token);
+        continue;
+      }
+
       bool left_sep = false;
       bool right_sep = false;
 
