@@ -4,6 +4,10 @@
 
 * Fix `SpaceTokenizer` crash with leading or trailing spaces
 * Fix incorrect tokenization around tabulation character (#5)
+* Fix incorrect joiner between numeric and punctuation
+* Introduce `segment_numbers` option
+* Introduce support of protected sequence
+* Introduce `space` mode
 
 ## [v0.2.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v0.2.0) (2017-03-08)
 
