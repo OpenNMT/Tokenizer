@@ -15,7 +15,11 @@ namespace onmt
     std::vector<std::string> encode(const std::string& str) const;
 
   private:
-    static const std::string end_of_word;
+    static std::string end_of_word;
+    static std::string begin_of_word;
+    static bool prefix;
+    static bool suffix;
+    static bool case_insensitive;
 
     struct pair_hash {
     public:
