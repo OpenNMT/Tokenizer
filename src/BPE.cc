@@ -82,7 +82,10 @@ namespace onmt
     unicode::explode_utf8(str_lc, chars, code_points);
 
     if (chars.size() == 1)
+    {
+      chars[0] = str;
       return chars;
+    }
 
     if (prefix) { chars.insert(chars.begin(), begin_of_word); }
     if (suffix) { chars.push_back(end_of_word); }
