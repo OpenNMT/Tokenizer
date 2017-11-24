@@ -20,11 +20,11 @@ namespace onmt
     return pairs;
   }
 
-  std::string BPE::end_of_word = "</w>";
-  std::string BPE::begin_of_word = "<w>";
-  bool BPE::case_insensitive = false;
-  bool BPE::suffix = true;
-  bool BPE::prefix = false;
+  std::string end_of_word = "</w>";
+  std::string begin_of_word = "<w>";
+  bool case_insensitive = false;
+  bool suffix = true;
+  bool prefix = false;
 
   BPE::BPE(const std::string& model_path)
   {
@@ -50,12 +50,14 @@ namespace onmt
 
     if (options.size() == 6 && options[0] == "v3")
     {
-      BPE::prefix = (options[1] == "true");
-      BPE::suffix = options[2] == "true";
-      BPE::case_insensitive = options[3] == "true";
-      BPE::begin_of_word = options[4];
-      BPE::end_of_word = options[5];
-    }
+      prefix = (options[1] == "true");
+      suffix = options[2] == "true";
+      case_insensitive = options[3] == "true";
+      begin_of_word = options[4];
+      end_of_word = options[5];
+    } else
+      in.seekg(0);
+
     while (std::getline(in, line))
     {
       size_t sep = line.find(' ');
