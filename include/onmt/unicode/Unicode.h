@@ -23,6 +23,8 @@ namespace onmt
                       std::vector<std::string>& chars,
                       std::vector<code_point_t>& code_points);
 
+    size_t utf8len(std::string str);
+
     enum _type_letter
     {
       _letter_other,

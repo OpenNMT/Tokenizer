@@ -4,6 +4,7 @@
 #include <limits>
 
 #include "onmt/unicode/Unicode.h"
+#include "onmt/CaseModifier.h"
 
 namespace onmt
 {
@@ -19,14 +20,42 @@ namespace onmt
     return pairs;
   }
 
-  const std::string BPE::end_of_word = "</w>";
-
   BPE::BPE(const std::string& model_path)
+    : _end_of_word("</w>")
+    , _begin_of_word("<w>")
+    , _prefix(false)
+    , _suffix(true)
+    , _case_insensitive(false)
   {
     std::ifstream in(model_path.c_str());
     std::string line;
 
     int i = 0;
+
+    std::getline(in, line);
+
+    std::vector<std::string> options;
+    std::string option;
+
+    size_t sep = line.find(';');
+    size_t bidx = 0;
+    while (sep != std::string::npos && sep + 1 < line.size())
+    {
+      options.push_back(line.substr(bidx, sep-bidx));
+      bidx = sep + 1;
+      sep = line.find(';', bidx);
+    }
+    options.push_back(line.substr(bidx));
+
+    if (options.size() == 6 && options[0] == "v3")
+    {
+      _prefix = (options[1] == "true");
+      _suffix = options[2] == "true";
+      _case_insensitive = options[3] == "true";
+      _begin_of_word = options[4];
+      _end_of_word = options[5];
+    } else
+      in.seekg(0);
 
     while (std::getline(in, line))
     {
@@ -42,15 +71,26 @@ namespace onmt
 
   std::vector<std::string> BPE::encode(const std::string& str) const
   {
+    std::string str_lc = str;
+    if (_case_insensitive)
+    {
+      str_lc = CaseModifier::extract_case(str).first;
+    }
+
     std::vector<std::string> chars;
     std::vector<unicode::code_point_t> code_points;
 
-    unicode::explode_utf8(str, chars, code_points);
+    unicode::explode_utf8(str_lc, chars, code_points);
 
     if (chars.size() == 1)
+    {
+      chars[0] = str;
       return chars;
+    }
 
-    chars.push_back(end_of_word);
+    if (_prefix) { chars.insert(chars.begin(), _begin_of_word); }
+    if (_suffix) { chars.push_back(_end_of_word); }
+
     auto pairs = get_pairs(chars);
 
     while (true)
@@ -99,13 +139,53 @@ namespace onmt
         pairs = get_pairs(chars);
     }
 
-    if (chars.back() == end_of_word)
-      chars.pop_back();
-    else if (chars.back().substr(chars.back().size() - end_of_word.size()) == end_of_word)
+    if (_prefix)
     {
-      std::string cleaned = chars.back().substr(0, chars.back().size() - end_of_word.size());
-      chars.pop_back();
-      chars.push_back(cleaned);
+      if (chars.front() == _begin_of_word)
+        chars.erase(chars.begin());
+      else if (chars.front().substr(0, _begin_of_word.size()) == _begin_of_word)
+      {
+        std::string cleaned = chars.front().substr(_begin_of_word.size());
+        chars.erase(chars.begin());
+        chars.insert(chars.begin(), cleaned);
+      }
+    }
+
+    if (_suffix)
+    {
+      if (chars.back() == _end_of_word)
+        chars.pop_back();
+      else if (chars.back().substr(chars.back().size() - _end_of_word.size()) == _end_of_word)
+      {
+        std::string cleaned = chars.back().substr(0, chars.back().size() - _end_of_word.size());
+        chars.pop_back();
+        chars.push_back(cleaned);
+      }
+    }
+
+    if (_case_insensitive)
+    {
+      std::vector<std::string> word_tc;
+
+      std::vector<std::string> chars_tc;
+      std::vector<unicode::code_point_t> code_points_tc;
+
+      unicode::explode_utf8(str, chars_tc, code_points_tc);
+
+      std::vector<std::string>::iterator it = chars_tc.begin();
+      for (size_t i = 0; i < chars.size(); ++i)
+      {
+        size_t curr_length = unicode::utf8len(chars[i]);
+        std::string curr_str;
+        std::vector<std::string>::iterator it_end = it + curr_length;
+        while (it != it_end)
+        {
+          curr_str += *it;
+          it++;
+        }
+        word_tc.push_back(curr_str);
+      }
+      chars.swap(word_tc);
     }
 
     return chars;
