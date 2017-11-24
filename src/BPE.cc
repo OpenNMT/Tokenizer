@@ -20,13 +20,12 @@ namespace onmt
     return pairs;
   }
 
-  std::string end_of_word = "</w>";
-  std::string begin_of_word = "<w>";
-  bool case_insensitive = false;
-  bool suffix = true;
-  bool prefix = false;
-
   BPE::BPE(const std::string& model_path)
+    : _end_of_word("</w>")
+    , _begin_of_word("<w>")
+    , _prefix(false)
+    , _suffix(true)
+    , _case_insensitive(false)
   {
     std::ifstream in(model_path.c_str());
     std::string line;
@@ -50,11 +49,11 @@ namespace onmt
 
     if (options.size() == 6 && options[0] == "v3")
     {
-      prefix = (options[1] == "true");
-      suffix = options[2] == "true";
-      case_insensitive = options[3] == "true";
-      begin_of_word = options[4];
-      end_of_word = options[5];
+      _prefix = (options[1] == "true");
+      _suffix = options[2] == "true";
+      _case_insensitive = options[3] == "true";
+      _begin_of_word = options[4];
+      _end_of_word = options[5];
     } else
       in.seekg(0);
 
@@ -73,7 +72,7 @@ namespace onmt
   std::vector<std::string> BPE::encode(const std::string& str) const
   {
     std::string str_lc = str;
-    if (case_insensitive)
+    if (_case_insensitive)
     {
       str_lc = CaseModifier::extract_case(str).first;
     }
@@ -89,8 +88,8 @@ namespace onmt
       return chars;
     }
 
-    if (prefix) { chars.insert(chars.begin(), begin_of_word); }
-    if (suffix) { chars.push_back(end_of_word); }
+    if (_prefix) { chars.insert(chars.begin(), _begin_of_word); }
+    if (_suffix) { chars.push_back(_end_of_word); }
 
     auto pairs = get_pairs(chars);
 
@@ -140,31 +139,31 @@ namespace onmt
         pairs = get_pairs(chars);
     }
 
-    if (prefix)
+    if (_prefix)
     {
-      if (chars.front() == begin_of_word)
+      if (chars.front() == _begin_of_word)
         chars.erase(chars.begin());
-      else if (chars.front().substr(0, begin_of_word.size()) == begin_of_word)
+      else if (chars.front().substr(0, _begin_of_word.size()) == _begin_of_word)
       {
-        std::string cleaned = chars.front().substr(begin_of_word.size());
+        std::string cleaned = chars.front().substr(_begin_of_word.size());
         chars.erase(chars.begin());
         chars.insert(chars.begin(), cleaned);
       }
     }
 
-    if (suffix)
+    if (_suffix)
     {
-      if (chars.back() == end_of_word)
+      if (chars.back() == _end_of_word)
         chars.pop_back();
-      else if (chars.back().substr(chars.back().size() - end_of_word.size()) == end_of_word)
+      else if (chars.back().substr(chars.back().size() - _end_of_word.size()) == _end_of_word)
       {
-        std::string cleaned = chars.back().substr(0, chars.back().size() - end_of_word.size());
+        std::string cleaned = chars.back().substr(0, chars.back().size() - _end_of_word.size());
         chars.pop_back();
         chars.push_back(cleaned);
       }
     }
 
-    if (case_insensitive)
+    if (_case_insensitive)
     {
       std::vector<std::string> word_tc;
 
