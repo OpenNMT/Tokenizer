@@ -384,9 +384,15 @@ namespace onmt
 
       for (size_t i = 0; i < words.size(); ++i)
       {
-        auto data = CaseModifier::extract_case(words[i]);
-        words[i] = data.first;
-        case_feat.emplace_back(1, data.second);
+        if (words[i].find(ph_marker_open) == std::string::npos)
+        {
+          auto data = CaseModifier::extract_case(words[i]);
+          words[i] = data.first;
+          case_feat.emplace_back(1, data.second);
+        } else
+        {
+          case_feat.emplace_back(1, 'N');
+        }
       }
 
       features.push_back(case_feat);

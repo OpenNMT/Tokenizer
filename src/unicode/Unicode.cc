@@ -135,6 +135,14 @@ namespace onmt
       }
     }
 
+    size_t utf8len(std::string str)
+    {
+      std::vector<std::string> chars;
+      std::vector<unicode::code_point_t> code_points;
+      unicode::explode_utf8(str, chars, code_points);
+      return chars.size();
+    }
+
     static bool _find_codepoint(code_point_t u, const map_of_list_t &map)
     {
       map_of_list_t::const_iterator it = map.begin();
