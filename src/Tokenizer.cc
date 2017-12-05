@@ -15,8 +15,8 @@ namespace onmt
                                                       { "％", "%" },
                                                       { "＃", "#" },
                                                       { "：", ":" }};
-  const std::string ph_marker_open = "｟";
-  const std::string ph_marker_close = "｠";
+  const std::string Tokenizer::ph_marker_open = "｟";
+  const std::string Tokenizer::ph_marker_close = "｠";
   const std::string protected_character = "％";
 
   const std::unordered_map<std::string, onmt::Tokenizer::Mode> Tokenizer::mapMode = {
@@ -163,7 +163,7 @@ namespace onmt
         bool isSeparator = unicode::is_separator(v);
 
         if (placeholder) {
-            if (c == ph_marker_close) {
+            if (c == Tokenizer::ph_marker_close) {
               token = token + c;
               letter = true;
               prev_alphabet = "placeholder";
@@ -178,7 +178,7 @@ namespace onmt
               token += c;
             }
           }
-          else if (c == ph_marker_open) {
+          else if (c == Tokenizer::ph_marker_open) {
             std::string initc;
             if (!space) {
               if (_joiner_annotate && !_joiner_new) {
@@ -401,7 +401,7 @@ namespace onmt
     {
       std::string token = tokens[i];
 
-      if (token.find(ph_marker_open) != std::string::npos) {
+      if (token.find(Tokenizer::ph_marker_open) != std::string::npos) {
         segments.push_back(token);
         continue;
       }

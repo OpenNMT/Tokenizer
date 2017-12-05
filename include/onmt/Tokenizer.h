@@ -23,6 +23,9 @@ namespace onmt
     static std::unordered_map<std::string, BPE*> bpe_cache;
     static std::mutex bpe_cache_mutex;
     static const std::string joiner_marker;
+    static const std::string ph_marker_open;
+    static const std::string ph_marker_close;
+    
     static const std::unordered_map<std::string, onmt::Tokenizer::Mode> mapMode;
 
     Tokenizer(Mode mode = Mode::Conservative,
