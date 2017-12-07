@@ -19,23 +19,27 @@ namespace onmt
       Space
     };
 
+    enum Flags
+    {
+      None = 0,
+      CaseFeature = 1,
+      JoinerAnnotate = 2,
+      JoinerNew = 4,
+      WithSeparators = 8,
+      SegmentCase = 16,
+      SegmentNumbers = 32,
+      CacheBPEModel = 64
+    };
+
     static const std::string joiner_marker;
     static const std::string ph_marker_open;
     static const std::string ph_marker_close;
 
     static const std::unordered_map<std::string, onmt::Tokenizer::Mode> mapMode;
 
-    Tokenizer(Mode mode = Mode::Conservative,
+    Tokenizer(Mode mode,
+              int flags = Flags::None,
               const std::string& bpe_model_path = "",
-              bool case_feature = false,
-              bool joiner_annotate = false,
-              bool joiner_new = false,
-              const std::string& joiner = joiner_marker,
-              bool with_separators = false,
-              bool segment_case = false,
-              bool segment_numbers = false,
-              bool cache_bpe_model = false);
-    Tokenizer(bool case_feature = false,
               const std::string& joiner = joiner_marker);
     ~Tokenizer();
 
@@ -46,17 +50,22 @@ namespace onmt
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features) override;
 
+    Tokenizer& set_joiner(const std::string& joiner);
+    Tokenizer& set_bpe_model(const std::string& model_path, bool cache_model = false);
+
   private:
     Mode _mode;
-    BPE* _bpe;
+
     bool _case_feature;
     bool _joiner_annotate;
     bool _joiner_new;
-    std::string _joiner;
     bool _with_separators;
     bool _segment_case;
     bool _segment_numbers;
     bool _cache_bpe_model;
+
+    BPE* _bpe;
+    std::string _joiner;
 
     std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens);
 
