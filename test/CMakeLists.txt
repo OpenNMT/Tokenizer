@@ -1,8 +1,18 @@
 enable_testing()
+find_package(GTest)
 
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+if (GTEST_FOUND)
+  find_package(Threads)
 
-file(GLOB files "*.raw")
-foreach(file ${files})
-  add_test(${file} sh ${CMAKE_CURRENT_SOURCE_DIR}/test.sh ${file} ${CMAKE_BINARY_DIR})
-endforeach()
+  add_executable(onmt_tokenizer_test test.cc)
+  target_include_directories(onmt_tokenizer_test PUBLIC
+    ${GTEST_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/include
+    )
+  target_link_libraries(onmt_tokenizer_test
+    ${GTEST_BOTH_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${PROJECT_NAME}
+    )
+  add_test(TokenizerTest onmt_tokenizer_test "${CMAKE_CURRENT_LIST_DIR}/data/")
+endif()

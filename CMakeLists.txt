@@ -36,8 +36,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORIES})
 
 if (NOT LIB_ONLY)
   add_subdirectory(cli)
-  add_subdirectory(test)
 endif()
+
+add_subdirectory(test)
 
 install(
   TARGETS ${PROJECT_NAME}
