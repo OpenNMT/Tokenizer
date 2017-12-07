@@ -1,13 +1,13 @@
 #include "onmt/Tokenizer.h"
 
+#include <mutex>
+
 #include "onmt/CaseModifier.h"
 #include "onmt/unicode/Unicode.h"
 
 namespace onmt
 {
 
-  std::unordered_map<std::string, BPE*> bpe_cache;
-  std::mutex bpe_cache_mutex;
   const std::string Tokenizer::joiner_marker("￭");
   const std::map<std::string, std::string> substitutes = {
                                                       { "￭", "■" },
@@ -24,6 +24,9 @@ namespace onmt
     { "conservative", onmt::Tokenizer::Mode::Conservative },
     { "space", onmt::Tokenizer::Mode::Space }
   };
+
+  static std::unordered_map<std::string, BPE*> bpe_cache;
+  static std::mutex bpe_cache_mutex;
 
   static BPE* load_bpe(const std::string& bpe_model_path)
   {

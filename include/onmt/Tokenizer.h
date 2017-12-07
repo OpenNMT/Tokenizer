@@ -1,6 +1,5 @@
 #pragma once
 
-#include <mutex>
 #include <unordered_map>
 
 #include "onmt/ITokenizer.h"
@@ -20,8 +19,6 @@ namespace onmt
       Space
     };
 
-    static std::unordered_map<std::string, BPE*> bpe_cache;
-    static std::mutex bpe_cache_mutex;
     static const std::string joiner_marker;
     static const std::string ph_marker_open;
     static const std::string ph_marker_close;
