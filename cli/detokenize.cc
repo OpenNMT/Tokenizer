@@ -26,7 +26,13 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  onmt::ITokenizer* tokenizer = new onmt::Tokenizer(vm["case_feature"].as<bool>(),
+  int flags = 0;
+  if (vm["case_feature"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::CaseFeature;
+
+  onmt::ITokenizer* tokenizer = new onmt::Tokenizer(onmt::Tokenizer::Mode::Conservative,
+                                                    flags,
+                                                    "",
                                                     vm["joiner"].as<std::string>());
 
   std::string line;

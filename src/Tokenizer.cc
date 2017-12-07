@@ -42,41 +42,27 @@ namespace onmt
   }
 
   Tokenizer::Tokenizer(Mode mode,
+                       int flags,
                        const std::string& bpe_model_path,
-                       bool case_feature,
-                       bool joiner_annotate,
-                       bool joiner_new,
-                       const std::string& joiner,
-                       bool with_separators,
-                       bool segment_case,
-                       bool segment_numbers,
-                       bool cache_bpe_model)
+                       const std::string& joiner)
     : _mode(mode)
+    , _case_feature(flags & Flags::CaseFeature)
+    , _joiner_annotate(flags & Flags::JoinerAnnotate)
+    , _joiner_new(flags & Flags::JoinerNew)
+    , _with_separators(flags & Flags::WithSeparators)
+    , _segment_case(flags & Flags::SegmentCase)
+    , _segment_numbers(flags & Flags::SegmentNumbers)
+    , _cache_bpe_model(flags & Flags::CacheBPEModel)
     , _bpe(nullptr)
-    , _case_feature(case_feature)
-    , _joiner_annotate(joiner_annotate)
-    , _joiner_new(joiner_new)
     , _joiner(joiner)
-    , _with_separators(with_separators)
-    , _segment_case(segment_case)
-    , _segment_numbers(segment_numbers)
-    , _cache_bpe_model(cache_bpe_model)
   {
     if (!bpe_model_path.empty())
     {
-      if (cache_bpe_model)
+      if (_cache_bpe_model)
         _bpe = load_bpe(bpe_model_path);
       else
         _bpe = new BPE(bpe_model_path);
     }
-  }
-
-  Tokenizer::Tokenizer(bool case_feature,
-                       const std::string& joiner)
-    : _mode(Mode::Conservative)
-    , _case_feature(case_feature)
-    , _joiner(joiner)
-  {
   }
 
   Tokenizer::~Tokenizer()

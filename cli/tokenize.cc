@@ -31,15 +31,22 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  int flags = 0;
+  if (vm["case_feature"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::CaseFeature;
+  if (vm["joiner_annotate"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::JoinerAnnotate;
+  if (vm["joiner_new"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::JoinerNew;
+  if (vm["segment_case"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::SegmentCase;
+  if (vm["segment_numbers"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::SegmentNumbers;
+
   onmt::ITokenizer* tokenizer = new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
+                                                    flags,
                                                     vm["bpe_model"].as<std::string>(),
-                                                    vm["case_feature"].as<bool>(),
-                                                    vm["joiner_annotate"].as<bool>(),
-                                                    vm["joiner_new"].as<bool>(),
-                                                    vm["joiner"].as<std::string>(),
-                                                    false,
-                                                    vm["segment_case"].as<bool>(),
-                                                    vm["segment_numbers"].as<bool>());
+                                                    vm["joiner"].as<std::string>());
 
   std::string line;
 

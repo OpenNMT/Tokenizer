@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Breaking changes
+
+* New `Tokenizer` constructor requiring bit flags
+
 ### New features
 
 * Support BPE modes from `learn_bpe.lua`
