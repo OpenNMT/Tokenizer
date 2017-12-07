@@ -28,7 +28,8 @@ namespace onmt
       WithSeparators = 8,
       SegmentCase = 16,
       SegmentNumbers = 32,
-      CacheBPEModel = 64
+      SegmentAlphabetChange = 64,
+      CacheBPEModel = 128
     };
 
     static const std::string joiner_marker;
@@ -52,6 +53,8 @@ namespace onmt
 
     Tokenizer& set_joiner(const std::string& joiner);
     Tokenizer& set_bpe_model(const std::string& model_path, bool cache_model = false);
+    Tokenizer& add_alphabet_to_segment(const std::string& alphabet);
+    bool is_alphabet_to_segment(const std::string& alphabet) const;
 
   private:
     Mode _mode;
@@ -62,10 +65,13 @@ namespace onmt
     bool _with_separators;
     bool _segment_case;
     bool _segment_numbers;
+    bool _segment_alphabet_change;
     bool _cache_bpe_model;
 
     BPE* _bpe;
     std::string _joiner;
+
+    std::vector<std::string> _segment_alphabet;
 
     std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens);
 

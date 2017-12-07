@@ -9,9 +9,11 @@
 * Support BPE modes from `learn_bpe.lua`
 * Case insensitive BPE models
 * Space tokenization mode
+* Alphabet segmentation
 * Do not tokenize blocks encapsulated by `｟` and `｠`
 * `segment_numbers` flag to split numbers into digits
 * `segment_case` flag to split words on case changes
+* `segment_alphabet_change` flag to split on alphabet change
 * `cache_bpe_model` flag to cache BPE models for future instances
 
 ### Fixes and improvements
