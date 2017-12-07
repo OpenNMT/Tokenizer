@@ -56,13 +56,7 @@ namespace onmt
     , _bpe(nullptr)
     , _joiner(joiner)
   {
-    if (!bpe_model_path.empty())
-    {
-      if (_cache_bpe_model)
-        _bpe = load_bpe(bpe_model_path);
-      else
-        _bpe = new BPE(bpe_model_path);
-    }
+    set_bpe_model(bpe_model_path, _cache_bpe_model);
   }
 
   Tokenizer::~Tokenizer()
@@ -445,6 +439,33 @@ namespace onmt
 
     return segments;
   }
+
+  Tokenizer& Tokenizer::set_joiner(const std::string& joiner)
+  {
+    _joiner = joiner;
+    return *this;
+  }
+
+  Tokenizer& Tokenizer::set_bpe_model(const std::string& model_path, bool cache_model)
+  {
+    if (_bpe != nullptr && !_cache_bpe_model)
+    {
+      delete _bpe;
+    }
+
+    if (!model_path.empty())
+    {
+      if (cache_model)
+        _bpe = load_bpe(model_path);
+      else
+        _bpe = new BPE(model_path);
+
+      _cache_bpe_model = cache_model;
+    }
+
+    return *this;
+  }
+
 
 
   bool Tokenizer::has_left_join(const std::string& word)

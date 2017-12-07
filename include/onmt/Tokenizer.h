@@ -50,6 +50,9 @@ namespace onmt
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features) override;
 
+    Tokenizer& set_joiner(const std::string& joiner);
+    Tokenizer& set_bpe_model(const std::string& model_path, bool cache_model = false);
+
   private:
     Mode _mode;
 
