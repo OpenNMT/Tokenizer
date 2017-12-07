@@ -28,6 +28,10 @@ namespace onmt
     , _case_insensitive(false)
   {
     std::ifstream in(model_path.c_str());
+
+    if (!in.is_open())
+      throw std::invalid_argument("Unable to open BPE model `" + model_path + "'");
+
     std::string line;
 
     int i = 0;
