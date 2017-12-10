@@ -1,7 +1,9 @@
 #include "onmt/Tokenizer.h"
 
+#include <algorithm>
 #include <mutex>
 
+#include "onmt/Alphabet.h"
 #include "onmt/CaseModifier.h"
 #include "onmt/unicode/Unicode.h"
 
@@ -52,6 +54,7 @@ namespace onmt
     , _with_separators(flags & Flags::WithSeparators)
     , _segment_case(flags & Flags::SegmentCase)
     , _segment_numbers(flags & Flags::SegmentNumbers)
+    , _segment_alphabet_change(flags & Flags::SegmentAlphabetChange)
     , _cache_bpe_model(flags & Flags::CacheBPEModel)
     , _bpe(nullptr)
     , _joiner(joiner)
@@ -235,6 +238,10 @@ namespace onmt
             cur_letter = unicode::is_letter(v, type_letter);
             cur_number = unicode::is_number(v);
 
+            std::string alphabet;
+            if (cur_letter && (_segment_alphabet_change || !_segment_alphabet.empty()))
+              alphabet = get_alphabet(v);
+
             if (unicode::is_mark(v)) {
               // if we have a mark, we keep type of previous character
               cur_letter = letter;
@@ -252,11 +259,14 @@ namespace onmt
 
             if (cur_letter)
             {
-              if ((!letter && !space) ||
-                  (letter && !unicode::is_mark(v) &&
-                    (prev_alphabet == "placeholder" ||
-                     (_segment_case && letter && ((type_letter == unicode::_letter_upper && !uppercase) ||
-                                                  (type_letter == unicode::_letter_lower && uppercase_sequence))))))
+              if ((!letter && !space)
+                  || (letter && !unicode::is_mark(v) &&
+                      ((prev_alphabet == alphabet && is_alphabet_to_segment(alphabet))
+                       || (prev_alphabet != alphabet && _segment_alphabet_change)
+                       || (prev_alphabet == "placeholder"
+                           || (_segment_case && letter
+                               && ((type_letter == unicode::_letter_upper && !uppercase)
+                                   || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))
               {
                 if (_joiner_annotate && !_joiner_new)
                   token += _joiner;
@@ -285,7 +295,7 @@ namespace onmt
               number = false;
               other = false;
               space = false;
-              prev_alphabet = "letter";
+              prev_alphabet = alphabet;
             }
             else if (cur_number)
             {
@@ -466,7 +476,17 @@ namespace onmt
     return *this;
   }
 
+  Tokenizer& Tokenizer::add_alphabet_to_segment(const std::string& alphabet)
+  {
+    _segment_alphabet.push_back(alphabet);
+    return *this;
+  }
 
+  bool Tokenizer::is_alphabet_to_segment(const std::string& alphabet) const
+  {
+    return (std::find(_segment_alphabet.begin(), _segment_alphabet.end(), alphabet)
+            != _segment_alphabet.end());
+  }
 
   bool Tokenizer::has_left_join(const std::string& word)
   {

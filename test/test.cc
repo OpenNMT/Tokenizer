@@ -143,6 +143,22 @@ TEST(TokenizerTest, SegmentNumbers) {
                      "1￭ 9￭ 8￭ 4 mille neuf cent quatrevingt ￭-￭ quatre");
 }
 
+TEST(TokenizerTest, SegmentAlphabet) {
+  auto tokenizer_raw = new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate);
+  tokenizer_raw->add_alphabet_to_segment("Han");
+  auto tokenizer = std::unique_ptr<ITokenizer>(tokenizer_raw);
+  test_tok_and_detok(tokenizer, "rawБ", "rawБ");
+  test_tok(tokenizer,
+           "有入聲嘅唐話往往有陽入對轉，即係入聲韻尾同鼻音韻尾可以轉化。比如粵語嘅「抌」（dam）「揼」（dap），意思接近，意味微妙，區別在於-m同-p嘅轉換。",
+           "有￭ 入￭ 聲￭ 嘅￭ 唐￭ 話￭ 往￭ 往￭ 有￭ 陽￭ 入￭ 對￭ 轉 ￭，￭ 即￭ 係￭ 入￭ 聲￭ 韻￭ 尾￭ 同￭ 鼻￭ 音￭ 韻￭ 尾￭ 可￭ 以￭ 轉￭ 化 ￭。￭ 比￭ 如￭ 粵￭ 語￭ 嘅 ￭「￭ 抌 ￭」 ￭（￭ dam ￭） ￭「￭ 揼 ￭」 ￭（￭ dap ￭） ￭，￭ 意￭ 思￭ 接￭ 近 ￭，￭ 意￭ 味￭ 微￭ 妙 ￭，￭ 區￭ 別￭ 在￭ 於-m同-p嘅￭ 轉￭ 換 ￭。");
+}
+
+TEST(TokenizerTest, SegmentAlphabetChange) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::SegmentAlphabetChange));
+  test_tok(tokenizer, "rawБ", "raw Б");
+}
+
 TEST(TokenizerTest, BPEBasic) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate,

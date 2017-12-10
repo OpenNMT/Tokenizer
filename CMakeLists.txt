@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME}
   src/ITokenizer.cc
   src/SpaceTokenizer.cc
   src/Tokenizer.cc
+  src/Alphabet.cc
   src/unicode/Data.cc
   src/unicode/Unicode.cc
   )
