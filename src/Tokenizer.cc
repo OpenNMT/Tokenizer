@@ -254,7 +254,10 @@ namespace onmt
                   || (c == "-" && letter)
                   || (c == "_")
                   || (letter && (c == "." || c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))
-                cur_letter = true;
+                {
+                  cur_letter = true;
+                  alphabet = "Number";
+                }
             }
 
             if (cur_letter)
