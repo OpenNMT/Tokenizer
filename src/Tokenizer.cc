@@ -69,7 +69,7 @@ namespace onmt
   }
 
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,
-                                    const std::vector<std::vector<std::string> >& features)
+                                    const std::vector<std::vector<std::string> >& features) const
   {
     std::string line;
 
@@ -100,7 +100,7 @@ namespace onmt
 
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
-                           std::vector<std::vector<std::string> >& features)
+                           std::vector<std::vector<std::string> >& features) const
   {
     if (_mode == Mode::Space) {
       std::vector<std::string> chunks = unicode::split_utf8(text, " ");
@@ -395,7 +395,7 @@ namespace onmt
     }
   }
 
-  std::vector<std::string> Tokenizer::bpe_segment(const std::vector<std::string>& tokens)
+  std::vector<std::string> Tokenizer::bpe_segment(const std::vector<std::string>& tokens) const
   {
     std::vector<std::string> segments;
 
@@ -491,12 +491,12 @@ namespace onmt
             != _segment_alphabet.end());
   }
 
-  bool Tokenizer::has_left_join(const std::string& word)
+  bool Tokenizer::has_left_join(const std::string& word) const
   {
     return (word.length() >= _joiner.length() && word.substr(0, _joiner.length()) == _joiner);
   }
 
-  bool Tokenizer::has_right_join(const std::string& word)
+  bool Tokenizer::has_right_join(const std::string& word) const
   {
     return (word.length() >= _joiner.length()
             && word.substr(word.length() - _joiner.length(), _joiner.length()) == _joiner);

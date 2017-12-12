@@ -14,10 +14,10 @@ namespace onmt
 
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
-                  std::vector<std::vector<std::string> >& features) override;
+                  std::vector<std::vector<std::string> >& features) const override;
 
     std::string detokenize(const std::vector<std::string>& words,
-                           const std::vector<std::vector<std::string> >& features) override;
+                           const std::vector<std::vector<std::string> >& features) const override;
 
   };
 

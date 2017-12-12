@@ -7,19 +7,19 @@ namespace onmt
 
   const std::string ITokenizer::feature_marker("￨");
 
-  void ITokenizer::tokenize(const std::string& text, std::vector<std::string>& words)
+  void ITokenizer::tokenize(const std::string& text, std::vector<std::string>& words) const
   {
     std::vector<std::vector<std::string> > features;
     tokenize(text, words, features);
   }
 
-  std::string ITokenizer::detokenize(const std::vector<std::string>& words)
+  std::string ITokenizer::detokenize(const std::vector<std::string>& words) const
   {
     std::vector<std::vector<std::string> > features;
     return detokenize(words, features);
   }
 
-  std::string ITokenizer::tokenize(const std::string& text)
+  std::string ITokenizer::tokenize(const std::string& text) const
   {
     std::vector<std::string> words;
     std::vector<std::vector<std::string> > features;
@@ -40,7 +40,7 @@ namespace onmt
     return output;
   }
 
-  std::string ITokenizer::detokenize(const std::string& text)
+  std::string ITokenizer::detokenize(const std::string& text) const
   {
     std::vector<std::string> words;
     std::vector<std::vector<std::string> > features;

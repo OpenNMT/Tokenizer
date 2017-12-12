@@ -15,7 +15,7 @@ namespace onmt
 
   void SpaceTokenizer::tokenize(const std::string& text,
                                 std::vector<std::string>& words,
-                                std::vector<std::vector<std::string> >& features)
+                                std::vector<std::vector<std::string> >& features) const
   {
     std::vector<std::string> chunks = unicode::split_utf8(text, " ");
 
@@ -39,7 +39,7 @@ namespace onmt
   }
 
   std::string SpaceTokenizer::detokenize(const std::vector<std::string>& words,
-                                         const std::vector<std::vector<std::string> >& features)
+                                         const std::vector<std::vector<std::string> >& features) const
   {
     std::ostringstream oss;
 

@@ -46,10 +46,10 @@ namespace onmt
 
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
-                  std::vector<std::vector<std::string> >& features) override;
+                  std::vector<std::vector<std::string> >& features) const override;
 
     std::string detokenize(const std::vector<std::string>& words,
-                           const std::vector<std::vector<std::string> >& features) override;
+                           const std::vector<std::vector<std::string> >& features) const override;
 
     Tokenizer& set_joiner(const std::string& joiner);
     Tokenizer& set_bpe_model(const std::string& model_path, bool cache_model = false);
@@ -68,15 +68,15 @@ namespace onmt
     bool _segment_alphabet_change;
     bool _cache_bpe_model;
 
-    BPE* _bpe;
+    const BPE* _bpe;
     std::string _joiner;
 
     std::vector<std::string> _segment_alphabet;
 
-    std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens);
+    std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens) const;
 
-    bool has_left_join(const std::string& word);
-    bool has_right_join(const std::string& word);
+    bool has_left_join(const std::string& word) const;
+    bool has_right_join(const std::string& word) const;
   };
 
 }

@@ -15,18 +15,18 @@ namespace onmt
 
     virtual void tokenize(const std::string& text,
                           std::vector<std::string>& words,
-                          std::vector<std::vector<std::string> >& features) = 0;
-    virtual void tokenize(const std::string& text, std::vector<std::string>& words);
+                          std::vector<std::vector<std::string> >& features) const = 0;
+    virtual void tokenize(const std::string& text, std::vector<std::string>& words) const;
 
     virtual std::string detokenize(const std::vector<std::string>& words,
-                                   const std::vector<std::vector<std::string> >& features) = 0;
-    virtual std::string detokenize(const std::vector<std::string>& words);
+                                   const std::vector<std::vector<std::string> >& features) const = 0;
+    virtual std::string detokenize(const std::vector<std::string>& words) const;
 
     // Tokenize and use spaces as token separators.
-    virtual std::string tokenize(const std::string& text);
+    virtual std::string tokenize(const std::string& text) const;
 
     // Split the text on spaces and detokenize.
-    virtual std::string detokenize(const std::string& text);
+    virtual std::string detokenize(const std::string& text) const;
   };
 
 }
