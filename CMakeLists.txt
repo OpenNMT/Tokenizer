@@ -36,14 +36,11 @@ add_library(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORIES})
 
-if (WITH_PYTHON_BINDINGS)
-  add_subdirectory(bindings)
-endif()
-
 if (NOT LIB_ONLY)
   add_subdirectory(cli)
 endif()
 
+add_subdirectory(bindings)
 add_subdirectory(test)
 
 install(
