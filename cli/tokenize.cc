@@ -60,7 +60,10 @@ int main(int argc, char* argv[])
     vm["joiner"].as<std::string>());
 
   for (const auto& alphabet : alphabets_to_segment)
-    tokenizer->add_alphabet_to_segment(alphabet);
+  {
+    if (!alphabet.empty() && !tokenizer->add_alphabet_to_segment(alphabet))
+      std::cerr << "WARNING: " << alphabet << " alphabet is not supported" << std::endl;
+  }
 
   std::string line;
 

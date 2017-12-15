@@ -2,9 +2,55 @@
 
 #include <unordered_map>
 #include <vector>
+#include <set>
 
 namespace onmt
 {
+
+  static std::set<std::string> supported_alphabets = {
+    "Arabic",
+    "Armenian",
+    "Bengali",
+    "Bopomofo",
+    "Braille",
+    "Buhid",
+    "Cherokee",
+    "Cyrillic",
+    "Devanagari",
+    "Ethiopic",
+    "Georgian",
+    "Greek",
+    "Gujarati",
+    "Gurmukhi",
+    "Han",
+    "Hangul",
+    "Hanunoo",
+    "Hebrew",
+    "Hiragana",
+    "Kanbun",
+    "Kangxi",
+    "Kannada",
+    "Katakana",
+    "Khmer",
+    "Lao",
+    "Latin",
+    "Limbu",
+    "Malayalam",
+    "Mongolian",
+    "Myanmar",
+    "Ogham",
+    "Oriya",
+    "Sinhala",
+    "Syriac",
+    "Tagalog",
+    "Tagbanwa",
+    "Tamil",
+    "Telugu",
+    "Thaana",
+    "Thai",
+    "Tibetan",
+    "Yi"
+  };
 
   // WARNING: keep this vector sorted in increasing order!
   static std::vector<std::pair<std::vector<unicode::code_point_t>, std::string > > alphabet_ranges = {
@@ -67,6 +113,11 @@ namespace onmt
     {{0xFB50, 0xFDFF}, "Arabic"},
     {{0xFE30, 0xFE4F}, "Han"},
     {{0xFE70, 0xFEFF}, "Arabic"}};
+
+  bool alphabet_is_supported(const std::string& alphabet)
+  {
+    return supported_alphabets.count(alphabet) > 0;
+  }
 
   std::string get_alphabet(unicode::code_point_t c)
   {
