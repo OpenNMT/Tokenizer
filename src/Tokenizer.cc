@@ -103,6 +103,9 @@ namespace onmt
                            std::vector<std::vector<std::string> >& features) const
   {
     if (_mode == Mode::Space) {
+      if (text.empty())
+        return;
+
       std::vector<std::string> chunks = unicode::split_utf8(text, " ");
       for (const auto& chunk: chunks)
       {

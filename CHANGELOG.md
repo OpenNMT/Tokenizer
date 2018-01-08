@@ -10,6 +10,7 @@
 
 * Fix incorrect behavior when `--segment_alphabet` is not set by the client
 * Fix alphabet identification
+* Fix segmentation fault when tokenizing empty string on spaces
 
 ## [v1.0.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.0.0) (2017-12-11)
 

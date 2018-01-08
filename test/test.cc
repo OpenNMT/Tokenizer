@@ -38,6 +38,11 @@ TEST(TokenizerTest, BasicConservative) {
            "Your Hardware-Enablement Stack (HWE) is supported until April 2019.",
            "Your Hardware-Enablement Stack ( HWE ) is supported until April 2019 .");
 }
+TEST(TokenizerTest, ConservativeEmpty) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Conservative));
+  test_tok(tokenizer, "", "");
+}
 
 TEST(TokenizerTest, BasicSpace) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
@@ -45,6 +50,31 @@ TEST(TokenizerTest, BasicSpace) {
   test_tok(tokenizer,
            "49th meeting Social and human rights questions: human rights [14 (g)]",
            "49th meeting Social and human rights questions: human rights [14 (g)]");
+}
+TEST(TokenizerTest, SpaceEmpty) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Space));
+  test_tok(tokenizer, "", "");
+}
+TEST(TokenizerTest, SpaceSingle) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Space));
+  test_tok(tokenizer, "Hello", "Hello");
+}
+TEST(TokenizerTest, SpaceLeading) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Space));
+  test_tok(tokenizer, " Hello", "Hello");
+}
+TEST(TokenizerTest, SpaceTrailing) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Space));
+  test_tok(tokenizer, "Hello ", "Hello");
+}
+TEST(TokenizerTest, SpaceDuplicated) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Space));
+  test_tok(tokenizer, "  Hello   World ", "Hello World");
 }
 
 TEST(TokenizerTest, BasicJoiner) {
