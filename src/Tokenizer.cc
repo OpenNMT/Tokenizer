@@ -234,7 +234,7 @@ namespace onmt
           bool cur_letter = false;
           bool cur_number = false;
           // skip special characters and BOM
-          if (v > 32 and v != 0xFEFF)
+          if (v > 32 && v != 0xFEFF)
           {
             if (substitutes.find(c)!=substitutes.end())
               c = substitutes.at(c);
@@ -311,7 +311,7 @@ namespace onmt
                 if (_joiner_annotate) {
                   if (_joiner_new) addjoiner = true;
                   else {
-                    if (!letter or prev_alphabet == "placeholder")
+                    if (!letter || prev_alphabet == "placeholder")
                       token += _joiner;
                     else
                       c = _joiner + c;
