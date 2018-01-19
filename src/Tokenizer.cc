@@ -56,6 +56,7 @@ namespace onmt
     , _segment_numbers(flags & Flags::SegmentNumbers)
     , _segment_alphabet_change(flags & Flags::SegmentAlphabetChange)
     , _cache_bpe_model(flags & Flags::CacheBPEModel)
+    , _no_substitution(flags & Flags::NoSubstitution)
     , _bpe(nullptr)
     , _joiner(joiner)
   {
@@ -236,7 +237,7 @@ namespace onmt
           // skip special characters and BOM
           if (v > 32 && v != 0xFEFF)
           {
-            if (substitutes.find(c)!=substitutes.end())
+            if (!_no_substitution && substitutes.find(c) != substitutes.end())
               c = substitutes.at(c);
             cur_letter = unicode::is_letter(v, type_letter);
             cur_number = unicode::is_number(v);
