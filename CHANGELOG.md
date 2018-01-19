@@ -5,6 +5,7 @@
 ### New features
 
 * Python bindings
+* Tokenization flag to disable special characters substitution
 
 ### Fixes and improvements
 

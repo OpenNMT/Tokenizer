@@ -30,7 +30,8 @@ namespace onmt
       SegmentCase = 16,
       SegmentNumbers = 32,
       SegmentAlphabetChange = 64,
-      CacheBPEModel = 128
+      CacheBPEModel = 128,
+      NoSubstitution = 256  // Do not replace special characters.
     };
 
     static const std::string joiner_marker;
@@ -68,6 +69,7 @@ namespace onmt
     bool _segment_numbers;
     bool _segment_alphabet_change;
     bool _cache_bpe_model;
+    bool _no_substitution;
 
     const BPE* _bpe;
     std::string _joiner;

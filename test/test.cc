@@ -140,6 +140,14 @@ TEST(TokenizerTest, Substitutes) {
            "test ■ protect │ , : , and % or # . . .");
 }
 
+TEST(TokenizerTest, NoSubstitution) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::NoSubstitution));
+  test_tok(tokenizer,
+           "test￭ protect￨, ：, and ％ or ＃...",
+           "test ￭ protect ￨ , ： , and ％ or ＃ . . .");
+}
+
 TEST(TokenizerTest, CombiningMark) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate));
