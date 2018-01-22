@@ -4,6 +4,12 @@
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.1.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.1.0) (2018-01-22)
+
+### New features
+
 * Python bindings
 * Tokenization flag to disable special characters substitution
 
