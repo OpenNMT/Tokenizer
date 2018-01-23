@@ -15,13 +15,6 @@ endif()
 set(INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
-set(PUBLIC_HEADERS
-  include/onmt/ITokenizer.h
-  include/onmt/Tokenizer.h
-  include/onmt/BPE.h
-  include/onmt/CaseModifier.h
-  include/onmt/SpaceTokenizer.h
-  )
 
 add_library(${PROJECT_NAME}
   src/BPE.cc
@@ -48,7 +41,16 @@ install(
   ARCHIVE DESTINATION lib/
   LIBRARY DESTINATION lib/
   )
-install(
-  FILES ${PUBLIC_HEADERS}
+install(FILES
+  include/onmt/ITokenizer.h
+  include/onmt/Tokenizer.h
+  include/onmt/BPE.h
+  include/onmt/CaseModifier.h
+  include/onmt/SpaceTokenizer.h
+  include/onmt/Alphabet.h
   DESTINATION include/onmt/
+  )
+install(FILES
+  include/onmt/unicode/Unicode.h
+  DESTINATION include/onmt/unicode
   )
