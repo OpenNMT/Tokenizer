@@ -6,6 +6,10 @@
 
 ### Fixes and improvements
 
+## [v1.1.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.1.1) (2018-01-23)
+
+### Fixes and improvements
+
 * Make `Alphabet.h` public
 
 ## [v1.1.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.1.0) (2018-01-22)
