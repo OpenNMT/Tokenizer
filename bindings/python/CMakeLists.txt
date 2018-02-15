@@ -24,3 +24,9 @@ target_link_libraries(${PYTHON_MODULE_NAME}
   ${Boost_LIBRARIES}
   ${PYTHON_LIBRARIES}
   )
+
+install(
+  TARGETS ${PYTHON_MODULE_NAME}
+  ARCHIVE DESTINATION lib/
+  LIBRARY DESTINATION lib/
+  )

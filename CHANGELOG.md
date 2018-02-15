@@ -6,6 +6,8 @@
 
 ### Fixes and improvements
 
+* Add install target for the Python bindings library
+
 ## [v1.1.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.1.1) (2018-01-23)
 
 ### Fixes and improvements
