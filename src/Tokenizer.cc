@@ -11,6 +11,7 @@ namespace onmt
 {
 
   const std::string Tokenizer::joiner_marker("￭");
+  const std::string Tokenizer::spacer_marker("▁");  // same as systran::tokenizer::sp_spacer
   const std::map<std::string, std::string> substitutes = {
                                                       { "￭", "■" },
                                                       { "￨", "│" },
@@ -57,9 +58,16 @@ namespace onmt
     , _segment_alphabet_change(flags & Flags::SegmentAlphabetChange)
     , _cache_bpe_model(flags & Flags::CacheBPEModel)
     , _no_substitution(flags & Flags::NoSubstitution)
+    , _spacer_annotate(flags & Flags::SpacerAnnotate)
     , _bpe(nullptr)
     , _joiner(joiner)
   {
+    if (_spacer_annotate)
+    {
+      _joiner_annotate = true;
+      _joiner_new = false;
+    }
+
     set_bpe_model(bpe_model_path, _cache_bpe_model);
   }
 
@@ -94,6 +102,22 @@ namespace onmt
       }
 
       line += word;
+    }
+
+    if (_spacer_annotate)
+    {
+      const std::string blank_str(" ");
+      size_t start_pos = 0;
+      while((start_pos = line.find(blank_str, start_pos)) != std::string::npos)
+      {
+        line.replace(start_pos, blank_str.length(), "");
+      }
+      start_pos = 0;
+      while((start_pos = line.find(Tokenizer::spacer_marker, start_pos)) != std::string::npos) 
+      {
+        line.replace(start_pos, Tokenizer::spacer_marker.length(), blank_str);
+        start_pos += blank_str.length();
+      }
     }
 
     return line;
@@ -396,6 +420,37 @@ namespace onmt
       }
 
       features.push_back(case_feat);
+    }
+
+    if (_spacer_annotate)
+    {
+      size_t words_count = words.size();
+      words.insert(words.begin(), Tokenizer::joiner_marker);
+
+      for (size_t i = 0; i < words_count; ++i)
+      {
+        bool has_joiner = false;
+
+        if (words[i].length() >= Tokenizer::joiner_marker.length() && 
+            words[i].compare(words[i].length()-Tokenizer::joiner_marker.length(), Tokenizer::joiner_marker.length(), Tokenizer::joiner_marker) == 0)
+        {
+          words[i].erase(words[i].length()-Tokenizer::joiner_marker.length());
+          has_joiner = true;
+        }
+
+        if (words[i+1].length() > Tokenizer::joiner_marker.length() && 
+            words[i+1].compare(0, Tokenizer::joiner_marker.length(), Tokenizer::joiner_marker) == 0) 
+        {
+          words[i+1].erase(0, Tokenizer::joiner_marker.length());
+          has_joiner = true;
+        }
+
+        if (has_joiner == false)  
+        {
+          words[i+1] = Tokenizer::spacer_marker + words[i+1];
+        }
+      } 
+      words.erase(words.begin());
     }
   }
 

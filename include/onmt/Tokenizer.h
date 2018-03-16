@@ -31,10 +31,12 @@ namespace onmt
       SegmentNumbers = 32,
       SegmentAlphabetChange = 64,
       CacheBPEModel = 128,
-      NoSubstitution = 256  // Do not replace special characters.
+      NoSubstitution = 256,  // Do not replace special characters.
+      SpacerAnnotate = 512
     };
 
     static const std::string joiner_marker;
+    static const std::string spacer_marker;
     static const std::string ph_marker_open;
     static const std::string ph_marker_close;
 
@@ -70,6 +72,7 @@ namespace onmt
     bool _segment_alphabet_change;
     bool _cache_bpe_model;
     bool _no_substitution;
+    bool _spacer_annotate;
 
     const BPE* _bpe;
     std::string _joiner;
