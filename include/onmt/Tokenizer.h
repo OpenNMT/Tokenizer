@@ -82,7 +82,9 @@ namespace onmt
     std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens) const;
 
     bool has_left_join(const std::string& word) const;
+    bool has_left_join(const std::string& word, const std::string& joiner) const;
     bool has_right_join(const std::string& word) const;
+    bool has_right_join(const std::string& word, const std::string& joiner) const;
   };
 
 }

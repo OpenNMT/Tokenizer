@@ -84,7 +84,8 @@ namespace onmt
 
     for (size_t i = 0; i < words.size(); ++i)
     {
-      if (i > 0 && !has_right_join(words[i - 1]) && !has_left_join(words[i]))
+      if (i > 0 && !has_right_join(words[i - 1]) && !has_left_join(words[i]) &&
+        !_spacer_annotate)
         line += " ";
 
       std::string word = words[i];
@@ -94,6 +95,17 @@ namespace onmt
       if (has_left_join(word))
         word.erase(0, _joiner.length());
 
+      if (has_right_join(word, Tokenizer::spacer_marker))
+      {
+        word.erase(word.length() - Tokenizer::spacer_marker.length(), Tokenizer::spacer_marker.length());
+        line += " ";
+      }
+      else if (has_left_join(word, Tokenizer::spacer_marker))
+      {
+        word.erase(0, Tokenizer::spacer_marker.length());
+        line += " ";
+      }
+
       if (_case_feature)
       {
         if (features.empty())
@@ -102,22 +114,6 @@ namespace onmt
       }
 
       line += word;
-    }
-
-    if (_spacer_annotate)
-    {
-      const std::string blank_str(" ");
-      size_t start_pos = 0;
-      while((start_pos = line.find(blank_str, start_pos)) != std::string::npos)
-      {
-        line.replace(start_pos, blank_str.length(), "");
-      }
-      start_pos = 0;
-      while((start_pos = line.find(Tokenizer::spacer_marker, start_pos)) != std::string::npos) 
-      {
-        line.replace(start_pos, Tokenizer::spacer_marker.length(), blank_str);
-        start_pos += blank_str.length();
-      }
     }
 
     return line;
@@ -554,10 +550,21 @@ namespace onmt
     return (word.length() >= _joiner.length() && word.substr(0, _joiner.length()) == _joiner);
   }
 
+  bool Tokenizer::has_left_join(const std::string& word, const std::string& joiner) const
+  {
+    return (word.length() >= joiner.length() && word.substr(0, joiner.length()) == joiner);
+  }
+
   bool Tokenizer::has_right_join(const std::string& word) const
   {
     return (word.length() >= _joiner.length()
             && word.substr(word.length() - _joiner.length(), _joiner.length()) == _joiner);
+  }
+
+  bool Tokenizer::has_right_join(const std::string& word, const std::string& joiner) const
+  {
+    return (word.length() >= joiner.length()
+            && word.substr(word.length() - joiner.length(), joiner.length()) == joiner);
   }
 
 }
