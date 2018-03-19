@@ -425,23 +425,21 @@ namespace onmt
     if (_spacer_annotate)
     {
       size_t words_count = words.size();
-      words.insert(words.begin(), Tokenizer::joiner_marker);
+      words.insert(words.begin(), _joiner);
 
       for (size_t i = 0; i < words_count; ++i)
       {
         bool has_joiner = false;
 
-        if (words[i].length() >= Tokenizer::joiner_marker.length() && 
-            words[i].compare(words[i].length()-Tokenizer::joiner_marker.length(), Tokenizer::joiner_marker.length(), Tokenizer::joiner_marker) == 0)
+        if (has_right_join(words[i]))
         {
-          words[i].erase(words[i].length()-Tokenizer::joiner_marker.length());
+          words[i].erase(words[i].length() - _joiner.length());
           has_joiner = true;
         }
 
-        if (words[i+1].length() > Tokenizer::joiner_marker.length() && 
-            words[i+1].compare(0, Tokenizer::joiner_marker.length(), Tokenizer::joiner_marker) == 0) 
+        if (has_left_join(words[i+1]))
         {
-          words[i+1].erase(0, Tokenizer::joiner_marker.length());
+          words[i+1].erase(0, _joiner.length());
           has_joiner = true;
         }
 
