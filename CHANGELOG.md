@@ -4,6 +4,8 @@
 
 ### New features
 
+* Flag to convert joiners to spacers
+
 ### Fixes and improvements
 
 * Add install target for the Python bindings library
