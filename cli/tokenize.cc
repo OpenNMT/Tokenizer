@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
     ("joiner_annotate,j", po::bool_switch()->default_value(false), "include joiner annotation using 'joiner' character")
     ("joiner", po::value<std::string>()->default_value(onmt::Tokenizer::joiner_marker), "character used to annotate joiners")
     ("joiner_new", po::bool_switch()->default_value(false), "in joiner_annotate mode, 'joiner' is an independent token")
+    ("spacer_annotate", po::bool_switch()->default_value(false), "convert joiners to spacers")
     ("case_feature,c", po::bool_switch()->default_value(false), "lowercase corpus and generate case feature")
     ("segment_case", po::bool_switch()->default_value(false), "Segment case feature, splits AbC to Ab C to be able to restore case")
     ("segment_numbers", po::bool_switch()->default_value(false), "Segment numbers into single digits")
@@ -41,6 +42,8 @@ int main(int argc, char* argv[])
     flags |= onmt::Tokenizer::Flags::JoinerAnnotate;
   if (vm["joiner_new"].as<bool>())
     flags |= onmt::Tokenizer::Flags::JoinerNew;
+  if (vm["spacer_annotate"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::SpacerAnnotate;
   if (vm["segment_case"].as<bool>())
     flags |= onmt::Tokenizer::Flags::SegmentCase;
   if (vm["segment_numbers"].as<bool>())
