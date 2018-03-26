@@ -32,6 +32,7 @@ public:
                    const std::string& joiner,
                    bool joiner_annotate,
                    bool joiner_new,
+                   bool spacer_annotate,
                    bool case_feature,
                    bool no_substitution,
                    bool segment_case,
@@ -44,6 +45,8 @@ public:
       flags |= onmt::Tokenizer::Flags::JoinerAnnotate;
     if (joiner_new)
       flags |= onmt::Tokenizer::Flags::JoinerNew;
+    if (spacer_annotate)
+      flags |= onmt::Tokenizer::Flags::SpacerAnnotate;
     if (case_feature)
       flags |= onmt::Tokenizer::Flags::CaseFeature;
     if (no_substitution)
@@ -112,11 +115,12 @@ BOOST_PYTHON_MODULE(pyonmttok)
 {
   py::class_<TokenizerWrapper>(
       "Tokenizer",
-      py::init<std::string, std::string, std::string, bool, bool, bool, bool, bool, bool, bool, py::list>(
+      py::init<std::string, std::string, std::string, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
         (py::arg("bpe_model_path")="",
          py::arg("joiner")=onmt::Tokenizer::joiner_marker,
          py::arg("joiner_annotate")=false,
          py::arg("joiner_new")=false,
+         py::arg("spacer_annotate")=false,
          py::arg("case_feature")=false,
          py::arg("no_substitution")=false,
          py::arg("segment_case")=false,

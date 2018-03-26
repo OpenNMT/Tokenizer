@@ -253,6 +253,15 @@ TEST(TokenizerTest, BPECaseInsensitive) {
            "Seulement seulement il va is n on seulement seu l em ent n on à Ver d un");
 }
 
+TEST(TokenizerTest, SpacerAnnotate) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SpacerAnnotate));
+  test_tok_and_detok(tokenizer,
+                     "Isn't it so-greatly working?",
+                     "Isn ' t ▁it ▁so - greatly ▁working ?");
+  test_tok_and_detok(tokenizer, "MP3", "MP 3");
+}
+
 int main(int argc, char *argv[]) {
   testing::InitGoogleTest(&argc, argv);
   assert(argc == 2);

@@ -16,6 +16,7 @@ tokenizer = pyonmt.Tokenizer(
     joiner="￭",
     joiner_annotate=False,
     joiner_new=False,
+    spacer_annotate=False,
     case_feature=False,
     no_substitution=False,
     segment_case=False,

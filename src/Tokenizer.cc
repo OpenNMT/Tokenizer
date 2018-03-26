@@ -11,6 +11,7 @@ namespace onmt
 {
 
   const std::string Tokenizer::joiner_marker("￭");
+  const std::string Tokenizer::spacer_marker("▁");  // same as systran::tokenizer::sp_spacer
   const std::map<std::string, std::string> substitutes = {
                                                       { "￭", "■" },
                                                       { "￨", "│" },
@@ -57,9 +58,16 @@ namespace onmt
     , _segment_alphabet_change(flags & Flags::SegmentAlphabetChange)
     , _cache_bpe_model(flags & Flags::CacheBPEModel)
     , _no_substitution(flags & Flags::NoSubstitution)
+    , _spacer_annotate(flags & Flags::SpacerAnnotate)
     , _bpe(nullptr)
     , _joiner(joiner)
   {
+    if (_spacer_annotate)
+    {
+      _joiner_annotate = true;
+      _joiner_new = false;
+    }
+
     set_bpe_model(bpe_model_path, _cache_bpe_model);
   }
 
@@ -76,7 +84,8 @@ namespace onmt
 
     for (size_t i = 0; i < words.size(); ++i)
     {
-      if (i > 0 && !has_right_join(words[i - 1]) && !has_left_join(words[i]))
+      if (i > 0 && !has_right_join(words[i - 1]) && !has_left_join(words[i]) &&
+        !_spacer_annotate)
         line += " ";
 
       std::string word = words[i];
@@ -85,6 +94,17 @@ namespace onmt
         word.erase(word.length() - _joiner.length(), _joiner.length());
       if (has_left_join(word))
         word.erase(0, _joiner.length());
+
+      if (has_right_marker(word, Tokenizer::spacer_marker))
+      {
+        word.erase(word.length() - Tokenizer::spacer_marker.length(), Tokenizer::spacer_marker.length());
+        line += " ";
+      }
+      else if (has_left_marker(word, Tokenizer::spacer_marker))
+      {
+        word.erase(0, Tokenizer::spacer_marker.length());
+        line += " ";
+      }
 
       if (_case_feature)
       {
@@ -397,6 +417,35 @@ namespace onmt
 
       features.push_back(case_feat);
     }
+
+    if (_spacer_annotate)
+    {
+      size_t words_count = words.size();
+      words.insert(words.begin(), _joiner);
+
+      for (size_t i = 0; i < words_count; ++i)
+      {
+        bool has_joiner = false;
+
+        if (has_right_join(words[i]))
+        {
+          words[i].erase(words[i].length() - _joiner.length());
+          has_joiner = true;
+        }
+
+        if (has_left_join(words[i+1]))
+        {
+          words[i+1].erase(0, _joiner.length());
+          has_joiner = true;
+        }
+
+        if (has_joiner == false)  
+        {
+          words[i+1] = Tokenizer::spacer_marker + words[i+1];
+        }
+      } 
+      words.erase(words.begin());
+    }
   }
 
   std::vector<std::string> Tokenizer::bpe_segment(const std::vector<std::string>& tokens) const
@@ -498,13 +547,23 @@ namespace onmt
 
   bool Tokenizer::has_left_join(const std::string& word) const
   {
-    return (word.length() >= _joiner.length() && word.substr(0, _joiner.length()) == _joiner);
+    return has_left_marker(word, _joiner);
   }
 
   bool Tokenizer::has_right_join(const std::string& word) const
   {
-    return (word.length() >= _joiner.length()
-            && word.substr(word.length() - _joiner.length(), _joiner.length()) == _joiner);
+    return has_right_marker(word, _joiner);
+  }
+
+  bool Tokenizer::has_left_marker(const std::string& word, const std::string& marker) const
+  {
+    return (word.length() >= marker.length() && word.substr(0, marker.length()) == marker);
+  }
+
+  bool Tokenizer::has_right_marker(const std::string& word, const std::string& marker) const
+  {
+    return (word.length() >= marker.length()
+            && word.substr(word.length() - marker.length(), marker.length()) == marker);
   }
 
 }
