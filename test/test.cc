@@ -31,7 +31,7 @@ static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
                      const std::set<std::string>& expected_alphabets) {
   std::vector<std::string> words;
   std::vector<std::vector<std::string> > features;
-  std::set<std::string> alphabets;
+  std::unordered_map<std::string, size_t> alphabets;
 
   tokenizer->tokenize(in, words ,features, alphabets);
 
@@ -47,8 +47,6 @@ static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
 
   for(auto it: expected_alphabets)
     EXPECT_TRUE(alphabets.find(it) != alphabets.end());
-  for(auto it: alphabets)
-    EXPECT_TRUE(expected_alphabets.find(it) != alphabets.end());
 }
 
 static void test_tok_and_detok(std::unique_ptr<ITokenizer>& tokenizer,
