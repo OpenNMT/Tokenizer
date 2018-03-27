@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include <set>
+#include <unordered_map>
 
 namespace onmt
 {
@@ -20,7 +20,7 @@ namespace onmt
     virtual void tokenize(const std::string& text,
                           std::vector<std::string>& words,
                           std::vector<std::vector<std::string> >& features,
-                          std::set<std::string>& alphabets) const = 0;
+                          std::unordered_map<std::string,size_t>& alphabets) const = 0;
     virtual void tokenize(const std::string& text, std::vector<std::string>& words) const;
 
     virtual std::string detokenize(const std::vector<std::string>& words,

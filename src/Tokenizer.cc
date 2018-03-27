@@ -122,14 +122,14 @@ namespace onmt
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features) const {
-    std::set<std::string> alphabets;
+    std::unordered_map<std::string,size_t> alphabets;
     return tokenize(text, words, features, alphabets);
   }
 
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features,
-                           std::set<std::string> &alphabets) const
+                           std::unordered_map<std::string,size_t> &alphabets) const
   {
     if (_mode == Mode::Space) {
       if (text.empty())
@@ -270,12 +270,20 @@ namespace onmt
             cur_letter = unicode::is_letter(v, type_letter);
             cur_number = unicode::is_number(v);
 
-            std::string alphabet;
-            if (cur_letter && (_segment_alphabet_change || !_segment_alphabet.empty()))
-              {
-                alphabet = get_alphabet(v);
-                alphabets.insert(alphabet);
-              }
+            std::string alphabet = get_alphabet(v);
+            if (!alphabet.empty() && cur_letter)
+            {
+              if (alphabets.find(alphabet) != alphabets.end()) alphabets.at(alphabet)++;
+              else alphabets.insert(std::make_pair(alphabet,1));
+            }
+            else if (cur_number) {
+              if (alphabets.find("Numeric") != alphabets.end()) alphabets.at("Numeric")++;
+              else alphabets.insert(std::make_pair("Numeric",1));
+	    }
+	    else {
+              if (alphabets.find("Other") != alphabets.end()) alphabets.at("Other")++;
+              else alphabets.insert(std::make_pair("Other",1));
+            }
 
             if (unicode::is_mark(v)) {
               // if we have a mark, we keep type of previous character
