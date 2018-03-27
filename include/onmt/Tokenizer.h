@@ -52,6 +52,11 @@ namespace onmt
                   std::vector<std::string>& words,
                   std::vector<std::vector<std::string> >& features) const override;
 
+    void tokenize(const std::string& text,
+                  std::vector<std::string>& words,
+                  std::vector<std::vector<std::string> >& features,
+                  std::set<std::string> &alphabets) const override;
+
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features) const override;
 

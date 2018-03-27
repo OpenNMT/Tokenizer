@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <set>
 
 namespace onmt
 {
@@ -16,6 +17,10 @@ namespace onmt
     virtual void tokenize(const std::string& text,
                           std::vector<std::string>& words,
                           std::vector<std::vector<std::string> >& features) const = 0;
+    virtual void tokenize(const std::string& text,
+                          std::vector<std::string>& words,
+                          std::vector<std::vector<std::string> >& features,
+                          std::set<std::string>& alphabets) const = 0;
     virtual void tokenize(const std::string& text, std::vector<std::string>& words) const;
 
     virtual std::string detokenize(const std::vector<std::string>& words,

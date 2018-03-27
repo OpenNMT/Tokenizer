@@ -25,6 +25,32 @@ static void test_tok(std::unique_ptr<ITokenizer>& tokenizer,
   }
 }
 
+static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
+                     const std::string& in,
+                     const std::string& expected,
+                     const std::set<std::string>& expected_alphabets) {
+  std::vector<std::string> words;
+  std::vector<std::vector<std::string> > features;
+  std::set<std::string> alphabets;
+
+  tokenizer->tokenize(in, words ,features, alphabets);
+
+  std::string output;
+  for (size_t i = 0; i < words.size(); ++i)
+  {
+    if (i > 0)
+      output += " ";
+    output += words[i];
+  }
+
+  EXPECT_EQ(expected, output);
+
+  for(auto it: expected_alphabets)
+    EXPECT_TRUE(alphabets.find(it) != alphabets.end());
+  for(auto it: alphabets)
+    EXPECT_TRUE(expected_alphabets.find(it) != alphabets.end());
+}
+
 static void test_tok_and_detok(std::unique_ptr<ITokenizer>& tokenizer,
                                const std::string& in,
                                const std::string& expected) {
@@ -260,6 +286,15 @@ TEST(TokenizerTest, SpacerAnnotate) {
                      "Isn't it so-greatly working?",
                      "Isn ' t ▁it ▁so - greatly ▁working ?");
   test_tok_and_detok(tokenizer, "MP3", "MP 3");
+}
+
+TEST(TokenizerTest, Alphabets) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SegmentAlphabetChange));
+  std::set<std::string> lat_cyrillic_alphabets;
+  lat_cyrillic_alphabets.insert("Latin");
+  lat_cyrillic_alphabets.insert("Cyrillic");
+  test_tok_alphabet(tokenizer, "rawБ", "raw Б", lat_cyrillic_alphabets);
 }
 
 int main(int argc, char *argv[]) {
