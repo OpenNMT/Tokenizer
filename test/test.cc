@@ -28,7 +28,7 @@ static void test_tok(std::unique_ptr<ITokenizer>& tokenizer,
 static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
                      const std::string& in,
                      const std::string& expected,
-                     const std::set<std::string>& expected_alphabets) {
+                     const std::unordered_map<std::string, size_t>& expected_alphabets) {
   std::vector<std::string> words;
   std::vector<std::vector<std::string> > features;
   std::unordered_map<std::string, size_t> alphabets;
@@ -46,7 +46,8 @@ static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
   EXPECT_EQ(expected, output);
 
   for(auto it: expected_alphabets)
-    EXPECT_TRUE(alphabets.find(it) != alphabets.end());
+    EXPECT_TRUE(alphabets.find(it.first) != alphabets.end() &&
+                alphabets[it.first] == it.second);
 }
 
 static void test_tok_and_detok(std::unique_ptr<ITokenizer>& tokenizer,
@@ -289,10 +290,14 @@ TEST(TokenizerTest, SpacerAnnotate) {
 TEST(TokenizerTest, Alphabets) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SegmentAlphabetChange));
-  std::set<std::string> lat_cyrillic_alphabets;
-  lat_cyrillic_alphabets.insert("Latin");
-  lat_cyrillic_alphabets.insert("Cyrillic");
+  std::unordered_map<std::string, size_t> lat_cyrillic_alphabets;
+  lat_cyrillic_alphabets["Latin"] = 3;
+  lat_cyrillic_alphabets["Cyrillic"] = 1;
   test_tok_alphabet(tokenizer, "rawБ", "raw Б", lat_cyrillic_alphabets);
+
+  std::unordered_map<std::string, size_t> han2;
+  han2["Han"] = 2;
+  test_tok_alphabet(tokenizer, "有 入", "有 入", han2);
 }
 
 int main(int argc, char *argv[]) {

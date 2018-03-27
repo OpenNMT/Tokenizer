@@ -272,18 +272,9 @@ namespace onmt
 
             std::string alphabet = get_alphabet(v);
             if (!alphabet.empty() && cur_letter)
-            {
-              if (alphabets.find(alphabet) != alphabets.end()) alphabets.at(alphabet)++;
-              else alphabets.insert(std::make_pair(alphabet,1));
-            }
-            else if (cur_number) {
-              if (alphabets.find("Numeric") != alphabets.end()) alphabets.at("Numeric")++;
-              else alphabets.insert(std::make_pair("Numeric",1));
-	    }
-	    else {
-              if (alphabets.find("Other") != alphabets.end()) alphabets.at("Other")++;
-              else alphabets.insert(std::make_pair("Other",1));
-            }
+              alphabets[alphabet]++;
+            else
+              alphabets[cur_number ? "Numeric" : "Other"]++;
 
             if (unicode::is_mark(v)) {
               // if we have a mark, we keep type of previous character
