@@ -4,6 +4,12 @@
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.2.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.2.0) (2018-03-28)
+
+### New features
+
 * Add API to retrieve discovered alphabet during tokenization
 * Flag to convert joiners to spacers
 
