@@ -26,9 +26,9 @@ static void test_tok(std::unique_ptr<ITokenizer>& tokenizer,
 }
 
 static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
-                     const std::string& in,
-                     const std::string& expected,
-                     const std::unordered_map<std::string, size_t>& expected_alphabets) {
+                              const std::string& in,
+                              const std::string& expected,
+                              const std::unordered_map<std::string, size_t>& expected_alphabets) {
   std::vector<std::string> words;
   std::vector<std::vector<std::string> > features;
   std::unordered_map<std::string, size_t> alphabets;

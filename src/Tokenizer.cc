@@ -122,14 +122,14 @@ namespace onmt
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features) const {
-    std::unordered_map<std::string,size_t> alphabets;
+    std::unordered_map<std::string, size_t> alphabets;
     return tokenize(text, words, features, alphabets);
   }
 
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features,
-                           std::unordered_map<std::string,size_t> &alphabets) const
+                           std::unordered_map<std::string, size_t>& alphabets) const
   {
     if (_mode == Mode::Space) {
       if (text.empty())
