@@ -300,6 +300,11 @@ TEST(TokenizerTest, Alphabets) {
   test_tok_alphabet(tokenizer, "有 入", "有 入", han2);
 }
 
+TEST(TokenizerTest, NonbreakableSpace) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(new Tokenizer(Tokenizer::Mode::Conservative));
+  test_tok(tokenizer, "a b", "a b");
+}
+
 int main(int argc, char *argv[]) {
   testing::InitGoogleTest(&argc, argv);
   assert(argc == 2);
