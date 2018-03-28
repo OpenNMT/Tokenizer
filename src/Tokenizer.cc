@@ -121,7 +121,15 @@ namespace onmt
 
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
-                           std::vector<std::vector<std::string> >& features) const
+                           std::vector<std::vector<std::string> >& features) const {
+    std::unordered_map<std::string, size_t> alphabets;
+    return tokenize(text, words, features, alphabets);
+  }
+
+  void Tokenizer::tokenize(const std::string& text,
+                           std::vector<std::string>& words,
+                           std::vector<std::vector<std::string> >& features,
+                           std::unordered_map<std::string, size_t>& alphabets) const
   {
     if (_mode == Mode::Space) {
       if (text.empty())
@@ -262,9 +270,11 @@ namespace onmt
             cur_letter = unicode::is_letter(v, type_letter);
             cur_number = unicode::is_number(v);
 
-            std::string alphabet;
-            if (cur_letter && (_segment_alphabet_change || !_segment_alphabet.empty()))
-              alphabet = get_alphabet(v);
+            std::string alphabet = get_alphabet(v);
+            if (!alphabet.empty() && cur_letter)
+              alphabets[alphabet]++;
+            else
+              alphabets[cur_number ? "Numeric" : "Other"]++;
 
             if (unicode::is_mark(v)) {
               // if we have a mark, we keep type of previous character

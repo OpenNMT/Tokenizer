@@ -4,6 +4,7 @@
 
 ### New features
 
+* Add API to retrieve discovered alphabet during tokenization
 * Flag to convert joiners to spacers
 
 ### Fixes and improvements
