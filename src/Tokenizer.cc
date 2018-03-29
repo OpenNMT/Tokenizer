@@ -419,9 +419,10 @@ namespace onmt
           auto data = CaseModifier::extract_case(words[i]);
           words[i] = data.first;
           case_feat.emplace_back(1, data.second);
-        } else
+        }
+        else
         {
-          case_feat.emplace_back(1, 'N');
+          case_feat.emplace_back(1, CaseModifier::type_to_char(CaseModifier::Type::None));
         }
       }
 
