@@ -18,10 +18,10 @@ static void test_tok(std::unique_ptr<ITokenizer>& tokenizer,
                      const std::string& expected,
                      bool detokenize = false) {
   auto joined_tokens = tokenizer->tokenize(in);
-  EXPECT_EQ(expected, joined_tokens);
+  EXPECT_EQ(joined_tokens, expected);
   if (detokenize) {
     auto detok = tokenizer->detokenize(joined_tokens);
-    EXPECT_EQ(in, detok);
+    EXPECT_EQ(detok, in);
   }
 }
 
@@ -43,7 +43,7 @@ static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
     output += words[i];
   }
 
-  EXPECT_EQ(expected, output);
+  EXPECT_EQ(output, expected);
 
   for(auto it: expected_alphabets)
     EXPECT_TRUE(alphabets.find(it.first) != alphabets.end() &&

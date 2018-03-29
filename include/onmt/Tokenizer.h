@@ -66,6 +66,29 @@ namespace onmt
     bool is_alphabet_to_segment(const std::string& alphabet) const;
 
   private:
+    class AnnotatedToken
+    {
+    public:
+      AnnotatedToken() = default;
+      AnnotatedToken(const std::string& str);
+
+      void append(const std::string& str);
+      void set(const std::string& str);
+      void clear();
+      const std::string& str() const;
+
+      void link_right();
+      void link_left();
+
+      bool has_right_link() const;
+      bool has_left_link() const;
+
+    private:
+      std::string _str;
+      bool _link_left = false;
+      bool _link_right = false;
+    };
+
     Mode _mode;
 
     bool _case_feature;
@@ -84,7 +107,9 @@ namespace onmt
 
     std::set<std::string> _segment_alphabet;
 
-    std::vector<std::string> bpe_segment(const std::vector<std::string>& tokens) const;
+    std::vector<AnnotatedToken> bpe_segment(const std::vector<AnnotatedToken>& tokens) const;
+    void finalize_tokens(const std::vector<AnnotatedToken>& annotated_tokens,
+                         std::vector<std::string>& tokens) const;
 
     bool has_left_join(const std::string& word) const;
     bool has_right_join(const std::string& word) const;
