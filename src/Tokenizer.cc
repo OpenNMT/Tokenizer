@@ -450,11 +450,11 @@ namespace onmt
           has_joiner = true;
         }
 
-        if (has_joiner == false)  
+        if (has_joiner == false)
         {
           words[i+1] = Tokenizer::spacer_marker + words[i+1];
         }
-      } 
+      }
       words.erase(words.begin());
     }
   }
