@@ -5,6 +5,10 @@
 
 #include "onmt/Alphabet.h"
 #include "onmt/CaseModifier.h"
+#include "onmt/BPE.h"
+#ifdef WITH_SP
+#  include "onmt/SentencePiece.h"
+#endif
 #include "onmt/unicode/Unicode.h"
 
 namespace onmt
@@ -25,28 +29,30 @@ namespace onmt
   const std::unordered_map<std::string, onmt::Tokenizer::Mode> Tokenizer::mapMode = {
     { "aggressive", onmt::Tokenizer::Mode::Aggressive },
     { "conservative", onmt::Tokenizer::Mode::Conservative },
-    { "space", onmt::Tokenizer::Mode::Space }
+    { "space", onmt::Tokenizer::Mode::Space },
+    { "none", onmt::Tokenizer::Mode::None }
   };
 
-  static std::unordered_map<std::string, BPE*> bpe_cache;
-  static std::mutex bpe_cache_mutex;
+  static std::unordered_map<std::string, const SubwordEncoder*> cache;
+  static std::mutex cache_mutex;
 
-  static BPE* load_bpe(const std::string& bpe_model_path)
+  template <typename T>
+  static const T* load_subword_encoder(const std::string& model_path)
   {
-    std::lock_guard<std::mutex> lock(bpe_cache_mutex);
+    std::lock_guard<std::mutex> lock(cache_mutex);
 
-    auto it = bpe_cache.find(bpe_model_path);
-    if (it != bpe_cache.end())
-      return it->second;
+    auto it = cache.find(model_path);
+    if (it != cache.end())
+      return dynamic_cast<const T*>(it->second);
 
-    BPE* bpe = new BPE(bpe_model_path);
-    bpe_cache[bpe_model_path] = bpe;
-    return bpe;
+    T* encoder = new T(model_path);
+    cache[model_path] = encoder;
+    return encoder;
   }
 
   Tokenizer::Tokenizer(Mode mode,
                        int flags,
-                       const std::string& bpe_model_path,
+                       const std::string& model_path,
                        const std::string& joiner)
     : _mode(mode)
     , _case_feature(flags & Flags::CaseFeature)
@@ -56,19 +62,28 @@ namespace onmt
     , _segment_case(flags & Flags::SegmentCase)
     , _segment_numbers(flags & Flags::SegmentNumbers)
     , _segment_alphabet_change(flags & Flags::SegmentAlphabetChange)
-    , _cache_bpe_model(flags & Flags::CacheBPEModel)
+    , _cache_model((flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel))
     , _no_substitution(flags & Flags::NoSubstitution)
     , _spacer_annotate(flags & Flags::SpacerAnnotate)
-    , _bpe(nullptr)
+    , _subword_encoder(nullptr)
     , _joiner(joiner)
   {
-    set_bpe_model(bpe_model_path, _cache_bpe_model);
+    if (flags & Flags::SentencePieceModel)
+#ifdef WITH_SP
+      set_sp_model(model_path, _cache_model);
+    else
+#else
+      throw std::runtime_error("The Tokenizer was not built with SentencePiece support");
+#endif
+    {
+      set_bpe_model(model_path, _cache_model);
+    }
   }
 
   Tokenizer::~Tokenizer()
   {
-    if (!_cache_bpe_model)
-      delete _bpe;
+    if (!_cache_model)
+      delete _subword_encoder;
   }
 
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,
@@ -92,12 +107,14 @@ namespace onmt
       if (has_right_marker(word, Tokenizer::spacer_marker))
       {
         word.erase(word.length() - Tokenizer::spacer_marker.length(), Tokenizer::spacer_marker.length());
-        line += " ";
+        if (i > 0)
+          line += " ";
       }
       else if (has_left_marker(word, Tokenizer::spacer_marker))
       {
         word.erase(0, Tokenizer::spacer_marker.length());
-        line += " ";
+        if (i > 0)
+          line += " ";
       }
 
       if (_case_feature)
@@ -127,7 +144,9 @@ namespace onmt
   {
     std::vector<AnnotatedToken> annotated_tokens;
 
-    if (_mode == Mode::Space) {
+    if (_mode == Mode::None) {
+      annotated_tokens.emplace_back(text);
+    } else if (_mode == Mode::Space) {
       if (text.empty())
         return;
 
@@ -196,13 +215,13 @@ namespace onmt
             if (!space) {
               AnnotatedToken next_token;
               if ((letter && prev_alphabet != "placeholder") || number)
-                next_token.link_left();
+                next_token.join_left();
               else
-                token.link_right();
+                token.join_right();
               annotated_tokens.push_back(token);
               token = next_token;
             } else if (other && token.str().empty()) {
-              annotated_tokens.back().link_right();
+              annotated_tokens.back().join_right();
             }
             token.append(c);
             placeholder = true;
@@ -218,11 +237,11 @@ namespace onmt
           if (v == 0x200D) // Zero-Width joiner.
           {
             if (other || (number && unicode::is_letter(next_v, type_letter)))
-              annotated_tokens.back().link_right();
+              annotated_tokens.back().join_right();
             else
             {
               token.clear();
-              token.link_left();
+              token.join_left();
             }
           }
           else if (_with_separators)
@@ -289,7 +308,7 @@ namespace onmt
                                && ((type_letter == unicode::_letter_upper && !uppercase)
                                    || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))
               {
-                token.link_right();
+                token.join_right();
                 annotated_tokens.push_back(token);
                 token.clear();
                 uppercase = (type_letter == unicode::_letter_upper);
@@ -297,7 +316,7 @@ namespace onmt
               }
               else if (other && token.str().empty())
               {
-                annotated_tokens.back().link_right();
+                annotated_tokens.back().join_right();
                 uppercase = (type_letter == unicode::_letter_upper);
                 uppercase_sequence = false;
               } else {
@@ -318,15 +337,15 @@ namespace onmt
               {
                 AnnotatedToken next_token;
                 if (!letter || prev_alphabet == "placeholder")
-                  token.link_right();
+                  token.join_right();
                 else
-                  next_token.link_left();
+                  next_token.join_left();
                 annotated_tokens.push_back(token);
                 token = next_token;
               }
               else if (other)
               {
-                annotated_tokens.back().link_right();
+                annotated_tokens.back().join_right();
               }
 
               token.append(c);
@@ -343,12 +362,12 @@ namespace onmt
               {
                 annotated_tokens.push_back(token);
                 token.clear();
-                token.link_left();
+                token.join_left();
               }
               else if (other)
               {
                 token.clear();
-                token.link_left();
+                token.join_left();
               }
 
               token.append(c);
@@ -369,8 +388,8 @@ namespace onmt
         annotated_tokens.push_back(token);
     }
 
-    if (_bpe)
-      annotated_tokens = bpe_segment(annotated_tokens);
+    if (_subword_encoder)
+      annotated_tokens = encode_subword(annotated_tokens);
 
     if (_case_feature)
     {
@@ -396,7 +415,7 @@ namespace onmt
     finalize_tokens(annotated_tokens, words);
   }
 
-  void Tokenizer::finalize_tokens(const std::vector<Tokenizer::AnnotatedToken>& annotated_tokens,
+  void Tokenizer::finalize_tokens(const std::vector<AnnotatedToken>& annotated_tokens,
                                   std::vector<std::string>& tokens) const
   {
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
@@ -405,19 +424,20 @@ namespace onmt
 
       if (_joiner_annotate)
       {
-        if (token.has_left_link() && i > 0)
+        if (token.is_joined_left() && i > 0)
         {
           if (_joiner_new)
           {
             tokens.push_back(_joiner);
-            tokens.push_back(token.str());
+            if (!token.str().empty())
+              tokens.push_back(token.str());
           }
           else
             tokens.push_back(_joiner + token.str());
         }
-        else
+        else if (!token.str().empty())
           tokens.push_back(token.str());
-        if (token.has_right_link() && i + 1 < annotated_tokens.size())
+        if (token.is_joined_right() && i + 1 < annotated_tokens.size())
         {
           if (_joiner_new)
             tokens.push_back(_joiner);
@@ -427,8 +447,13 @@ namespace onmt
       }
       else if (_spacer_annotate)
       {
-        if (i == 0 || token.has_left_link() || (i > 0 && annotated_tokens[i - 1].has_right_link()))
-          tokens.push_back(token.str());
+        bool joined_left = (token.is_joined_left()
+                            || (i > 0 && annotated_tokens[i - 1].is_joined_right()));
+        if (joined_left || (i == 0 && !token.is_spacer()))
+        {
+          if (!token.str().empty())
+            tokens.push_back(token.str());
+        }
         else
           tokens.push_back(spacer_marker + token.str());
       }
@@ -439,8 +464,8 @@ namespace onmt
     }
   }
 
-  std::vector<Tokenizer::AnnotatedToken> Tokenizer::bpe_segment(
-      const std::vector<Tokenizer::AnnotatedToken>& tokens) const
+  std::vector<AnnotatedToken> Tokenizer::encode_subword(
+      const std::vector<AnnotatedToken>& tokens) const
   {
     std::vector<AnnotatedToken> segments;
 
@@ -451,17 +476,8 @@ namespace onmt
         continue;
       }
 
-      std::vector<std::string> encoded = _bpe->encode(token.str());
-
-      for (size_t j = 0; j < encoded.size(); ++j)
-      {
-        AnnotatedToken subtok(encoded[j]);
-        if (j == 0 && token.has_left_link())
-          subtok.link_left();
-        if (j + 1 < encoded.size() || token.has_right_link())
-          subtok.link_right();
-        segments.push_back(subtok);
-      }
+      std::vector<AnnotatedToken> sub_segments = _subword_encoder->encode_and_annotate(token);
+      segments.insert(segments.end(), sub_segments.begin(), sub_segments.end());
     }
 
     return segments;
@@ -473,25 +489,40 @@ namespace onmt
     return *this;
   }
 
-  Tokenizer& Tokenizer::set_bpe_model(const std::string& model_path, bool cache_model)
+  template <typename T>
+  Tokenizer& Tokenizer::set_subword_encoder_model(const std::string& model_path, bool cache_model)
   {
-    if (_bpe != nullptr && !_cache_bpe_model)
+    if (_subword_encoder != nullptr && !_cache_model)
     {
-      delete _bpe;
+      delete _subword_encoder;
     }
 
     if (!model_path.empty())
     {
       if (cache_model)
-        _bpe = load_bpe(model_path);
+        _subword_encoder = load_subword_encoder<T>(model_path);
       else
-        _bpe = new BPE(model_path);
+        _subword_encoder = new T(model_path);
 
-      _cache_bpe_model = cache_model;
+      _cache_model = cache_model;
     }
 
     return *this;
   }
+
+  Tokenizer& Tokenizer::set_bpe_model(const std::string& model_path, bool cache_model)
+  {
+    return this->set_subword_encoder_model<BPE>(model_path, cache_model);
+  }
+
+#ifdef WITH_SP
+  Tokenizer& Tokenizer::set_sp_model(const std::string& model_path, bool cache_model)
+  {
+    if (!_joiner_annotate && !_spacer_annotate)
+      _spacer_annotate = true;
+    return this->set_subword_encoder_model<SentencePiece>(model_path, cache_model);
+  }
+#endif
 
   bool Tokenizer::add_alphabet_to_segment(const std::string& alphabet)
   {
@@ -525,54 +556,6 @@ namespace onmt
   {
     return (word.length() >= marker.length()
             && word.substr(word.length() - marker.length(), marker.length()) == marker);
-  }
-
-
-  Tokenizer::AnnotatedToken::AnnotatedToken(const std::string& str)
-    : _str(str)
-  {
-  }
-
-  void Tokenizer::AnnotatedToken::append(const std::string& str)
-  {
-    _str += str;
-  }
-
-  void Tokenizer::AnnotatedToken::set(const std::string& str)
-  {
-    _str = str;
-  }
-
-  void Tokenizer::AnnotatedToken::clear()
-  {
-    _str.clear();
-    _link_right = false;
-    _link_left = false;
-  }
-
-  const std::string& Tokenizer::AnnotatedToken::str() const
-  {
-    return _str;
-  }
-
-  void Tokenizer::AnnotatedToken::link_right()
-  {
-    _link_right = true;
-  }
-
-  void Tokenizer::AnnotatedToken::link_left()
-  {
-    _link_left = true;
-  }
-
-  bool Tokenizer::AnnotatedToken::has_right_link() const
-  {
-    return _link_right;
-  }
-
-  bool Tokenizer::AnnotatedToken::has_left_link() const
-  {
-    return _link_left;
   }
 
 }

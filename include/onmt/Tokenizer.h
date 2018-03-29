@@ -4,7 +4,7 @@
 #include <set>
 
 #include "onmt/ITokenizer.h"
-#include "onmt/BPE.h"
+#include "onmt/SubwordEncoder.h"
 
 namespace onmt
 {
@@ -17,7 +17,8 @@ namespace onmt
     {
       Conservative,
       Aggressive,
-      Space
+      Space,
+      None
     };
 
     enum Flags
@@ -30,9 +31,11 @@ namespace onmt
       SegmentCase = 16,
       SegmentNumbers = 32,
       SegmentAlphabetChange = 64,
-      CacheBPEModel = 128,
+      CacheBPEModel = 128,  // Keeping for compatibility, replaced by CacheModel.
       NoSubstitution = 256,  // Do not replace special characters.
-      SpacerAnnotate = 512
+      SpacerAnnotate = 512,
+      CacheModel = 1024,
+      SentencePieceModel = 2048
     };
 
     static const std::string joiner_marker;
@@ -44,7 +47,7 @@ namespace onmt
 
     Tokenizer(Mode mode,
               int flags = Flags::None,
-              const std::string& bpe_model_path = "",
+              const std::string& model_path = "",
               const std::string& joiner = joiner_marker);
     ~Tokenizer();
 
@@ -61,34 +64,18 @@ namespace onmt
                            const std::vector<std::vector<std::string> >& features) const override;
 
     Tokenizer& set_joiner(const std::string& joiner);
+
+    template <typename T>
+    Tokenizer& set_subword_encoder_model(const std::string& model_path, bool cache_model);
     Tokenizer& set_bpe_model(const std::string& model_path, bool cache_model = false);
+#ifdef WITH_SP
+    Tokenizer& set_sp_model(const std::string& model_path, bool cache_model = false);
+#endif
+
     bool add_alphabet_to_segment(const std::string& alphabet);
     bool is_alphabet_to_segment(const std::string& alphabet) const;
 
   private:
-    class AnnotatedToken
-    {
-    public:
-      AnnotatedToken() = default;
-      AnnotatedToken(const std::string& str);
-
-      void append(const std::string& str);
-      void set(const std::string& str);
-      void clear();
-      const std::string& str() const;
-
-      void link_right();
-      void link_left();
-
-      bool has_right_link() const;
-      bool has_left_link() const;
-
-    private:
-      std::string _str;
-      bool _link_left = false;
-      bool _link_right = false;
-    };
-
     Mode _mode;
 
     bool _case_feature;
@@ -98,16 +85,16 @@ namespace onmt
     bool _segment_case;
     bool _segment_numbers;
     bool _segment_alphabet_change;
-    bool _cache_bpe_model;
+    bool _cache_model;
     bool _no_substitution;
     bool _spacer_annotate;
 
-    const BPE* _bpe;
+    const SubwordEncoder* _subword_encoder;
     std::string _joiner;
 
     std::set<std::string> _segment_alphabet;
 
-    std::vector<AnnotatedToken> bpe_segment(const std::vector<AnnotatedToken>& tokens) const;
+    std::vector<AnnotatedToken> encode_subword(const std::vector<AnnotatedToken>& tokens) const;
     void finalize_tokens(const std::vector<AnnotatedToken>& annotated_tokens,
                          std::vector<std::string>& tokens) const;
 

@@ -4,6 +4,9 @@
 
 ### New features
 
+* New tokenization mode `None` that simply forwards the input text
+* Support SentencePiece, as a tokenizer or sub-tokenizer
+
 ### Fixes and improvements
 
 ## [v1.2.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.2.0) (2018-03-28)

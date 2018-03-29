@@ -13,6 +13,7 @@ import pyonmttok
 tokenizer = pyonmt.Tokenizer(
     mode: str,
     bpe_model_path="",
+    sp_model_path="",
     joiner="￭",
     joiner_annotate=False,
     joiner_new=False,
