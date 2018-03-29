@@ -15,13 +15,6 @@ namespace onmt
 
   void SpaceTokenizer::tokenize(const std::string& text,
                                 std::vector<std::string>& words,
-                                std::vector<std::vector<std::string> >& features,
-                                std::unordered_map<std::string, size_t>&) const {
-    return tokenize(text, words, features);
-  }
-
-  void SpaceTokenizer::tokenize(const std::string& text,
-                                std::vector<std::string>& words,
                                 std::vector<std::vector<std::string> >& features) const
   {
     std::vector<std::string> chunks = unicode::split_utf8(text, " ");
