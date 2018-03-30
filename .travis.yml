@@ -6,19 +6,28 @@ compiler:
 cache:
   directories:
     - $HOME/googletest-release-1.8.0/
+    - $HOME/sentencepiece/
 addons:
   apt:
     sources:
       - george-edison55-precise-backports
       - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.8
-      - g++-4.8
+      - autoconf
+      - automake
       - cmake
       - cmake-data
+      - g++-4.8
+      - gcc-4.8
+      - git
       - libboost-dev
       - libboost-program-options-dev
       - libboost-python-dev
+      - libprotobuf-c++
+      - libprotobuf-dev
+      - libtool
+      - pkg-config
+      - protobuf-compiler
 before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - export ROOT_TRAVIS_DIR=$(pwd)
@@ -34,9 +43,19 @@ before_install:
       make && make install
       cd $ROOT_TRAVIS_DIR
     fi
+  - |
+    if [ ! -d sentencepiece/ ]; then
+      git clone https://github.com/google/sentencepiece.git sentencepiece-git
+      cd sentencepiece-git
+      ./autogen.sh
+      ./configure --prefix=$ROOT_TRAVIS_DIR/sentencepiece
+      make
+      make install
+      cd $ROOT_TRAVIS_DIR
+    fi
 install:
   - mkdir build && cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release -DGTEST_ROOT=$ROOT_TRAVIS_DIR/googletest-release-1.8.0/install/ -DWITH_PYTHON_BINDINGS=ON -DPYTHON_VERSION=2.7 ..
+  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$ROOT_TRAVIS_DIR/sentencepiece -DGTEST_ROOT=$ROOT_TRAVIS_DIR/googletest-release-1.8.0/install/ -DWITH_PYTHON_BINDINGS=ON -DPYTHON_VERSION=2.7 ..
   - make
   - export PYTHONPATH="$PYTHONPATH:$(pwd)/bindings/python"
 script:
