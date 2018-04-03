@@ -65,6 +65,7 @@ namespace onmt
     , _cache_model((flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel))
     , _no_substitution(flags & Flags::NoSubstitution)
     , _spacer_annotate(flags & Flags::SpacerAnnotate)
+    , _preserve_placeholders(flags & Flags::PreservePlaceholders)
     , _subword_encoder(nullptr)
     , _joiner(joiner)
   {
@@ -397,7 +398,7 @@ namespace onmt
 
       for (size_t i = 0; i < annotated_tokens.size(); ++i)
       {
-        if (annotated_tokens[i].str().find(ph_marker_open) == std::string::npos)
+        if (!is_placeholder(annotated_tokens[i].str()))
         {
           auto data = CaseModifier::extract_case(annotated_tokens[i].str());
           annotated_tokens[i].set(data.first);
@@ -415,7 +416,7 @@ namespace onmt
     finalize_tokens(annotated_tokens, words);
   }
 
-  void Tokenizer::finalize_tokens(const std::vector<AnnotatedToken>& annotated_tokens,
+  void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
                                   std::vector<std::string>& tokens) const
   {
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
@@ -432,6 +433,11 @@ namespace onmt
             if (!token.str().empty())
               tokens.push_back(token.str());
           }
+          else if (_preserve_placeholders && is_placeholder(token.str()))
+          {
+            tokens.back() += _joiner;
+            tokens.push_back(token.str());
+          }
           else
             tokens.push_back(_joiner + token.str());
         }
@@ -441,6 +447,14 @@ namespace onmt
         {
           if (_joiner_new)
             tokens.push_back(_joiner);
+          else if (_preserve_placeholders && is_placeholder(token.str()))
+          {
+            auto& next_token = annotated_tokens[i + 1];
+            if (!is_placeholder(next_token.str()))
+              next_token.join_left();
+            else
+              tokens.push_back(_joiner);
+          }
           else
             tokens.back() += _joiner;
         }
@@ -453,6 +467,11 @@ namespace onmt
         {
           if (!token.str().empty())
             tokens.push_back(token.str());
+        }
+        else if (_preserve_placeholders && is_placeholder(token.str()))
+        {
+          tokens.push_back(spacer_marker);
+          tokens.push_back(token.str());
         }
         else
           tokens.push_back(spacer_marker + token.str());
@@ -471,7 +490,7 @@ namespace onmt
 
     for (const auto& token : tokens)
     {
-      if (token.str().find(Tokenizer::ph_marker_open) != std::string::npos) {
+      if (is_placeholder(token.str())) {
         segments.push_back(token);
         continue;
       }
@@ -556,6 +575,11 @@ namespace onmt
   {
     return (word.length() >= marker.length()
             && word.substr(word.length() - marker.length(), marker.length()) == marker);
+  }
+
+  bool Tokenizer::is_placeholder(const std::string& str)
+  {
+    return str.find(ph_marker_open) == 0;
   }
 
 }
