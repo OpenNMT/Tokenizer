@@ -35,7 +35,8 @@ namespace onmt
       NoSubstitution = 256,  // Do not replace special characters.
       SpacerAnnotate = 512,
       CacheModel = 1024,
-      SentencePieceModel = 2048
+      SentencePieceModel = 2048,
+      PreservePlaceholders = 4096,
     };
 
     static const std::string joiner_marker;
@@ -88,6 +89,7 @@ namespace onmt
     bool _cache_model;
     bool _no_substitution;
     bool _spacer_annotate;
+    bool _preserve_placeholders;
 
     const SubwordEncoder* _subword_encoder;
     std::string _joiner;
@@ -95,7 +97,7 @@ namespace onmt
     std::set<std::string> _segment_alphabet;
 
     std::vector<AnnotatedToken> encode_subword(const std::vector<AnnotatedToken>& tokens) const;
-    void finalize_tokens(const std::vector<AnnotatedToken>& annotated_tokens,
+    void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
                          std::vector<std::string>& tokens) const;
 
     bool has_left_join(const std::string& word) const;
@@ -103,6 +105,8 @@ namespace onmt
 
     bool has_left_marker(const std::string& word, const std::string& marker) const;
     bool has_right_marker(const std::string& word, const std::string& marker) const;
+
+    static bool is_placeholder(const std::string& str);
   };
 
 }

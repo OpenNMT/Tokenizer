@@ -20,6 +20,7 @@ tokenizer = pyonmt.Tokenizer(
     spacer_annotate=False,
     case_feature=False,
     no_substitution=False,
+    preserve_placeholders=False,
     segment_case=False,
     segment_numbers=False,
     segment_alphabet_change=False,

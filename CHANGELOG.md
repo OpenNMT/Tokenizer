@@ -6,6 +6,7 @@
 
 * New tokenization mode `None` that simply forwards the input text
 * Support SentencePiece, as a tokenizer or sub-tokenizer
+* Flag `PreservePlaceholders` to not mark placeholders with joiners or spacers
 
 ### Fixes and improvements
 
