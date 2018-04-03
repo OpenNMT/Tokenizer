@@ -29,6 +29,7 @@ class TokenizerWrapper
 public:
   TokenizerWrapper(const std::string& mode,
                    const std::string& bpe_model_path,
+                   const std::string& sp_model_path,
                    const std::string& joiner,
                    bool joiner_annotate,
                    bool joiner_new,
@@ -58,8 +59,18 @@ public:
     if (segment_alphabet_change)
       flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
 
+    std::string model_path;
+
+    if (!bpe_model_path.empty())
+      model_path = bpe_model_path;
+    else if (!sp_model_path.empty())
+    {
+      flags |= onmt::Tokenizer::Flags::SentencePieceModel;
+      model_path = sp_model_path;
+    }
+
     _tokenizer = new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(mode),
-                                     flags, bpe_model_path, joiner);
+                                     flags, model_path, joiner);
 
     for (auto it = py::stl_input_iterator<std::string>(segment_alphabet);
          it != py::stl_input_iterator<std::string>(); it++)
@@ -115,8 +126,9 @@ BOOST_PYTHON_MODULE(pyonmttok)
 {
   py::class_<TokenizerWrapper>(
       "Tokenizer",
-      py::init<std::string, std::string, std::string, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
+      py::init<std::string, std::string, std::string, std::string, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
         (py::arg("bpe_model_path")="",
+         py::arg("sp_model_path")="",
          py::arg("joiner")=onmt::Tokenizer::joiner_marker,
          py::arg("joiner_annotate")=false,
          py::arg("joiner_new")=false,

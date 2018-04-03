@@ -23,6 +23,9 @@ int main(int argc, char* argv[])
     ("segment_alphabet", po::value<std::string>()->default_value(""), "comma-separated list of alphabets on which to segment all letters.")
     ("segment_alphabet_change", po::bool_switch()->default_value(false), "Segment if the alphabet changes between 2 letters.")
     ("bpe_model,bpe", po::value<std::string>()->default_value(""), "path to the BPE model")
+#ifdef WITH_SP
+    ("sp_model,sp", po::value<std::string>()->default_value(""), "path to the SentencePiece model")
+#endif
     ;
 
   po::variables_map vm;
@@ -56,10 +59,22 @@ int main(int argc, char* argv[])
                vm["segment_alphabet"].as<std::string>(),
                boost::is_any_of(","));
 
+  std::string model_path;
+
+  if (!vm["bpe_model"].as<std::string>().empty())
+    model_path = vm["bpe_model"].as<std::string>();
+#ifdef WITH_SP
+  else if (!vm["sp_model"].as<std::string>().empty())
+  {
+    flags |= onmt::Tokenizer::Flags::SentencePieceModel;
+    model_path = vm["sp_model"].as<std::string>();
+  }
+#endif
+
   onmt::Tokenizer* tokenizer = new onmt::Tokenizer(
     onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
     flags,
-    vm["bpe_model"].as<std::string>(),
+    model_path,
     vm["joiner"].as<std::string>());
 
   for (const auto& alphabet : alphabets_to_segment)

@@ -18,10 +18,10 @@ static void test_tok(std::unique_ptr<ITokenizer>& tokenizer,
                      const std::string& expected,
                      bool detokenize = false) {
   auto joined_tokens = tokenizer->tokenize(in);
-  EXPECT_EQ(expected, joined_tokens);
+  EXPECT_EQ(joined_tokens, expected);
   if (detokenize) {
     auto detok = tokenizer->detokenize(joined_tokens);
-    EXPECT_EQ(in, detok);
+    EXPECT_EQ(detok, in);
   }
 }
 
@@ -43,7 +43,7 @@ static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
     output += words[i];
   }
 
-  EXPECT_EQ(expected, output);
+  EXPECT_EQ(output, expected);
 
   for(auto it: expected_alphabets)
     EXPECT_TRUE(alphabets.find(it.first) != alphabets.end() &&
@@ -67,6 +67,12 @@ TEST(TokenizerTest, ConservativeEmpty) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative));
   test_tok(tokenizer, "", "");
+}
+
+TEST(TokenizerTest, None) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::None));
+  test_tok(tokenizer, "Hello World!", "Hello World!");
 }
 
 TEST(TokenizerTest, BasicSpace) {
@@ -304,6 +310,75 @@ TEST(TokenizerTest, NonbreakableSpace) {
   auto tokenizer = std::unique_ptr<ITokenizer>(new Tokenizer(Tokenizer::Mode::Conservative));
   test_tok(tokenizer, "a b", "a b");
 }
+
+#ifdef WITH_SP
+
+TEST(TokenizerTest, SentencePiece) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
+                  get_data("sp-models/sp.model")));
+  test_tok_and_detok(tokenizer,
+                     "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
+                     "The ▁two ▁shows , ▁called ▁De si re ▁and ▁S e c re t s , ▁will ▁be ▁one - hour ▁prime - time ▁shows .");
+}
+
+TEST(TokenizerTest, SentencePieceAlt) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
+                  get_data("sp-models/wmtende.model")));
+  test_tok_and_detok(tokenizer,
+                     "Bamford is appealing the sentence and has been granted bail of 50,000 baht.",
+                     "▁Ba m ford ▁is ▁appealing ▁the ▁sentence ▁and ▁has ▁been ▁granted ▁bail ▁of ▁ 50,000 ▁ba ht .");
+}
+
+TEST(TokenizerTest, SentencePieceWithJoiners) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::None,
+                  Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SentencePieceModel,
+                  get_data("sp-models/sp.model")));
+  test_tok_and_detok(tokenizer,
+                     "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
+                     "The two shows ￭, called De ￭si ￭re and S ￭e ￭c ￭re ￭t ￭s ￭, will be one ￭- ￭hour prime ￭- ￭time shows ￭.");
+}
+
+TEST(TokenizerTest, AggressiveWithSentencePiece) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SentencePieceModel,
+                  get_data("sp-models/sp.model")));
+  test_tok(tokenizer,
+           "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
+           "The ▁t wo ▁s how s , ▁called ▁D es ir e ▁and ▁Se c re t s , ▁will ▁be ▁one - hour ▁p rime - time ▁s how s .");
+}
+
+TEST(TokenizerTest, AggressiveWithSentencePieceAlt) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SentencePieceModel,
+                  get_data("sp-models/wmtende.model")));
+  test_tok(tokenizer,
+           "Bamford is appealing the sentence and has been granted bail of 50,000 baht.",
+           "▁Ba m ford ▁is ▁appealing ▁the ▁sentence ▁and ▁has ▁been ▁granted ▁bail ▁of ▁50 , 000 ▁ba ht .");
+}
+
+TEST(TokenizerTest, AggressiveWithSentencePieceAndJoiners) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Aggressive,
+                  Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SentencePieceModel,
+                  get_data("sp-models/sp.model")));
+  test_tok_and_detok(tokenizer,
+                     "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
+                     "The t ￭wo s ￭how ￭s ￭, called D ￭es ￭ir ￭e and Se ￭c ￭re ￭t ￭s ￭, will be one ￭-￭ hour p ￭rime ￭-￭ time s ￭how ￭s ￭.");
+}
+
+#else
+
+TEST(TokenizerTest, NoSentencePieceSupport) {
+  ASSERT_THROW(std::unique_ptr<ITokenizer>(
+                 new Tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
+                               get_data("sp-models/sp.model"))),
+               std::runtime_error);
+}
+
+#endif
 
 int main(int argc, char *argv[]) {
   testing::InitGoogleTest(&argc, argv);

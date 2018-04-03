@@ -4,15 +4,17 @@
 #include <unordered_map>
 #include <vector>
 
+#include "onmt/SubwordEncoder.h"
+
 namespace onmt
 {
 
-  class BPE
+  class BPE: public SubwordEncoder
   {
   public:
     BPE(const std::string& model_path);
 
-    std::vector<std::string> encode(const std::string& str) const;
+    std::vector<std::string> encode(const std::string& str) const override;
 
   private:
     std::string _end_of_word;
