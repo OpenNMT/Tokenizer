@@ -6,13 +6,12 @@ Tokenizer is a C++ implementation of OpenNMT tokenization and detokenization.
 
 ## Dependencies
 
-Compiling executables requires:
+* (optional) [SentencePiece](https://github.com/google/sentencepiece)
+* (required by clients) [Boost](https://www.boost.org/) (`program_options`)
 
-* `Boost` (`program_options`)
+Compiling bindings may require additional dependencies, see:
 
-Compiling tests requires:
-
-* [Google Test](https://github.com/google/googletest)
+* [Python bindings](bindings/python)
 
 ## Compiling
 
