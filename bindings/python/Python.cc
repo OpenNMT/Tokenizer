@@ -125,7 +125,7 @@ private:
   onmt::ITokenizer* _tokenizer;
 };
 
-BOOST_PYTHON_MODULE(pyonmttok)
+BOOST_PYTHON_MODULE(tokenizer)
 {
   py::class_<TokenizerWrapper>(
       "Tokenizer",
