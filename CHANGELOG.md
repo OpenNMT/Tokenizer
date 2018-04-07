@@ -4,6 +4,12 @@
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.3.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.3.0) (2018-04-07)
+
+### New features
+
 * New tokenization mode `None` that simply forwards the input text
 * Support SentencePiece, as a tokenizer or sub-tokenizer
 * Flag `PreservePlaceholders` to not mark placeholders with joiners or spacers
