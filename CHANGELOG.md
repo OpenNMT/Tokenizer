@@ -10,6 +10,8 @@
 
 ### Fixes and improvements
 
+* Revisit Python compilation to support wheels building
+
 ## [v1.2.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.2.0) (2018-03-28)
 
 ### New features

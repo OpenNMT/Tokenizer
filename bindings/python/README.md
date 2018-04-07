@@ -1,9 +1,10 @@
 ## Python bindings
 
-### Requirements
+### Installation
 
-* Python
-* Boost (`python`)
+```bash
+pip install pyonmttok
+```
 
 ### API
 
@@ -30,28 +31,4 @@ tokens, features = tokenizer.tokenize(test: str)
 
 text = tokenizer.detokenize(tokens, features)
 text = tokenizer.detokenize(tokens)  # will fail if case_feature is set.
-```
-
-### Guide
-
-1\. Compile with Python bindings enabled:
-
-```bash
-mkdir build && cd build
-cmake -DLIB_ONLY=ON -DWITH_PYTHON_BINDINGS=ON -DPYTHON_VERSION=3.5 ..
-make -j4
-```
-
-2\. Extend `PYTHONPATH` to the directory containing the `pyonmttok.so` library, e.g.:
-
-```bash
-export PYTHONPATH="$PYTHONPATH:$HOME/dev/Tokenizer/build/bindings/python"
-```
-
-3\. Test the example script:
-
-```bash
-$ python3 ../bindings/python/example.py
-tokenized:   ['Hello', 'World', '￭', '!']
-detokenized: Hello World!
 ```

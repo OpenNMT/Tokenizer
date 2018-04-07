@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.1.0)
 project(OpenNMTTokenizer)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(WITH_PYTHON_BINDINGS "Build Python bindings" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -64,7 +63,6 @@ if (NOT LIB_ONLY)
   add_subdirectory(cli)
 endif()
 
-add_subdirectory(bindings)
 add_subdirectory(test)
 
 install(
