@@ -5,8 +5,8 @@
 # docker pull quay.io/pypa/manylinux1_x86_64
 # mkdir docker
 # docker run --rm -ti -v $PWD/docker:/docker -w /docker quay.io/pypa/manylinux1_x86_64 bash
-# wget https://raw.githubusercontent.com/OpenNMT/Tokenizer/master/bindings/python/tools/build_wheel.sh
-# sh tools/build_wheel.sh v1.3.0
+# wget --no-check-certificate https://raw.githubusercontent.com/OpenNMT/Tokenizer/master/bindings/python/tools/build_wheel.sh
+# sh build_wheel.sh v1.3.0
 # twine wheelhouse/*.whl
 
 ROOT_DIR=$PWD
