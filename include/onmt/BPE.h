@@ -22,6 +22,7 @@ namespace onmt
     bool _prefix;
     bool _suffix;
     bool _case_insensitive;
+    bool _compat_03;
 
     struct pair_hash {
     public:

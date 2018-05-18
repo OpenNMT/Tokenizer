@@ -1,5 +1,5 @@
 #include "onmt/BPE.h"
-
+#include <iostream>
 #include <fstream>
 #include <limits>
 
@@ -26,6 +26,7 @@ namespace onmt
     , _prefix(false)
     , _suffix(true)
     , _case_insensitive(false)
+    , _compat_03(false)
   {
     std::ifstream in(model_path.c_str());
 
@@ -53,7 +54,8 @@ namespace onmt
 
     if (options.size() == 6 && options[0] == "v3")
     {
-      _prefix = (options[1] == "true");
+      _compat_03 = options[1] == "ref03";
+      _prefix = options[1] == "true";
       _suffix = options[2] == "true";
       _case_insensitive = options[3] == "true";
       _begin_of_word = options[4];
@@ -94,6 +96,7 @@ namespace onmt
 
     if (_prefix) { chars.insert(chars.begin(), _begin_of_word); }
     if (_suffix) { chars.push_back(_end_of_word); }
+    if (_compat_03) { chars[chars.size()-1] += _end_of_word; }
 
     auto pairs = get_pairs(chars);
 
@@ -165,6 +168,14 @@ namespace onmt
         chars.pop_back();
         chars.push_back(cleaned);
       }
+    }
+
+    if (_compat_03)
+    {
+      size_t l = chars[chars.size()-1].size();
+      if (l > _end_of_word.size() &&
+          chars.back().substr(l-_end_of_word.size()) == _end_of_word)
+        chars[chars.size()-1].erase(l-_end_of_word.size());
     }
 
     if (_case_insensitive)
