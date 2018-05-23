@@ -486,7 +486,7 @@ namespace onmt
             tokens.push_back(spacer_marker + token.str());
         }
       }
-      else
+      else if (!token.str().empty())
       {
         tokens.push_back(token.str());
       }
@@ -547,7 +547,7 @@ namespace onmt
 #ifdef WITH_SP
   Tokenizer& Tokenizer::set_sp_model(const std::string& model_path, bool cache_model)
   {
-    if (!_joiner_annotate && !_spacer_annotate)
+    if (_mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
       _spacer_annotate = true;
     return this->set_subword_encoder_model<SentencePiece>(model_path, cache_model);
   }

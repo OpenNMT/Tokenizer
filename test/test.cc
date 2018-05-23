@@ -379,19 +379,20 @@ TEST(TokenizerTest, SentencePieceWithJoiners) {
 TEST(TokenizerTest, AggressiveWithSentencePiece) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SentencePieceModel,
-                  get_data("sp-models/sp.model")));
-  test_tok(tokenizer,
-           "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
-           "The ▁t wo ▁s how s , ▁called ▁D es ir e ▁and ▁Se c re t s , ▁will ▁be ▁one - hour ▁p rime - time ▁s how s .");
-}
-
-TEST(TokenizerTest, AggressiveWithSentencePieceAlt) {
-  auto tokenizer = std::unique_ptr<ITokenizer>(
-    new Tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SentencePieceModel,
                   get_data("sp-models/wmtende.model")));
   test_tok(tokenizer,
            "Bamford is appealing the sentence and has been granted bail of 50,000 baht.",
-           "▁Ba m ford ▁is ▁appealing ▁the ▁sentence ▁and ▁has ▁been ▁granted ▁bail ▁of ▁50 , 000 ▁ba ht .");
+           "Ba m ford is appealing the sentence and has been granted bail of 50 , 000 ba ht .");
+}
+
+TEST(TokenizerTest, AggressiveWithSentencePieceAndSpacers) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Aggressive,
+                  Tokenizer::Flags::SpacerAnnotate | Tokenizer::Flags::SentencePieceModel,
+                  get_data("sp-models/sp.model")));
+  test_tok_and_detok(tokenizer,
+                     "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
+                     "The ▁t wo ▁s how s , ▁called ▁D es ir e ▁and ▁Se c re t s , ▁will ▁be ▁one - hour ▁p rime - time ▁s how s .");
 }
 
 TEST(TokenizerTest, AggressiveWithSentencePieceAndJoiners) {
