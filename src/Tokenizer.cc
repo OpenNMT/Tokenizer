@@ -17,6 +17,7 @@ namespace onmt
   const std::string Tokenizer::joiner_marker("￭");
   const std::string Tokenizer::spacer_marker("▁");
   const std::map<std::string, std::string> substitutes = {
+                                                      { "▁", "_" },
                                                       { "￭", "■" },
                                                       { "￨", "│" },
                                                       { "％", "%" },

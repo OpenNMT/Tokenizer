@@ -193,16 +193,16 @@ TEST(TokenizerTest, Substitutes) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative));
   test_tok(tokenizer,
-           "test￭ protect￨, ：, and ％ or ＃...",
-           "test ■ protect │ , : , and % or # . . .");
+           "test￭ protect￨, ：, ▁, and ％ or ＃...",
+           "test ■ protect │ , : , _ , and % or # . . .");
 }
 
 TEST(TokenizerTest, NoSubstitution) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::NoSubstitution));
   test_tok(tokenizer,
-           "test￭ protect￨, ：, and ％ or ＃...",
-           "test ￭ protect ￨ , ： , and ％ or ＃ . . .");
+           "test￭ protect￨, ：, ▁, and ％ or ＃...",
+           "test ￭ protect ￨ , ： , ▁ , and ％ or ＃ . . .");
 }
 
 TEST(TokenizerTest, CombiningMark) {
