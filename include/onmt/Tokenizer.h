@@ -37,6 +37,7 @@ namespace onmt
       CacheModel = 1024,
       SentencePieceModel = 2048,
       PreservePlaceholders = 4096,
+      SpacerNew = 8192
     };
 
     static const std::string joiner_marker;
@@ -89,6 +90,7 @@ namespace onmt
     bool _cache_model;
     bool _no_substitution;
     bool _spacer_annotate;
+    bool _spacer_new;
     bool _preserve_placeholders;
 
     const SubwordEncoder* _subword_encoder;
