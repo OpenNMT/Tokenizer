@@ -4,6 +4,8 @@
 
 ### New features
 
+* Flag `SpacerNew` to make spacers independent tokens
+
 ### Fixes and improvements
 
 ## [v1.3.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.3.0) (2018-04-07)

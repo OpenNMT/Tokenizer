@@ -319,6 +319,15 @@ TEST(TokenizerTest, SpacerAnnotate) {
   test_tok_and_detok(tokenizer, "MP3", "MP 3");
 }
 
+TEST(TokenizerTest, SpacerNew) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Aggressive,
+                  Tokenizer::Flags::SpacerAnnotate | Tokenizer::Flags::SpacerNew));
+  test_tok_and_detok(tokenizer,
+                     "Isn't it so-greatly working?",
+                     "Isn ' t ▁ it ▁ so - greatly ▁ working ?");
+}
+
 TEST(TokenizerTest, Alphabets) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SegmentAlphabetChange));

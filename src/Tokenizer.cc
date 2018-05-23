@@ -65,6 +65,7 @@ namespace onmt
     , _cache_model((flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel))
     , _no_substitution(flags & Flags::NoSubstitution)
     , _spacer_annotate(flags & Flags::SpacerAnnotate)
+    , _spacer_new(flags & Flags::SpacerNew)
     , _preserve_placeholders(flags & Flags::PreservePlaceholders)
     , _subword_encoder(nullptr)
     , _joiner(joiner)
@@ -474,7 +475,15 @@ namespace onmt
           tokens.push_back(token.str());
         }
         else
-          tokens.push_back(spacer_marker + token.str());
+        {
+          if (_spacer_new)
+          {
+            tokens.push_back(spacer_marker);
+            tokens.push_back(token.str());
+          }
+          else
+            tokens.push_back(spacer_marker + token.str());
+        }
       }
       else
       {
