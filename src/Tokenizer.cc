@@ -10,7 +10,6 @@
 #  include "onmt/SentencePiece.h"
 #endif
 #include "onmt/unicode/Unicode.h"
-#include <iostream>
 
 namespace onmt
 {
