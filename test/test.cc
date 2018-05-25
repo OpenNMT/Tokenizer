@@ -337,6 +337,24 @@ TEST(TokenizerTest, NonbreakableSpace) {
   test_tok(tokenizer, "a b", "a b");
 }
 
+TEST(TokenizerTest, CharMode) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Char));
+  test_tok(tokenizer, "  Hello   World 123.", "H e l l o W o r l d 1 2 3 .");
+}
+
+TEST(TokenizerTest, CharModeSpacer) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Char, Tokenizer::Flags::SpacerAnnotate));
+  test_tok(tokenizer, "  Hello   World 123.", "H e l l o ▁W o r l d ▁1 2 3 .");
+}
+
+TEST(TokenizerTest, CharModeSpacerNew) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Char, Tokenizer::Flags::SpacerAnnotate | Tokenizer::Flags::JoinerNew));
+  test_tok(tokenizer, "  Hello   World 123.", "H e l l o ▁ W o r l d ▁ 1 2 3 .");
+}
+
 #ifdef WITH_SP
 
 TEST(TokenizerTest, SentencePiece) {
