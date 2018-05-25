@@ -5,9 +5,12 @@
 ### New features
 
 * New character level tokenization mode `Char`
-* Flag `JoinerNew` now also works for spacer
+* Flag `SpacerNew` to make spacers independent tokens
 
 ### Fixes and improvements
+
+* Replace spacer tokens by substitutes when found in the input text
+* Do not enable spacers by default when SentencePiece is used as a subtokenizer
 
 ## [v1.3.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.3.0) (2018-04-07)
 
