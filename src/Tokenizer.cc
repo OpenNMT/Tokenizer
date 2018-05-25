@@ -476,14 +476,7 @@ namespace onmt
           tokens.push_back(token.str());
         }
         else {
-          if (_joiner_new) {
-            if (!token.str().empty()) {
-              tokens.push_back(spacer_marker);
-              tokens.push_back(token.str());
-            }
-          } else {
-            tokens.push_back(spacer_marker + token.str());
-          }
+          tokens.push_back(spacer_marker + token.str());
         }
       }
       else
