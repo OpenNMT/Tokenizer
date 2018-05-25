@@ -351,7 +351,7 @@ TEST(TokenizerTest, CharModeSpacer) {
 
 TEST(TokenizerTest, CharModeSpacerNew) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
-    new Tokenizer(Tokenizer::Mode::Char, Tokenizer::Flags::SpacerAnnotate | Tokenizer::Flags::JoinerNew));
+    new Tokenizer(Tokenizer::Mode::Char, Tokenizer::Flags::SpacerAnnotate | Tokenizer::Flags::SpacerNew));
   test_tok(tokenizer, "  Hello   World 123.", "H e l l o ▁ W o r l d ▁ 1 2 3 .");
 }
 
