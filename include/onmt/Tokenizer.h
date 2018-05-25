@@ -19,7 +19,6 @@ namespace onmt
       Aggressive,
       Char,
       Space,
-      Spoce,
       None
     };
 
