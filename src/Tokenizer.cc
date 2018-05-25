@@ -18,6 +18,7 @@ namespace onmt
   const std::string Tokenizer::joiner_marker("￭");
   const std::string Tokenizer::spacer_marker("▁");
   const std::map<std::string, std::string> substitutes = {
+                                                      { "▁", "_" },
                                                       { "￭", "■" },
                                                       { "￨", "│" },
                                                       { "％", "%" },
@@ -67,6 +68,7 @@ namespace onmt
     , _cache_model((flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel))
     , _no_substitution(flags & Flags::NoSubstitution)
     , _spacer_annotate(flags & Flags::SpacerAnnotate)
+    , _spacer_new(flags & Flags::SpacerNew)
     , _preserve_placeholders(flags & Flags::PreservePlaceholders)
     , _subword_encoder(nullptr)
     , _joiner(joiner)
@@ -475,11 +477,18 @@ namespace onmt
           tokens.push_back(spacer_marker);
           tokens.push_back(token.str());
         }
-        else {
-          tokens.push_back(spacer_marker + token.str());
+        else
+        {
+          if (_spacer_new)
+          {
+            tokens.push_back(spacer_marker);
+            tokens.push_back(token.str());
+          }
+          else
+            tokens.push_back(spacer_marker + token.str());
         }
       }
-      else
+      else if (!token.str().empty())
       {
         tokens.push_back(token.str());
       }
@@ -540,7 +549,7 @@ namespace onmt
 #ifdef WITH_SP
   Tokenizer& Tokenizer::set_sp_model(const std::string& model_path, bool cache_model)
   {
-    if (!_joiner_annotate && !_spacer_annotate)
+    if (_mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
       _spacer_annotate = true;
     return this->set_subword_encoder_model<SentencePiece>(model_path, cache_model);
   }
