@@ -17,6 +17,7 @@ namespace onmt
     {
       Conservative,
       Aggressive,
+      Char,
       Space,
       None
     };

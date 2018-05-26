@@ -31,6 +31,7 @@ namespace onmt
     { "aggressive", onmt::Tokenizer::Mode::Aggressive },
     { "conservative", onmt::Tokenizer::Mode::Conservative },
     { "space", onmt::Tokenizer::Mode::Space },
+    { "char", onmt::Tokenizer::Mode::Char },
     { "none", onmt::Tokenizer::Mode::None }
   };
 
@@ -300,7 +301,7 @@ namespace onmt
                 }
             }
 
-            if (cur_letter)
+            if (cur_letter && _mode != Mode::Char)
             {
               if ((!letter && !space)
                   || (letter && !unicode::is_mark(v) &&
@@ -334,7 +335,7 @@ namespace onmt
               space = false;
               prev_alphabet = alphabet;
             }
-            else if (cur_number)
+            else if (cur_number && _mode != Mode::Char)
             {
               if (letter || (number && _segment_numbers) || (!number && !space))
               {

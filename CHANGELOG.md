@@ -4,6 +4,7 @@
 
 ### New features
 
+* New character level tokenization mode `Char`
 * Flag `SpacerNew` to make spacers independent tokens
 
 ### Fixes and improvements
