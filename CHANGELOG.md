@@ -1,6 +1,10 @@
 ## [Unreleased]
 
-### Breaking changes
+### New features
+
+### Fixes and improvements
+
+## [v1.4.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.4.0) (2018-06-13)
 
 ### New features
 
