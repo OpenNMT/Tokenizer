@@ -1,3 +1,4 @@
+#define BOOST_PYTHON_MAX_ARITY 16
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 
