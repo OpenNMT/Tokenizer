@@ -23,19 +23,9 @@ namespace onmt
     bool _suffix;
     bool _case_insensitive;
 
-    struct pair_hash {
-    public:
-      template <typename T, typename U>
-      std::size_t operator()(const std::pair<T, U> &x) const
-      {
-        return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
-      }
-    };
+    std::unordered_map<std::string, int> _codes;
 
-    std::unordered_map<std::pair<std::string, std::string>, int, pair_hash> _codes;
-
-    std::pair<std::string, std::string>
-    get_min_pair(const std::vector<std::pair<std::string, std::string> >& pairs) const;
+    int get_min_pair_index(const std::vector<std::string>& chars) const;
 
   };
 
