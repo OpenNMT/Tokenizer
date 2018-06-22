@@ -8,8 +8,10 @@ namespace onmt
     return supported_alphabets.count(alphabet) > 0;
   }
 
-  std::string get_alphabet(unicode::code_point_t c)
+  const std::string& get_alphabet(unicode::code_point_t c)
   {
+    static const std::string empty_str = "";
+
     // Use binary search.
     size_t lower_bound = 0;
     size_t upper_bound = alphabet_ranges.size() - 1;
@@ -33,7 +35,7 @@ namespace onmt
         && c <= alphabet_ranges[lower_bound].first.second)
       return alphabet_ranges[lower_bound].second;
 
-    return "";
+    return empty_str;
   }
 
 }
