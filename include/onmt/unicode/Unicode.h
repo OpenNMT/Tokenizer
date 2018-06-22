@@ -12,7 +12,7 @@ namespace onmt
   {
 
     typedef uint32_t code_point_t;
-    typedef std::map<code_point_t, std::vector<code_point_t> > map_of_list_t;
+    typedef std::vector<std::pair<code_point_t, std::vector<code_point_t>>> map_of_list_t;
     typedef std::unordered_map<code_point_t, code_point_t> map_unicode;
 
     std::string cp_to_utf8(code_point_t u);

@@ -147,21 +147,17 @@ namespace onmt
 
     static bool _find_codepoint(code_point_t u, const map_of_list_t &map)
     {
-      map_of_list_t::const_iterator it = map.begin();
-
-      while (it != map.end())
+      for (const auto& pair: map)
       {
-        if (u >= it->first)
+        if (u >= pair.first)
         {
-          unsigned int idx = ((u - it->first) >> 4);
-          if (idx < it->second.size())
+          unsigned int idx = ((u - pair.first) >> 4);
+          if (idx < pair.second.size())
           {
-            unsigned int p = (u - it->first) & 0xf;
-            return (((it->second[idx] << p)) & 0x8000);
+            unsigned int p = (u - pair.first) & 0xf;
+            return (((pair.second[idx] << p)) & 0x8000);
           }
         }
-
-        it++;
       }
 
       return 0;
