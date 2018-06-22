@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* x2 speedup for conservative and aggressive tokenization (with or without BPE)
+
 ## [v1.4.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.4.0) (2018-06-13)
 
 ### New features

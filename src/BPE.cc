@@ -9,17 +9,6 @@
 namespace onmt
 {
 
-  static std::vector<std::pair<std::string, std::string> >
-  get_pairs(const std::vector<std::string>& chars)
-  {
-    std::vector<std::pair<std::string, std::string> > pairs;
-
-    for (size_t i = 0; i < chars.size() - 1; ++i)
-      pairs.emplace_back(chars[i], chars[i + 1]);
-
-    return pairs;
-  }
-
   BPE::BPE(const std::string& model_path)
     : _end_of_word("</w>")
     , _begin_of_word("<w>")
@@ -66,25 +55,22 @@ namespace onmt
       size_t sep = line.find(' ');
       if (sep != std::string::npos && sep + 1 < line.size())
       {
-        auto data = std::make_pair(line.substr(0, sep), line.substr(sep + 1));
-        if (_codes.count(data) == 0)
-          _codes[data] = i++;
+        std::string pair = line.substr(0, sep) + line.substr(sep + 1);
+        if (_codes.count(pair) == 0)
+          _codes.emplace(pair, i++);
       }
     }
   }
 
   std::vector<std::string> BPE::encode(const std::string& str) const
   {
-    std::string str_lc = str;
-    if (_case_insensitive)
-    {
-      str_lc = CaseModifier::extract_case(str).first;
-    }
-
     std::vector<std::string> chars;
     std::vector<unicode::code_point_t> code_points;
 
-    unicode::explode_utf8(str_lc, chars, code_points);
+    if (_case_insensitive)
+      unicode::explode_utf8(CaseModifier::extract_case(str).first, chars, code_points);
+    else
+      unicode::explode_utf8(str, chars, code_points);
 
     if (chars.size() == 1)
     {
@@ -95,41 +81,45 @@ namespace onmt
     if (_prefix) { chars.insert(chars.begin(), _begin_of_word); }
     if (_suffix) { chars.push_back(_end_of_word); }
 
-    auto pairs = get_pairs(chars);
+    std::vector<std::string> new_chars;
+    new_chars.reserve(chars.size());
 
     while (true)
     {
-      auto bigram = get_min_pair(pairs);
+      int min_index = get_min_pair_index(chars);
 
-      if (bigram.first.empty())
+      if (min_index < 0)
         break;
 
-      std::vector<std::string> new_chars;
+      const std::string& gram1 = chars[min_index];
+      const std::string& gram2 = chars[min_index + 1];
+
       bool merge = false;
+      new_chars.clear();
 
       for (size_t i = 0; i < chars.size(); ++i)
       {
         if (merge)
         {
-          if (chars[i] == bigram.second)
+          if (chars[i] == gram2)
           {
-            new_chars.push_back(bigram.first + bigram.second);
+            new_chars.push_back(gram1 + gram2);
             merge = false;
           }
-          else if (chars[i] == bigram.first)
+          else if (chars[i] == gram1)
           {
-            new_chars.push_back(bigram.first);
+            new_chars.push_back(gram1);
           }
           else
           {
-            new_chars.push_back(bigram.first);
+            new_chars.push_back(gram1);
             new_chars.push_back(chars[i]);
             merge = false;
           }
         }
         else
         {
-          if (chars[i] == bigram.first)
+          if (chars[i] == gram1)
             merge = true;
           else
             new_chars.push_back(chars[i]);
@@ -139,8 +129,6 @@ namespace onmt
       chars.swap(new_chars);
       if (chars.size() == 1)
         break;
-      else
-        pairs = get_pairs(chars);
     }
 
     if (_prefix)
@@ -148,11 +136,7 @@ namespace onmt
       if (chars.front() == _begin_of_word)
         chars.erase(chars.begin());
       else if (chars.front().substr(0, _begin_of_word.size()) == _begin_of_word)
-      {
-        std::string cleaned = chars.front().substr(_begin_of_word.size());
-        chars.erase(chars.begin());
-        chars.insert(chars.begin(), cleaned);
-      }
+        chars.front().erase(0, _begin_of_word.size());
     }
 
     if (_suffix)
@@ -160,11 +144,7 @@ namespace onmt
       if (chars.back() == _end_of_word)
         chars.pop_back();
       else if (chars.back().substr(chars.back().size() - _end_of_word.size()) == _end_of_word)
-      {
-        std::string cleaned = chars.back().substr(0, chars.back().size() - _end_of_word.size());
-        chars.pop_back();
-        chars.push_back(cleaned);
-      }
+        chars.back().erase(chars.back().size() - _end_of_word.size(), _end_of_word.size());
     }
 
     if (_case_insensitive)
@@ -195,15 +175,14 @@ namespace onmt
     return chars;
   }
 
-  std::pair<std::string, std::string>
-  BPE::get_min_pair(const std::vector<std::pair<std::string, std::string> >& pairs) const
+  int BPE::get_min_pair_index(const std::vector<std::string>& chars) const
   {
+    int min_index = -1;
     int min_score = std::numeric_limits<int>::max();
-    std::pair<std::string, std::string> min_pair;
 
-    for (size_t i = 0; i < pairs.size(); ++i)
+    for (int i = 0; i + 1 < static_cast<int>(chars.size()); ++i)
     {
-      auto it = _codes.find(pairs[i]);
+      auto it = _codes.find(chars[i] + chars[i + 1]);
 
       if (it != _codes.end())
       {
@@ -211,12 +190,12 @@ namespace onmt
         if (score < min_score)
         {
           min_score = score;
-          min_pair = pairs[i];
+          min_index = i;
         }
       }
     }
 
-    return min_pair;
+    return min_index;
   }
 
 }

@@ -117,25 +117,27 @@ namespace onmt
       return fragments;
     }
 
-    void explode_utf8(std::string str,
+    void explode_utf8(const std::string& str,
                       std::vector<std::string>& chars,
                       std::vector<code_point_t>& code_points)
     {
-      size_t offset = 0;
+      const char* c_str = str.c_str();
 
-      while (offset < str.length())
+      chars.reserve(str.length());
+      code_points.reserve(str.length());
+
+      while (*c_str)
       {
         unsigned int char_size = 0;
-        code_point_t code_point = utf8_to_cp(reinterpret_cast<const unsigned char*>(str.c_str()),
-                                                     char_size);
-
+        code_point_t code_point = utf8_to_cp(
+          reinterpret_cast<const unsigned char*>(c_str), char_size);
         code_points.push_back(code_point);
-        chars.emplace_back(str.substr(0, char_size));
-        str.erase(0, char_size);
+        chars.emplace_back(c_str, char_size);
+        c_str += char_size;
       }
     }
 
-    size_t utf8len(std::string str)
+    size_t utf8len(const std::string& str)
     {
       std::vector<std::string> chars;
       std::vector<unicode::code_point_t> code_points;
@@ -145,21 +147,17 @@ namespace onmt
 
     static bool _find_codepoint(code_point_t u, const map_of_list_t &map)
     {
-      map_of_list_t::const_iterator it = map.begin();
-
-      while (it != map.end())
+      for (const auto& pair: map)
       {
-        if (u >= it->first)
+        if (u >= pair.first)
         {
-          unsigned int idx = ((u - it->first) >> 4);
-          if (idx < it->second.size())
+          unsigned int idx = ((u - pair.first) >> 4);
+          if (idx < pair.second.size())
           {
-            unsigned int p = (u - it->first) & 0xf;
-            return (((it->second[idx] << p)) & 0x8000);
+            unsigned int p = (u - pair.first) & 0xf;
+            return (((pair.second[idx] << p)) & 0x8000);
           }
         }
-
-        it++;
       }
 
       return 0;
