@@ -16,6 +16,7 @@ namespace onmt
     , _suffix(true)
     , _case_insensitive(false)
     , _compat_03(false)
+    , _joiner("")
   {
     std::ifstream in(model_path.c_str());
 
@@ -35,7 +36,7 @@ namespace onmt
     size_t bidx = 0;
     while (sep != std::string::npos && sep + 1 < line.size())
     {
-      options.push_back(line.substr(bidx, sep-bidx));
+      options.push_back(line.substr(bidx, sep - bidx));
       bidx = sep + 1;
       sep = line.find(';', bidx);
     }
@@ -49,7 +50,8 @@ namespace onmt
       _case_insensitive = options[3] == "true";
       _begin_of_word = options[4];
       _end_of_word = options[5];
-    } else
+    }
+    else
       in.seekg(0);
 
     while (std::getline(in, line))
@@ -57,9 +59,13 @@ namespace onmt
       size_t sep = line.find(' ');
       if (sep != std::string::npos && sep + 1 < line.size())
       {
-        std::string pair = line.substr(0, sep) + line.substr(sep + 1);
+        std::string first_token = line.substr(0, sep);
+        std::string second_token = line.substr(sep + 1);
+        std::string pair = first_token + second_token;
         if (_codes.count(pair) == 0)
           _codes.emplace(pair, i++);
+
+        _codes_reverse.emplace(pair, std::pair<std::string, std::string>(first_token, second_token));
       }
     }
   }
@@ -82,7 +88,7 @@ namespace onmt
 
     if (_prefix) { chars.insert(chars.begin(), _begin_of_word); }
     if (_suffix) { chars.push_back(_end_of_word); }
-    if (_compat_03) { chars[chars.size()-1] += _end_of_word; }
+    if (_compat_03) { chars[chars.size() - 1] += _end_of_word; }
 
     std::vector<std::string> new_chars;
     new_chars.reserve(chars.size());
@@ -152,10 +158,10 @@ namespace onmt
 
     if (_compat_03)
     {
-      size_t l = chars[chars.size()-1].size();
+      size_t l = chars[chars.size() - 1].size();
       if (l > _end_of_word.size() &&
-          chars.back().substr(l-_end_of_word.size()) == _end_of_word)
-        chars[chars.size()-1].erase(l-_end_of_word.size());
+        chars.back().substr(l - _end_of_word.size()) == _end_of_word)
+        chars[chars.size() - 1].erase(l - _end_of_word.size());
     }
 
     if (_case_insensitive)
@@ -181,6 +187,13 @@ namespace onmt
         word_tc.push_back(curr_str);
       }
       chars.swap(word_tc);
+    }
+
+    if (!_bpe_vocab.empty())
+    {
+      std::vector<std::string> out;
+      check_vocab_and_split(chars, out);
+      chars.swap(out);
     }
 
     return chars;
@@ -209,4 +222,94 @@ namespace onmt
     return min_index;
   }
 
+  void BPE::init_bpe_vocab(std::string vocab_path, int bpe_vocab_threshold)
+  {
+    std::ifstream in(vocab_path.c_str());
+
+    if (!in.is_open())
+      throw std::invalid_argument("Unable to open BPE vocab file `" + vocab_path + "'");
+
+    std::string line;
+    while (std::getline(in, line))
+    {
+      size_t sep = line.find(' ');
+      if (sep != std::string::npos)
+      {
+        if(std::stoi(line.substr(sep + 1)) >= bpe_vocab_threshold)
+          _bpe_vocab.emplace(line.substr(0, sep));
+      }
+    }
+  }
+
+  void BPE::check_vocab_and_split(std::vector<std::string> & orig, std::vector<std::string> & out) const
+  {
+    // Check for each segment in word if it is in-vocabulary,
+    // and segment OOV segments into smaller units by reversing the BPE merge operations
+
+    for (std::vector<std::string>::iterator it = orig.begin(); it != orig.end(); ++it)
+    {
+      std::string segment = *it;
+
+      // if it is not the last, add joiner
+      if (_bpe_vocab.find(std::next(it) == orig.end() ? segment : segment+_joiner) != _bpe_vocab.end())
+      {
+        out.push_back(segment);
+      }
+      else
+      {
+        recursive_split(segment, out, std::next(it) == orig.end());
+      }
+    }
+
+  }
+
+  void BPE::recursive_split(std::string & segment, std::vector<std::string> & out, bool finalflag) const
+  {
+    // Recursively split segment into smaller units (by reversing BPE merges)
+    // until all units are either in - vocabulary, or cannot be split futher.
+
+    std::unordered_map<std::string, std::pair<std::string, std::string> >::const_iterator got = _codes_reverse.find(finalflag == true ? segment+_end_of_word: segment);
+    if (got != _codes_reverse.end())
+    {
+      std::string left = got->second.first;
+      std::string right = got->second.second;
+
+      if (finalflag)
+        right = right.substr(0, right.size() - 4);
+
+      recursive_split_left(left, out);
+      recursive_split_right(right, out, finalflag);
+    }
+    else
+    {
+      out.push_back(segment);
+    }
+
+  }
+
+  void BPE::recursive_split_left(std::string & segment, std::vector<std::string> & out) const
+  {
+    if (_bpe_vocab.find(segment + _joiner) != _bpe_vocab.end())
+    {
+      out.push_back(segment);
+    }
+    else
+    {
+      recursive_split(segment, out, false);
+    }
+
+  }
+
+  void BPE::recursive_split_right(std::string & segment, std::vector<std::string> & out, bool finalflag) const
+  {
+    if((finalflag && _bpe_vocab.find(segment) != _bpe_vocab.end()) || (!finalflag && _bpe_vocab.find(segment + _joiner) != _bpe_vocab.end()))
+    {
+      out.push_back(segment);
+    }
+    else
+    {
+      recursive_split(segment, out, finalflag);
+    }
+
+  }
 }
