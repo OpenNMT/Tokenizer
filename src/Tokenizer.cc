@@ -194,7 +194,7 @@ namespace onmt
 
       for (size_t i = 0; i < chars.size(); ++i)
       {
-        std::string c = chars[i];
+        const std::string& c = chars[i];
         unicode::code_point_t v = code_points[i];
         unicode::code_point_t next_v = i + 1 < code_points.size() ? code_points[i + 1] : 0;
         bool isSeparator = unicode::is_separator(v);
@@ -210,9 +210,10 @@ namespace onmt
               if (isSeparator) {
                 char buffer[10];
                 sprintf(buffer, "%04x", v);
-                c = protected_character + buffer;
+                token.append(protected_character + buffer);
+              } else {
+                token.append(c);
               }
-              token.append(c);
             }
           }
           else if (c == Tokenizer::ph_marker_open) {
@@ -272,8 +273,8 @@ namespace onmt
           // skip special characters and BOM
           if (v > 32 && v != 0xFEFF)
           {
-            if (!_no_substitution && substitutes.find(c) != substitutes.end())
-              c = substitutes.at(c);
+            const std::string& sub_c(!_no_substitution && substitutes.find(c) != substitutes.end() ?
+                                     substitutes.at(c) : c);
             cur_letter = unicode::is_letter(v, type_letter);
             cur_number = unicode::is_number(v);
 
@@ -294,9 +295,9 @@ namespace onmt
             if (_mode == Mode::Conservative)
             {
               if (cur_number
-                  || (c == "-" && letter)
-                  || (c == "_")
-                  || (letter && (c == "." || c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))
+                  || (sub_c == "-" && letter)
+                  || (sub_c == "_")
+                  || (letter && (sub_c == "." || sub_c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))
                 {
                   cur_letter = true;
                   alphabet = number_alphabet;
@@ -330,7 +331,7 @@ namespace onmt
                 uppercase = (type_letter == unicode::_letter_upper);
               }
 
-              token.append(c);
+              token.append(sub_c);
               letter = true;
               number = false;
               other = false;
@@ -354,7 +355,7 @@ namespace onmt
                 annotated_tokens.back().join_right();
               }
 
-              token.append(c);
+              token.append(sub_c);
               letter = false;
               uppercase = false;
               uppercase_sequence = false;
@@ -376,7 +377,7 @@ namespace onmt
                 token.join_left();
               }
 
-              token.append(c);
+              token.append(sub_c);
               annotated_tokens.push_back(token);
               token.clear();
               letter = false;
