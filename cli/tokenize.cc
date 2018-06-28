@@ -79,12 +79,8 @@ int main(int argc, char* argv[])
   }
 #endif
 
-  std::string bpe_vocab_path;
-  if (!vm["bpe_vocab"].as<std::string>().empty())
-    bpe_vocab_path = vm["bpe_vocab"].as<std::string>();
-
-  int bpe_vocab_threshold;
-  bpe_vocab_threshold = vm["bpe_vocab_threshold"].as<int>();
+  std::string bpe_vocab_path = vm["bpe_vocab"].as<std::string>();
+  int bpe_vocab_threshold = vm["bpe_vocab_threshold"].as<int>();
 
   onmt::Tokenizer* tokenizer = new onmt::Tokenizer(
     onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),

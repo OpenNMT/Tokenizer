@@ -17,7 +17,7 @@ namespace onmt
 
     std::vector<std::string> encode(const std::string& str) const override;
 
-    void init_bpe_vocab(std::string path, int bpe_vocab_threshold);
+    void init_bpe_vocab(const std::string& vocab_path, int bpe_vocab_threshold);
     void set_joiner(std::string joiner)
     {
       _joiner = joiner;
@@ -39,11 +39,11 @@ namespace onmt
 
     int get_min_pair_index(const std::vector<std::string>& chars) const;
 
-    void check_vocab_and_split(std::vector<std::string> & orig, std::vector<std::string> & out) const;
-    void recursive_split(std::string & segment, std::vector<std::string> & out, bool finalflag = false) const;
+    void check_vocab_and_split(const std::vector<std::string> & orig, std::vector<std::string> & out) const;
+    void recursive_split(const std::string & segment, std::vector<std::string> & out, bool finalflag = false) const;
 
-    void recursive_split_left(std::string & segment, std::vector<std::string> & out) const;
-    void recursive_split_right(std::string & segment, std::vector<std::string> & out, bool finalflag) const;
+    void recursive_split_left(const std::string & segment, std::vector<std::string> & out) const;
+    void recursive_split_right(const std::string & segment, std::vector<std::string> & out, bool finalflag) const;
   };
 
 }

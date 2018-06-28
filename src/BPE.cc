@@ -1,5 +1,4 @@
 #include "onmt/BPE.h"
-#include <iostream>
 #include <fstream>
 #include <limits>
 
@@ -222,7 +221,7 @@ namespace onmt
     return min_index;
   }
 
-  void BPE::init_bpe_vocab(std::string vocab_path, int bpe_vocab_threshold)
+  void BPE::init_bpe_vocab(const std::string& vocab_path, int bpe_vocab_threshold)
   {
     std::ifstream in(vocab_path.c_str());
 
@@ -241,17 +240,17 @@ namespace onmt
     }
   }
 
-  void BPE::check_vocab_and_split(std::vector<std::string> & orig, std::vector<std::string> & out) const
+  void BPE::check_vocab_and_split(const std::vector<std::string> & orig, std::vector<std::string> & out) const
   {
     // Check for each segment in word if it is in-vocabulary,
     // and segment OOV segments into smaller units by reversing the BPE merge operations
 
-    for (std::vector<std::string>::iterator it = orig.begin(); it != orig.end(); ++it)
+    for (auto it = orig.begin(); it != orig.end(); ++it)
     {
-      std::string segment = *it;
+      const std::string& segment = *it;
 
       // if it is not the last, add joiner
-      if (_bpe_vocab.find(std::next(it) == orig.end() ? segment : segment+_joiner) != _bpe_vocab.end())
+      if (_bpe_vocab.count(std::next(it) == orig.end() ? segment : segment+_joiner) > 0)
       {
         out.push_back(segment);
       }
@@ -263,12 +262,12 @@ namespace onmt
 
   }
 
-  void BPE::recursive_split(std::string & segment, std::vector<std::string> & out, bool finalflag) const
+  void BPE::recursive_split(const std::string & segment, std::vector<std::string> & out, bool finalflag) const
   {
     // Recursively split segment into smaller units (by reversing BPE merges)
     // until all units are either in - vocabulary, or cannot be split futher.
 
-    std::unordered_map<std::string, std::pair<std::string, std::string> >::const_iterator got = _codes_reverse.find(finalflag == true ? segment+_end_of_word: segment);
+    auto got = _codes_reverse.find(finalflag == true ? segment+_end_of_word: segment);
     if (got != _codes_reverse.end())
     {
       std::string left = got->second.first;
@@ -287,9 +286,9 @@ namespace onmt
 
   }
 
-  void BPE::recursive_split_left(std::string & segment, std::vector<std::string> & out) const
+  void BPE::recursive_split_left(const std::string & segment, std::vector<std::string> & out) const
   {
-    if (_bpe_vocab.find(segment + _joiner) != _bpe_vocab.end())
+    if (_bpe_vocab.count(segment + _joiner) > 0)
     {
       out.push_back(segment);
     }
@@ -300,9 +299,9 @@ namespace onmt
 
   }
 
-  void BPE::recursive_split_right(std::string & segment, std::vector<std::string> & out, bool finalflag) const
+  void BPE::recursive_split_right(const std::string & segment, std::vector<std::string> & out, bool finalflag) const
   {
-    if((finalflag && _bpe_vocab.find(segment) != _bpe_vocab.end()) || (!finalflag && _bpe_vocab.find(segment + _joiner) != _bpe_vocab.end()))
+    if((finalflag && _bpe_vocab.count(segment) > 0) || (!finalflag && _bpe_vocab.count(segment + _joiner) > 0))
     {
       out.push_back(segment);
     }
