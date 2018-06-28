@@ -86,9 +86,9 @@ int main(int argc, char* argv[])
     onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
     flags,
     model_path,
+    vm["joiner"].as<std::string>(),
     bpe_vocab_path,
-    bpe_vocab_threshold,
-    vm["joiner"].as<std::string>());
+    bpe_vocab_threshold);
 
   for (const auto& alphabet : alphabets_to_segment)
   {

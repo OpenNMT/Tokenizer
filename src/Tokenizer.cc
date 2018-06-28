@@ -55,9 +55,9 @@ namespace onmt
   Tokenizer::Tokenizer(Mode mode,
                        int flags,
                        const std::string& model_path,
+                       const std::string& joiner,
                        const std::string& bpe_vocab_path,
-                       int bpe_vocab_threshold,
-                       const std::string& joiner)
+                       int bpe_vocab_threshold)
     : _mode(mode)
     , _case_feature(flags & Flags::CaseFeature)
     , _joiner_annotate(flags & Flags::JoinerAnnotate)
