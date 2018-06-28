@@ -242,10 +242,10 @@ TEST(TokenizerTest, SegmentNumbers) {
 TEST(TokenizerTest, GetAlphabet) {
   for (const auto& a : onmt::alphabet_ranges) {
     const auto& range = a.first;
-    const auto& name = a.second;
+    const auto& id = a.second;
 
-    EXPECT_EQ(name, onmt::get_alphabet(range.first));
-    EXPECT_EQ(name, onmt::get_alphabet(range.second));
+    EXPECT_EQ(static_cast<int>(id), onmt::get_alphabet_id(range.first));
+    EXPECT_EQ(static_cast<int>(id), onmt::get_alphabet_id(range.second));
   }
 }
 

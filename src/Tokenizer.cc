@@ -188,7 +188,7 @@ namespace onmt
       bool other = false;
       bool space = true;
       bool placeholder = false;
-      std::string prev_alphabet;
+      int prev_alphabet = -1;
 
       unicode::_type_letter type_letter;
 
@@ -203,7 +203,7 @@ namespace onmt
             if (c == Tokenizer::ph_marker_close) {
               token.append(c);
               letter = true;
-              prev_alphabet = "placeholder";
+              prev_alphabet = placeholder_alphabet;
               placeholder = false;
               space = false;
             } else {
@@ -218,7 +218,7 @@ namespace onmt
           else if (c == Tokenizer::ph_marker_open) {
             if (!space) {
               AnnotatedToken next_token;
-              if ((letter && prev_alphabet != "placeholder") || number)
+              if ((letter && prev_alphabet != placeholder_alphabet) || number)
                 next_token.join_left();
               else
                 token.join_right();
@@ -277,9 +277,9 @@ namespace onmt
             cur_letter = unicode::is_letter(v, type_letter);
             cur_number = unicode::is_number(v);
 
-            std::string alphabet = get_alphabet(v);
-            if (!alphabet.empty() && cur_letter)
-              alphabets[alphabet]++;
+            int alphabet = get_alphabet_id(v);
+            if (alphabet > 0 && cur_letter)
+              alphabets[id_to_alphabet(static_cast<Alphabet>(alphabet))]++;
             else
               alphabets[cur_number ? "Numeric" : "Other"]++;
 
@@ -299,7 +299,7 @@ namespace onmt
                   || (letter && (c == "." || c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))
                 {
                   cur_letter = true;
-                  alphabet = "Number";
+                  alphabet = number_alphabet;
                 }
             }
 
@@ -309,7 +309,7 @@ namespace onmt
                   || (letter && !is_mark &&
                       ((prev_alphabet == alphabet && is_alphabet_to_segment(alphabet))
                        || (prev_alphabet != alphabet && _segment_alphabet_change)
-                       || (prev_alphabet == "placeholder"
+                       || (prev_alphabet == placeholder_alphabet
                            || (_segment_case && letter
                                && ((type_letter == unicode::_letter_upper && !uppercase)
                                    || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))
@@ -342,7 +342,7 @@ namespace onmt
               if (letter || (number && _segment_numbers) || (!number && !space))
               {
                 AnnotatedToken next_token;
-                if (!letter || prev_alphabet == "placeholder")
+                if (!letter || prev_alphabet == placeholder_alphabet)
                   token.join_right();
                 else
                   next_token.join_left();
@@ -560,11 +560,16 @@ namespace onmt
   {
     if (!onmt::alphabet_is_supported(alphabet))
       return false;
-    _segment_alphabet.insert(alphabet);
+    _segment_alphabet.insert(static_cast<int>(alphabet_to_id(alphabet)));
     return true;
   }
 
   bool Tokenizer::is_alphabet_to_segment(const std::string& alphabet) const
+  {
+    return _segment_alphabet.count(static_cast<int>(alphabet_to_id(alphabet))) > 0;
+  }
+
+  bool Tokenizer::is_alphabet_to_segment(int alphabet) const
   {
     return _segment_alphabet.count(alphabet) > 0;
   }

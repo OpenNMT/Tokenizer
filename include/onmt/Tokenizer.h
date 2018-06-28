@@ -77,8 +77,12 @@ namespace onmt
 
     bool add_alphabet_to_segment(const std::string& alphabet);
     bool is_alphabet_to_segment(const std::string& alphabet) const;
+    bool is_alphabet_to_segment(int alphabet) const;
 
   private:
+    static const int placeholder_alphabet = -2;
+    static const int number_alphabet = -3;
+
     Mode _mode;
 
     bool _case_feature;
@@ -97,7 +101,7 @@ namespace onmt
     const SubwordEncoder* _subword_encoder;
     std::string _joiner;
 
-    std::set<std::string> _segment_alphabet;
+    std::set<int> _segment_alphabet;
 
     std::vector<AnnotatedToken> encode_subword(const std::vector<AnnotatedToken>& tokens) const;
     void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
