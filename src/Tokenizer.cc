@@ -283,7 +283,9 @@ namespace onmt
             else
               alphabets[cur_number ? "Numeric" : "Other"]++;
 
-            if (unicode::is_mark(v)) {
+            bool is_mark = unicode::is_mark(v);
+
+            if (is_mark) {
               // if we have a mark, we keep type of previous character
               cur_letter = letter;
               cur_number = number;
@@ -304,7 +306,7 @@ namespace onmt
             if (cur_letter && _mode != Mode::Char)
             {
               if ((!letter && !space)
-                  || (letter && !unicode::is_mark(v) &&
+                  || (letter && !is_mark &&
                       ((prev_alphabet == alphabet && is_alphabet_to_segment(alphabet))
                        || (prev_alphabet != alphabet && _segment_alphabet_change)
                        || (prev_alphabet == "placeholder"
