@@ -94,41 +94,51 @@ namespace onmt
                                     const std::vector<std::vector<std::string> >& features) const
   {
     std::string line;
+    line.reserve(words.size() * 10);
 
     for (size_t i = 0; i < words.size(); ++i)
     {
       if (i > 0 && !has_right_join(words[i - 1]) && !has_left_join(words[i]) &&
         !_spacer_annotate)
-        line += " ";
+        line += ' ';
 
-      std::string word = words[i];
+      const std::string& word = words[i];
+      size_t subpos = 0;
+      size_t sublen = word.size();
 
       if (has_right_join(word))
-        word.erase(word.length() - _joiner.length(), _joiner.length());
+        sublen -= _joiner.length();
       if (has_left_join(word))
-        word.erase(0, _joiner.length());
-
-      if (has_right_marker(word, Tokenizer::spacer_marker))
       {
-        word.erase(word.length() - Tokenizer::spacer_marker.length(), Tokenizer::spacer_marker.length());
-        if (i > 0)
-          line += " ";
+        subpos += _joiner.length();
+        sublen -= _joiner.length();
       }
-      else if (has_left_marker(word, Tokenizer::spacer_marker))
+
+      if (sublen == word.size())
       {
-        word.erase(0, Tokenizer::spacer_marker.length());
-        if (i > 0)
-          line += " ";
+        if (has_right_marker(word, spacer_marker))
+        {
+          sublen -= spacer_marker.length();
+          if (i > 0)
+            line += ' ';
+        }
+        else if (has_left_marker(word, spacer_marker))
+        {
+          subpos += spacer_marker.length();
+          sublen -= spacer_marker.length();
+          if (i > 0)
+            line += ' ';
+        }
       }
 
       if (_case_feature)
       {
         if (features.empty())
           throw std::runtime_error("Missing case feature");
-        word = CaseModifier::apply_case(word, features[0][i][0]);
+        line.append(CaseModifier::apply_case(word.substr(subpos, sublen), features[0][i][0]));
       }
-
-      line += word;
+      else
+        line.append(word, subpos, sublen);
     }
 
     return line;
@@ -590,13 +600,13 @@ namespace onmt
 
   bool Tokenizer::has_left_marker(const std::string& word, const std::string& marker) const
   {
-    return (word.length() >= marker.length() && word.substr(0, marker.length()) == marker);
+    return (word.length() >= marker.length() && word.compare(0, marker.length(), marker) == 0);
   }
 
   bool Tokenizer::has_right_marker(const std::string& word, const std::string& marker) const
   {
     return (word.length() >= marker.length()
-            && word.substr(word.length() - marker.length(), marker.length()) == marker);
+            && word.compare(word.length() - marker.length(), marker.length(), marker) == 0);
   }
 
   bool Tokenizer::is_placeholder(const std::string& str)
