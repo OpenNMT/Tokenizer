@@ -425,9 +425,12 @@ namespace onmt
   void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
                                   std::vector<std::string>& tokens) const
   {
+    tokens.reserve(annotated_tokens.size());
+
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
       const auto& token = annotated_tokens[i];
+      const auto& str = token.str();
 
       if (_joiner_annotate)
       {
@@ -436,24 +439,24 @@ namespace onmt
           if (_joiner_new)
           {
             tokens.push_back(_joiner);
-            if (!token.str().empty())
-              tokens.push_back(token.str());
+            if (!str.empty())
+              tokens.emplace_back(std::move(str));
           }
-          else if (_preserve_placeholders && is_placeholder(token.str()))
+          else if (_preserve_placeholders && is_placeholder(str))
           {
             tokens.back() += _joiner;
-            tokens.push_back(token.str());
+            tokens.emplace_back(std::move(str));
           }
           else
-            tokens.push_back(_joiner + token.str());
+            tokens.emplace_back(_joiner + str);
         }
-        else if (!token.str().empty())
-          tokens.push_back(token.str());
+        else if (!str.empty())
+          tokens.emplace_back(std::move(str));
         if (token.is_joined_right() && i + 1 < annotated_tokens.size())
         {
           if (_joiner_new)
             tokens.push_back(_joiner);
-          else if (_preserve_placeholders && is_placeholder(token.str()))
+          else if (_preserve_placeholders && is_placeholder(str))
           {
             auto& next_token = annotated_tokens[i + 1];
             if (!is_placeholder(next_token.str()))
@@ -471,28 +474,28 @@ namespace onmt
                             || (i > 0 && annotated_tokens[i - 1].is_joined_right()));
         if (joined_left || (i == 0 && !token.is_spacer()))
         {
-          if (!token.str().empty())
-            tokens.push_back(token.str());
+          if (!str.empty())
+            tokens.emplace_back(std::move(str));
         }
-        else if (_preserve_placeholders && is_placeholder(token.str()))
+        else if (_preserve_placeholders && is_placeholder(str))
         {
           tokens.push_back(spacer_marker);
-          tokens.push_back(token.str());
+          tokens.emplace_back(std::move(str));
         }
         else
         {
           if (_spacer_new)
           {
             tokens.push_back(spacer_marker);
-            tokens.push_back(token.str());
+            tokens.emplace_back(std::move(str));
           }
           else
-            tokens.push_back(spacer_marker + token.str());
+            tokens.emplace_back(spacer_marker + str);
         }
       }
-      else if (!token.str().empty())
+      else if (!str.empty())
       {
-        tokens.push_back(token.str());
+        tokens.emplace_back(std::move(str));
       }
     }
   }
