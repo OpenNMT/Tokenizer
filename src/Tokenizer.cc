@@ -191,8 +191,6 @@ namespace onmt
       bool placeholder = false;
       int prev_alphabet = -1;
 
-      unicode::_type_letter type_letter;
-
       for (size_t i = 0; i < chars.size(); ++i)
       {
         const std::string& c = chars[i];
@@ -242,7 +240,7 @@ namespace onmt
 
           if (v == 0x200D) // Zero-Width joiner.
           {
-            if (other || (number && unicode::is_letter(next_v, type_letter)))
+            if (other || (number && unicode::is_letter(next_v)))
               annotated_tokens.back().join_right();
             else
             {
@@ -276,7 +274,7 @@ namespace onmt
           {
             const std::string& sub_c(!_no_substitution && substitutes.find(c) != substitutes.end() ?
                                      substitutes.at(c) : c);
-            cur_letter = unicode::is_letter(v, type_letter);
+            cur_letter = unicode::is_letter(v);
             cur_number = unicode::is_number(v);
 
             int alphabet = get_alphabet_id(v);
@@ -298,7 +296,7 @@ namespace onmt
               if (cur_number
                   || (sub_c == "-" && letter)
                   || (sub_c == "_")
-                  || (letter && (sub_c == "." || sub_c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))
+                  || (letter && (sub_c == "." || sub_c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v))))
                 {
                   cur_letter = true;
                   alphabet = number_alphabet;
@@ -307,6 +305,7 @@ namespace onmt
 
             if (cur_letter && _mode != Mode::Char)
             {
+              unicode::_type_letter type_letter = unicode::get_case(v);
               if ((!letter && !space)
                   || (letter && !is_mark &&
                       ((prev_alphabet == alphabet && is_alphabet_to_segment(alphabet))

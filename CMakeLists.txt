@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(OpenNMTTokenizer)
 
+option(WITH_ICU "Compile with ICU" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall")
@@ -35,11 +37,19 @@ set(SOURCES
   src/SpaceTokenizer.cc
   src/SubwordEncoder.cc
   src/Tokenizer.cc
-  src/unicode/Data.cc
   src/unicode/Unicode.cc
   )
 
 list(APPEND LINK_LIBRARIES "")
+
+if (WITH_ICU)
+  find_package(ICU REQUIRED)
+  add_definitions(-DWITH_ICU)
+  list(APPEND INCLUDE_DIRECTORIES ${ICU_INCLUDE_DIRS})
+  list(APPEND LINK_LIBRARIES ${ICU_LIBRARIES})
+else()
+  list(APPEND SOURCES src/unicode/Data.cc)
+endif()
 
 find_library(SP_LIBRARY NAMES sentencepiece)
 find_path(SP_INCLUDE_DIR NAMES sentencepiece_processor.h)
