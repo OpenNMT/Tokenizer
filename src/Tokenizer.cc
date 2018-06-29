@@ -224,8 +224,8 @@ namespace onmt
                 next_token.join_left();
               else
                 token.join_right();
-              annotated_tokens.push_back(token);
-              token = next_token;
+              annotated_tokens.emplace_back(std::move(token));
+              std::swap(token, next_token);
             } else if (other && token.str().empty()) {
               annotated_tokens.back().join_right();
             }
@@ -236,7 +236,7 @@ namespace onmt
         {
           if (!space)
           {
-            annotated_tokens.push_back(token);
+            annotated_tokens.emplace_back(std::move(token));
             token.clear();
           }
 
@@ -255,7 +255,7 @@ namespace onmt
             token.append(c);
             if (!unicode::is_separator(next_v))
             {
-              annotated_tokens.push_back(token);
+              annotated_tokens.emplace_back(std::move(token));
               token.clear();
             }
           }
@@ -317,7 +317,7 @@ namespace onmt
                                    || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))
               {
                 token.join_right();
-                annotated_tokens.push_back(token);
+                annotated_tokens.emplace_back(std::move(token));
                 token.clear();
                 uppercase = (type_letter == unicode::_letter_upper);
                 uppercase_sequence = false;
@@ -348,8 +348,8 @@ namespace onmt
                   token.join_right();
                 else
                   next_token.join_left();
-                annotated_tokens.push_back(token);
-                token = next_token;
+                annotated_tokens.emplace_back(std::move(token));
+                std::swap(token, next_token);
               }
               else if (other)
               {
@@ -368,7 +368,7 @@ namespace onmt
             {
               if (!space)
               {
-                annotated_tokens.push_back(token);
+                annotated_tokens.emplace_back(std::move(token));
                 token.clear();
                 token.join_left();
               }
@@ -379,7 +379,7 @@ namespace onmt
               }
 
               token.append(sub_c);
-              annotated_tokens.push_back(token);
+              annotated_tokens.emplace_back(std::move(token));
               token.clear();
               letter = false;
               uppercase = false;
@@ -393,7 +393,7 @@ namespace onmt
       }
 
       if (!token.str().empty())
-        annotated_tokens.push_back(token);
+        annotated_tokens.emplace_back(std::move(token));
     }
 
     if (_subword_encoder)
