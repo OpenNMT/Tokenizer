@@ -147,6 +147,7 @@ namespace onmt
                            std::unordered_map<std::string, size_t>& alphabets) const
   {
     std::vector<AnnotatedToken> annotated_tokens;
+    annotated_tokens.reserve(text.size());
 
     if (_mode == Mode::None) {
       annotated_tokens.emplace_back(text);
