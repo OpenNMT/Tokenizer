@@ -94,41 +94,51 @@ namespace onmt
                                     const std::vector<std::vector<std::string> >& features) const
   {
     std::string line;
+    line.reserve(words.size() * 10);
 
     for (size_t i = 0; i < words.size(); ++i)
     {
       if (i > 0 && !has_right_join(words[i - 1]) && !has_left_join(words[i]) &&
         !_spacer_annotate)
-        line += " ";
+        line += ' ';
 
-      std::string word = words[i];
+      const std::string& word = words[i];
+      size_t subpos = 0;
+      size_t sublen = word.size();
 
       if (has_right_join(word))
-        word.erase(word.length() - _joiner.length(), _joiner.length());
+        sublen -= _joiner.length();
       if (has_left_join(word))
-        word.erase(0, _joiner.length());
-
-      if (has_right_marker(word, Tokenizer::spacer_marker))
       {
-        word.erase(word.length() - Tokenizer::spacer_marker.length(), Tokenizer::spacer_marker.length());
-        if (i > 0)
-          line += " ";
+        subpos += _joiner.length();
+        sublen -= _joiner.length();
       }
-      else if (has_left_marker(word, Tokenizer::spacer_marker))
+
+      if (sublen == word.size())
       {
-        word.erase(0, Tokenizer::spacer_marker.length());
-        if (i > 0)
-          line += " ";
+        if (has_right_marker(word, spacer_marker))
+        {
+          sublen -= spacer_marker.length();
+          if (i > 0)
+            line += ' ';
+        }
+        else if (has_left_marker(word, spacer_marker))
+        {
+          subpos += spacer_marker.length();
+          sublen -= spacer_marker.length();
+          if (i > 0)
+            line += ' ';
+        }
       }
 
       if (_case_feature)
       {
         if (features.empty())
           throw std::runtime_error("Missing case feature");
-        word = CaseModifier::apply_case(word, features[0][i][0]);
+        line.append(CaseModifier::apply_case(word.substr(subpos, sublen), features[0][i][0]));
       }
-
-      line += word;
+      else
+        line.append(word, subpos, sublen);
     }
 
     return line;
@@ -147,6 +157,7 @@ namespace onmt
                            std::unordered_map<std::string, size_t>& alphabets) const
   {
     std::vector<AnnotatedToken> annotated_tokens;
+    annotated_tokens.reserve(text.size());
 
     if (_mode == Mode::None) {
       annotated_tokens.emplace_back(text);
@@ -188,13 +199,11 @@ namespace onmt
       bool other = false;
       bool space = true;
       bool placeholder = false;
-      std::string prev_alphabet;
-
-      unicode::_type_letter type_letter;
+      int prev_alphabet = -1;
 
       for (size_t i = 0; i < chars.size(); ++i)
       {
-        std::string c = chars[i];
+        const std::string& c = chars[i];
         unicode::code_point_t v = code_points[i];
         unicode::code_point_t next_v = i + 1 < code_points.size() ? code_points[i + 1] : 0;
         bool isSeparator = unicode::is_separator(v);
@@ -203,27 +212,28 @@ namespace onmt
             if (c == Tokenizer::ph_marker_close) {
               token.append(c);
               letter = true;
-              prev_alphabet = "placeholder";
+              prev_alphabet = placeholder_alphabet;
               placeholder = false;
               space = false;
             } else {
               if (isSeparator) {
                 char buffer[10];
                 sprintf(buffer, "%04x", v);
-                c = protected_character + buffer;
+                token.append(protected_character + buffer);
+              } else {
+                token.append(c);
               }
-              token.append(c);
             }
           }
           else if (c == Tokenizer::ph_marker_open) {
             if (!space) {
               AnnotatedToken next_token;
-              if ((letter && prev_alphabet != "placeholder") || number)
+              if ((letter && prev_alphabet != placeholder_alphabet) || number)
                 next_token.join_left();
               else
                 token.join_right();
-              annotated_tokens.push_back(token);
-              token = next_token;
+              annotated_tokens.emplace_back(std::move(token));
+              std::swap(token, next_token);
             } else if (other && token.str().empty()) {
               annotated_tokens.back().join_right();
             }
@@ -234,13 +244,13 @@ namespace onmt
         {
           if (!space)
           {
-            annotated_tokens.push_back(token);
+            annotated_tokens.emplace_back(std::move(token));
             token.clear();
           }
 
           if (v == 0x200D) // Zero-Width joiner.
           {
-            if (other || (number && unicode::is_letter(next_v, type_letter)))
+            if (other || (number && unicode::is_letter(next_v)))
               annotated_tokens.back().join_right();
             else
             {
@@ -253,7 +263,7 @@ namespace onmt
             token.append(c);
             if (!unicode::is_separator(next_v))
             {
-              annotated_tokens.push_back(token);
+              annotated_tokens.emplace_back(std::move(token));
               token.clear();
             }
           }
@@ -272,18 +282,20 @@ namespace onmt
           // skip special characters and BOM
           if (v > 32 && v != 0xFEFF)
           {
-            if (!_no_substitution && substitutes.find(c) != substitutes.end())
-              c = substitutes.at(c);
-            cur_letter = unicode::is_letter(v, type_letter);
+            const std::string& sub_c(!_no_substitution && substitutes.find(c) != substitutes.end() ?
+                                     substitutes.at(c) : c);
+            cur_letter = unicode::is_letter(v);
             cur_number = unicode::is_number(v);
 
-            std::string alphabet = get_alphabet(v);
-            if (!alphabet.empty() && cur_letter)
-              alphabets[alphabet]++;
+            int alphabet = get_alphabet_id(v);
+            if (alphabet > 0 && cur_letter)
+              alphabets[id_to_alphabet(static_cast<Alphabet>(alphabet))]++;
             else
               alphabets[cur_number ? "Numeric" : "Other"]++;
 
-            if (unicode::is_mark(v)) {
+            bool is_mark = unicode::is_mark(v);
+
+            if (is_mark) {
               // if we have a mark, we keep type of previous character
               cur_letter = letter;
               cur_number = number;
@@ -292,28 +304,29 @@ namespace onmt
             if (_mode == Mode::Conservative)
             {
               if (cur_number
-                  || (c == "-" && letter)
-                  || (c == "_")
-                  || (letter && (c == "." || c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v, type_letter))))
+                  || (sub_c == "-" && letter)
+                  || (sub_c == "_")
+                  || (letter && (sub_c == "." || sub_c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v))))
                 {
                   cur_letter = true;
-                  alphabet = "Number";
+                  alphabet = number_alphabet;
                 }
             }
 
             if (cur_letter && _mode != Mode::Char)
             {
+              unicode::_type_letter type_letter = unicode::get_case(v);
               if ((!letter && !space)
-                  || (letter && !unicode::is_mark(v) &&
+                  || (letter && !is_mark &&
                       ((prev_alphabet == alphabet && is_alphabet_to_segment(alphabet))
                        || (prev_alphabet != alphabet && _segment_alphabet_change)
-                       || (prev_alphabet == "placeholder"
+                       || (prev_alphabet == placeholder_alphabet
                            || (_segment_case && letter
                                && ((type_letter == unicode::_letter_upper && !uppercase)
                                    || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))
               {
                 token.join_right();
-                annotated_tokens.push_back(token);
+                annotated_tokens.emplace_back(std::move(token));
                 token.clear();
                 uppercase = (type_letter == unicode::_letter_upper);
                 uppercase_sequence = false;
@@ -328,7 +341,7 @@ namespace onmt
                 uppercase = (type_letter == unicode::_letter_upper);
               }
 
-              token.append(c);
+              token.append(sub_c);
               letter = true;
               number = false;
               other = false;
@@ -340,19 +353,19 @@ namespace onmt
               if (letter || (number && _segment_numbers) || (!number && !space))
               {
                 AnnotatedToken next_token;
-                if (!letter || prev_alphabet == "placeholder")
+                if (!letter || prev_alphabet == placeholder_alphabet)
                   token.join_right();
                 else
                   next_token.join_left();
-                annotated_tokens.push_back(token);
-                token = next_token;
+                annotated_tokens.emplace_back(std::move(token));
+                std::swap(token, next_token);
               }
               else if (other)
               {
                 annotated_tokens.back().join_right();
               }
 
-              token.append(c);
+              token.append(sub_c);
               letter = false;
               uppercase = false;
               uppercase_sequence = false;
@@ -364,7 +377,7 @@ namespace onmt
             {
               if (!space)
               {
-                annotated_tokens.push_back(token);
+                annotated_tokens.emplace_back(std::move(token));
                 token.clear();
                 token.join_left();
               }
@@ -374,8 +387,8 @@ namespace onmt
                 token.join_left();
               }
 
-              token.append(c);
-              annotated_tokens.push_back(token);
+              token.append(sub_c);
+              annotated_tokens.emplace_back(std::move(token));
               token.clear();
               letter = false;
               uppercase = false;
@@ -389,7 +402,7 @@ namespace onmt
       }
 
       if (!token.str().empty())
-        annotated_tokens.push_back(token);
+        annotated_tokens.emplace_back(std::move(token));
     }
 
     if (_subword_encoder)
@@ -422,9 +435,12 @@ namespace onmt
   void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
                                   std::vector<std::string>& tokens) const
   {
+    tokens.reserve(annotated_tokens.size());
+
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
       const auto& token = annotated_tokens[i];
+      const auto& str = token.str();
 
       if (_joiner_annotate)
       {
@@ -433,24 +449,24 @@ namespace onmt
           if (_joiner_new)
           {
             tokens.push_back(_joiner);
-            if (!token.str().empty())
-              tokens.push_back(token.str());
+            if (!str.empty())
+              tokens.emplace_back(std::move(str));
           }
-          else if (_preserve_placeholders && is_placeholder(token.str()))
+          else if (_preserve_placeholders && is_placeholder(str))
           {
             tokens.back() += _joiner;
-            tokens.push_back(token.str());
+            tokens.emplace_back(std::move(str));
           }
           else
-            tokens.push_back(_joiner + token.str());
+            tokens.emplace_back(_joiner + str);
         }
-        else if (!token.str().empty())
-          tokens.push_back(token.str());
+        else if (!str.empty())
+          tokens.emplace_back(std::move(str));
         if (token.is_joined_right() && i + 1 < annotated_tokens.size())
         {
           if (_joiner_new)
             tokens.push_back(_joiner);
-          else if (_preserve_placeholders && is_placeholder(token.str()))
+          else if (_preserve_placeholders && is_placeholder(str))
           {
             auto& next_token = annotated_tokens[i + 1];
             if (!is_placeholder(next_token.str()))
@@ -468,28 +484,28 @@ namespace onmt
                             || (i > 0 && annotated_tokens[i - 1].is_joined_right()));
         if (joined_left || (i == 0 && !token.is_spacer()))
         {
-          if (!token.str().empty())
-            tokens.push_back(token.str());
+          if (!str.empty())
+            tokens.emplace_back(std::move(str));
         }
-        else if (_preserve_placeholders && is_placeholder(token.str()))
+        else if (_preserve_placeholders && is_placeholder(str))
         {
           tokens.push_back(spacer_marker);
-          tokens.push_back(token.str());
+          tokens.emplace_back(std::move(str));
         }
         else
         {
           if (_spacer_new)
           {
             tokens.push_back(spacer_marker);
-            tokens.push_back(token.str());
+            tokens.emplace_back(std::move(str));
           }
           else
-            tokens.push_back(spacer_marker + token.str());
+            tokens.emplace_back(spacer_marker + str);
         }
       }
-      else if (!token.str().empty())
+      else if (!str.empty())
       {
-        tokens.push_back(token.str());
+        tokens.emplace_back(std::move(str));
       }
     }
   }
@@ -558,11 +574,16 @@ namespace onmt
   {
     if (!onmt::alphabet_is_supported(alphabet))
       return false;
-    _segment_alphabet.insert(alphabet);
+    _segment_alphabet.insert(static_cast<int>(alphabet_to_id(alphabet)));
     return true;
   }
 
   bool Tokenizer::is_alphabet_to_segment(const std::string& alphabet) const
+  {
+    return _segment_alphabet.count(static_cast<int>(alphabet_to_id(alphabet))) > 0;
+  }
+
+  bool Tokenizer::is_alphabet_to_segment(int alphabet) const
   {
     return _segment_alphabet.count(alphabet) > 0;
   }
@@ -579,13 +600,13 @@ namespace onmt
 
   bool Tokenizer::has_left_marker(const std::string& word, const std::string& marker) const
   {
-    return (word.length() >= marker.length() && word.substr(0, marker.length()) == marker);
+    return (word.length() >= marker.length() && word.compare(0, marker.length(), marker) == 0);
   }
 
   bool Tokenizer::has_right_marker(const std::string& word, const std::string& marker) const
   {
     return (word.length() >= marker.length()
-            && word.substr(word.length() - marker.length(), marker.length()) == marker);
+            && word.compare(word.length() - marker.length(), marker.length(), marker) == 0);
   }
 
   bool Tokenizer::is_placeholder(const std::string& str)
