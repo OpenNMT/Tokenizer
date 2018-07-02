@@ -434,6 +434,32 @@ TEST(TokenizerTest, NoSentencePieceSupport) {
 
 #endif
 
+TEST(TokenizerTest, WithoutVocabulary) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Space,
+                  Tokenizer::Flags::JoinerAnnotate,
+                  get_data("bpe-models/bpe_code.v3"),
+                  "@@"
+                  ));
+  test_tok(tokenizer,
+           "Oliver Grün , welle",
+           "Oliver Grün , welle");
+}
+
+TEST(TokenizerTest, WithVocabulary) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Space,
+                  Tokenizer::Flags::JoinerAnnotate,
+                  get_data("bpe-models/bpe_code.v3"),
+                  "@@",
+                  get_data("bpe-models/vocab.en.v3"),
+                  50
+                  ));
+  test_tok(tokenizer,
+           "Oliver Grün , welle",
+           "Oliver Gr@@ ü@@ n , wel@@ le");
+}
+
 int main(int argc, char *argv[]) {
   testing::InitGoogleTest(&argc, argv);
   assert(argc == 2);

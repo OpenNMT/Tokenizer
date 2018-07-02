@@ -25,6 +25,8 @@ int main(int argc, char* argv[])
     ("segment_alphabet", po::value<std::string>()->default_value(""), "comma-separated list of alphabets on which to segment all letters.")
     ("segment_alphabet_change", po::bool_switch()->default_value(false), "Segment if the alphabet changes between 2 letters.")
     ("bpe_model,bpe", po::value<std::string>()->default_value(""), "path to the BPE model")
+    ("bpe_vocab", po::value<std::string>()->default_value(""), "Vocabulary file (built with get_vocab.py). If provided, this script reverts any merge operations that produce an OOV.")
+    ("bpe_vocab_threshold", po::value<int>()->default_value(50), "Vocabulary threshold. If vocabulary is provided, any word with frequency < threshold will be treated as OOV.")
 #ifdef WITH_SP
     ("sp_model,sp", po::value<std::string>()->default_value(""), "path to the SentencePiece model")
 #endif
@@ -77,11 +79,16 @@ int main(int argc, char* argv[])
   }
 #endif
 
+  std::string bpe_vocab_path = vm["bpe_vocab"].as<std::string>();
+  int bpe_vocab_threshold = vm["bpe_vocab_threshold"].as<int>();
+
   onmt::Tokenizer* tokenizer = new onmt::Tokenizer(
     onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
     flags,
     model_path,
-    vm["joiner"].as<std::string>());
+    vm["joiner"].as<std::string>(),
+    bpe_vocab_path,
+    bpe_vocab_threshold);
 
   for (const auto& alphabet : alphabets_to_segment)
   {

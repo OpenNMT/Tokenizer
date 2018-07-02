@@ -1,6 +1,7 @@
 ## [Unreleased]
 
 ### New features
+* Support `apply_bpe.py` 0.3 mode
 
 ### Fixes and improvements
 

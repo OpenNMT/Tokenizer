@@ -55,7 +55,9 @@ namespace onmt
   Tokenizer::Tokenizer(Mode mode,
                        int flags,
                        const std::string& model_path,
-                       const std::string& joiner)
+                       const std::string& joiner,
+                       const std::string& bpe_vocab_path,
+                       int bpe_vocab_threshold)
     : _mode(mode)
     , _case_feature(flags & Flags::CaseFeature)
     , _joiner_annotate(flags & Flags::JoinerAnnotate)
@@ -81,6 +83,11 @@ namespace onmt
 #endif
     {
       set_bpe_model(model_path, _cache_model);
+      if (_subword_encoder != nullptr && !bpe_vocab_path.empty())
+      {
+        ((BPE *)_subword_encoder)->init_bpe_vocab(bpe_vocab_path, bpe_vocab_threshold);
+        ((BPE *)_subword_encoder)->set_joiner(joiner);
+      }
     }
   }
 

@@ -51,7 +51,9 @@ namespace onmt
     Tokenizer(Mode mode,
               int flags = Flags::None,
               const std::string& model_path = "",
-              const std::string& joiner = joiner_marker);
+              const std::string& joiner = joiner_marker,
+              const std::string& bpe_vocab_path = "",
+              int bpe_vocab_threshold = 50);
     ~Tokenizer();
 
     void tokenize(const std::string& text,
