@@ -1,6 +1,12 @@
 ## [Unreleased]
 
 ### New features
+
+### Fixes and improvements
+
+## [v1.5.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.5.0) (2018-07-03)
+
+### New features
 * Support `apply_bpe.py` 0.3 mode
 
 ### Fixes and improvements
