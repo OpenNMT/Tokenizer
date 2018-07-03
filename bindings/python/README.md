@@ -14,6 +14,8 @@ import pyonmttok
 tokenizer = pyonmt.Tokenizer(
     mode: str,
     bpe_model_path="",
+    bpe_vocab_path="",
+    bpe_vocab_threshold=50,
     sp_model_path="",
     joiner="￭",
     joiner_annotate=False,

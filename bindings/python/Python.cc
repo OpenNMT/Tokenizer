@@ -1,4 +1,4 @@
-#define BOOST_PYTHON_MAX_ARITY 16
+#define BOOST_PYTHON_MAX_ARITY 18
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 
@@ -30,6 +30,8 @@ class TokenizerWrapper
 public:
   TokenizerWrapper(const std::string& mode,
                    const std::string& bpe_model_path,
+                   const std::string& bpe_vocab_path,
+                   int bpe_vocab_threshold,
                    const std::string& sp_model_path,
                    const std::string& joiner,
                    bool joiner_annotate,
@@ -77,7 +79,8 @@ public:
     }
 
     _tokenizer = new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(mode),
-                                     flags, model_path, joiner);
+                                     flags, model_path, joiner,
+                                     bpe_vocab_path, bpe_vocab_threshold);
 
     for (auto it = py::stl_input_iterator<std::string>(segment_alphabet);
          it != py::stl_input_iterator<std::string>(); it++)
@@ -133,8 +136,10 @@ BOOST_PYTHON_MODULE(tokenizer)
 {
   py::class_<TokenizerWrapper>(
       "Tokenizer",
-      py::init<std::string, std::string, std::string, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
+      py::init<std::string, std::string, std::string, int, std::string, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
         (py::arg("bpe_model_path")="",
+         py::arg("bpe_vocab_path")="",
+         py::arg("bpe_vocab_threshold")=50,
          py::arg("sp_model_path")="",
          py::arg("joiner")=onmt::Tokenizer::joiner_marker,
          py::arg("joiner_annotate")=false,
