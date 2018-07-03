@@ -16,7 +16,7 @@ TOKENIZER_REMOTE=https://github.com/OpenNMT/Tokenizer.git
 
 # Build SentencePiece dependencies.
 # See https://github.com/google/sentencepiece/blob/master/make_py_wheel.sh
-wget http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
+curl -fSsL -o libtool-2.4.6.tar.gz http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
 tar zxfv libtool-2.4.6.tar.gz
 cd libtool-2.4.6
 ./configure
@@ -46,13 +46,13 @@ cd ..
 
 # Fetch a binary release of cmake.
 mkdir -p cmake && cd cmake
-wget --no-check-certificate https://cmake.org/files/v3.1/cmake-3.1.0-Linux-x86_64.sh
+curl -fSsL -o cmake-3.1.0-Linux-x86_64.sh https://cmake.org/files/v3.1/cmake-3.1.0-Linux-x86_64.sh
 sh cmake-3.1.0-Linux-x86_64.sh --skip-license
 CMAKE=$PWD/bin/cmake
 cd ..
 
 # Fetch Boost.
-wget -O boost_1_66_0.tar.gz https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
+curl -fSsL -o boost_1_66_0.tar.gz https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
 tar xf boost_1_66_0.tar.gz
 
 # Boost default search path do not include the "m" suffix.
