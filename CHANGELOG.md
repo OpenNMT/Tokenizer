@@ -4,6 +4,10 @@
 
 ### Fixes and improvements
 
+## [v1.5.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.5.1) (2018-07-12)
+
+### Fixes and improvements
+
 * Do not escape spaces in placeholders value if `NoSubstitution` is enabled
 
 ## [v1.5.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.5.0) (2018-07-03)
