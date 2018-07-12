@@ -195,6 +195,7 @@ TEST(TokenizerTest, Substitutes) {
   test_tok(tokenizer,
            "test￭ protect￨, ：, ▁, and ％ or ＃...",
            "test ■ protect │ , : , _ , and % or # . . .");
+  test_tok(tokenizer, "｟tag：value with spaces｠", "｟tag：value％0020with％0020spaces｠");
 }
 
 TEST(TokenizerTest, NoSubstitution) {
@@ -203,6 +204,7 @@ TEST(TokenizerTest, NoSubstitution) {
   test_tok(tokenizer,
            "test￭ protect￨, ：, ▁, and ％ or ＃...",
            "test ￭ protect ￨ , ： , ▁ , and ％ or ＃ . . .");
+  test_tok(tokenizer, "｟tag：value with spaces｠", "｟tag：value with spaces｠");
 }
 
 TEST(TokenizerTest, CombiningMark) {

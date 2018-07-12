@@ -223,7 +223,7 @@ namespace onmt
               placeholder = false;
               space = false;
             } else {
-              if (isSeparator) {
+              if (isSeparator && !_no_substitution) {
                 char buffer[10];
                 sprintf(buffer, "%04x", v);
                 token.append(protected_character + buffer);
