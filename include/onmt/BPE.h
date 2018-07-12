@@ -29,7 +29,7 @@ namespace onmt
     bool _prefix;
     bool _suffix;
     bool _case_insensitive;
-    bool _compat_03;
+    std::pair<int, int> _version;
 
     std::string _joiner;
 

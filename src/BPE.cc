@@ -14,7 +14,7 @@ namespace onmt
     , _prefix(false)
     , _suffix(true)
     , _case_insensitive(false)
-    , _compat_03(false)
+    , _version(0, 0)
     , _joiner("")
   {
     std::ifstream in(model_path.c_str());
@@ -28,30 +28,38 @@ namespace onmt
 
     std::getline(in, line);
 
-    std::vector<std::string> options;
-    std::string option;
-
-    size_t sep = line.find(';');
-    size_t bidx = 0;
-    while (sep != std::string::npos && sep + 1 < line.size())
+    if (line.compare(0, 9, "#version:") == 0)  // Model from learn_bpe.py
     {
-      options.push_back(line.substr(bidx, sep - bidx));
-      bidx = sep + 1;
-      sep = line.find(';', bidx);
+      int major_version = line[line.size() - 3] - '0';
+      int minor_version = line[line.size() - 1] - '0';
+      _version = std::make_pair(major_version, minor_version);
     }
-    options.push_back(line.substr(bidx));
-
-    if (options.size() == 6 && options[0] == "v3")
+    else  // Model possibly from learn_bpe.lua
     {
-      _compat_03 = options[1] == "ref03";
-      _prefix = options[1] == "true";
-      _suffix = options[2] == "true";
-      _case_insensitive = options[3] == "true";
-      _begin_of_word = options[4];
-      _end_of_word = options[5];
+      std::vector<std::string> options;
+      std::string option;
+
+      size_t sep = line.find(';');
+      size_t bidx = 0;
+      while (sep != std::string::npos && sep + 1 < line.size())
+      {
+        options.push_back(line.substr(bidx, sep - bidx));
+        bidx = sep + 1;
+        sep = line.find(';', bidx);
+      }
+      options.push_back(line.substr(bidx));
+
+      if (options.size() == 6 && options[0] == "v3")
+      {
+        _prefix = options[1] == "true";
+        _suffix = options[2] == "true";
+        _case_insensitive = options[3] == "true";
+        _begin_of_word = options[4];
+        _end_of_word = options[5];
+      }
+      else  // Model from learn_bpe.py v0.1
+        in.seekg(0);
     }
-    else
-      in.seekg(0);
 
     while (std::getline(in, line))
     {
@@ -85,9 +93,22 @@ namespace onmt
       return chars;
     }
 
-    if (_prefix) { chars.insert(chars.begin(), _begin_of_word); }
-    if (_suffix) { chars.push_back(_end_of_word); }
-    if (_compat_03) { chars[chars.size() - 1] += _end_of_word; }
+    if (_version.first != 0 || _version.second != 0)
+    {
+      if (_version.first == 0 && _version.second == 1)
+        chars.push_back(_end_of_word);
+      else if (_version.first == 0 && _version.second == 2)
+        chars.back() += _end_of_word;
+      else
+        throw std::runtime_error("unsupported BPE version");
+    }
+    else
+    {
+      if (_prefix)
+        chars.insert(chars.begin(), _begin_of_word);
+      if (_suffix)
+        chars.push_back(_end_of_word);
+    }
 
     std::vector<std::string> new_chars;
     new_chars.reserve(chars.size());
@@ -143,25 +164,17 @@ namespace onmt
     {
       if (chars.front() == _begin_of_word)
         chars.erase(chars.begin());
-      else if (chars.front().substr(0, _begin_of_word.size()) == _begin_of_word)
+      else if (chars.front().compare(0, _begin_of_word.size(), _begin_of_word) == 0)
         chars.front().erase(0, _begin_of_word.size());
     }
 
-    if (_suffix)
-    {
-      if (chars.back() == _end_of_word)
-        chars.pop_back();
-      else if (chars.back().substr(chars.back().size() - _end_of_word.size()) == _end_of_word)
-        chars.back().erase(chars.back().size() - _end_of_word.size(), _end_of_word.size());
-    }
-
-    if (_compat_03)
-    {
-      size_t l = chars[chars.size() - 1].size();
-      if (l > _end_of_word.size() &&
-        chars.back().substr(l - _end_of_word.size()) == _end_of_word)
-        chars[chars.size() - 1].erase(l - _end_of_word.size());
-    }
+    if (chars.back() == _end_of_word)
+      chars.pop_back();
+    else if (chars.back().size() > _end_of_word.size()
+             && chars.back().compare(chars.back().size() - _end_of_word.size(),
+                                     std::string::npos,
+                                     _end_of_word) == 0)
+      chars.back().erase(chars.back().size() - _end_of_word.size(), _end_of_word.size());
 
     if (_case_insensitive)
     {

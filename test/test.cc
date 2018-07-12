@@ -270,7 +270,7 @@ TEST(TokenizerTest, SegmentAlphabetChange) {
 TEST(TokenizerTest, BPEBasic) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate,
-                  get_data("bpe-models/testcode")));
+                  get_data("bpe-models/testcode.v0.1")));
   test_tok_and_detok(tokenizer,
                      "abcdimprovement联合国",
                      "a￭ b￭ c￭ d￭ impr￭ ovemen￭ t￭ 联合￭ 国");
@@ -440,7 +440,7 @@ TEST(TokenizerTest, WithoutVocabulary) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Space,
                   Tokenizer::Flags::JoinerAnnotate,
-                  get_data("bpe-models/bpe_code.v3"),
+                  get_data("bpe-models/bpe_code.v0.2"),
                   "@@"
                   ));
   test_tok(tokenizer,
@@ -452,9 +452,9 @@ TEST(TokenizerTest, WithVocabulary) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Space,
                   Tokenizer::Flags::JoinerAnnotate,
-                  get_data("bpe-models/bpe_code.v3"),
+                  get_data("bpe-models/bpe_code.v0.2"),
                   "@@",
-                  get_data("bpe-models/vocab.en.v3"),
+                  get_data("bpe-models/vocab.en"),
                   50
                   ));
   test_tok(tokenizer,

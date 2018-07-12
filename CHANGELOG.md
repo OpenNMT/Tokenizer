@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* Fix support of BPE models v0.2 trained with `learn_bpe.py`
+
 ## [v1.5.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.5.1) (2018-07-12)
 
 ### Fixes and improvements
