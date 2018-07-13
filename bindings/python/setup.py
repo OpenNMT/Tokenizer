@@ -25,7 +25,7 @@ tokenizer_module = Extension(
 
 setup(
     name="pyonmttok",
-    version="1.5.2",
+    version="1.5.3",
     license="MIT",
     description="OpenNMT tokenization library",
     author="OpenNMT",
