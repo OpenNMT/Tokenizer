@@ -453,16 +453,11 @@ namespace onmt
       {
         if (token.is_joined_left() && i > 0)
         {
-          if (_joiner_new)
+          if (_joiner_new || (_preserve_placeholders && is_placeholder(str)))
           {
             tokens.push_back(_joiner);
             if (!str.empty())
               tokens.emplace_back(std::move(str));
-          }
-          else if (_preserve_placeholders && is_placeholder(str))
-          {
-            tokens.back() += _joiner;
-            tokens.emplace_back(std::move(str));
           }
           else
             tokens.emplace_back(_joiner + str);
@@ -471,16 +466,8 @@ namespace onmt
           tokens.emplace_back(std::move(str));
         if (token.is_joined_right() && i + 1 < annotated_tokens.size())
         {
-          if (_joiner_new)
+          if (_joiner_new || (_preserve_placeholders && is_placeholder(str)))
             tokens.push_back(_joiner);
-          else if (_preserve_placeholders && is_placeholder(str))
-          {
-            auto& next_token = annotated_tokens[i + 1];
-            if (!is_placeholder(next_token.str()))
-              next_token.join_left();
-            else
-              tokens.push_back(_joiner);
-          }
           else
             tokens.back() += _joiner;
         }

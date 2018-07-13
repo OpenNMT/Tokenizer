@@ -144,14 +144,14 @@ TEST(TokenizerTest, PreserveProtectedSequence) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative,
                   Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::PreservePlaceholders));
-  test_tok_and_detok(tokenizer, "｟1,023｠km", "｟1,023｠ ￭km");
-  test_tok_and_detok(tokenizer, "A｟380｠", "A￭ ｟380｠");
+  test_tok_and_detok(tokenizer, "｟1,023｠km", "｟1,023｠ ￭ km");
+  test_tok_and_detok(tokenizer, "A｟380｠", "A ￭ ｟380｠");
   test_tok_and_detok(tokenizer, "｟1,023｠｟380｠", "｟1,023｠ ￭ ｟380｠");
   test_tok_and_detok(tokenizer, "｟1023｠.", "｟1023｠ ￭.");
   test_tok_and_detok(tokenizer, "$｟0.23｠", "$￭ ｟0.23｠");
   test_tok_and_detok(tokenizer, "｟0.23｠$", "｟0.23｠ ￭$");
-  test_tok_and_detok(tokenizer, "｟US$｠23", "｟US$｠ ￭23");
-  test_tok_and_detok(tokenizer, "1｟ABCD｠0", "1￭ ｟ABCD｠ ￭0");
+  test_tok_and_detok(tokenizer, "｟US$｠23", "｟US$｠ ￭ 23");
+  test_tok_and_detok(tokenizer, "1｟ABCD｠0", "1 ￭ ｟ABCD｠ ￭ 0");
 }
 
 TEST(TokenizerTest, PreserveProtectedSequenceSpacerAnnotate) {

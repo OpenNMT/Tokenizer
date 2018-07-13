@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* Fix `PreservePlaceholders` with `JoinerAnnotate` that possibly modified other tokens
+
 ## [v1.5.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.5.2) (2018-07-12)
 
 ### Fixes and improvements
