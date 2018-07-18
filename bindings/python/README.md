@@ -35,3 +35,5 @@ tokens, features = tokenizer.tokenize(test: str)
 text = tokenizer.detokenize(tokens, features)
 text = tokenizer.detokenize(tokens)  # will fail if case_feature is set.
 ```
+
+See the [documentation](../../docs/options.md) for a description of each option.

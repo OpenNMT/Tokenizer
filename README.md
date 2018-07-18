@@ -20,25 +20,29 @@ cmake -DCMAKE_BUILD_TYPE=<Release or Debug> ..
 make
 ```
 
-It will produce the dynamic library `libOpenNMTTokenizer.so` (or `.dylib` on Mac OS, `.dll` on Windows), and the tokenization tools `cli/tokenize` and `cli/detokenize`.
+It will produce the dynamic library `libOpenNMTTokenizer.{so,dylib,dll}`, and the tokenization tools `cli/tokenize` and `cli/detokenize`.
 
 ### Options
 
 * To compile only the library, use the `-DLIB_ONLY=ON` flag.
+* To compile with the ICU unicode backend, use the `-DWITH_ICU=ON` flag.
 
 ## Using
 
-### Clients
+The tokenizer can be used in several ways:
 
-See `--help` on the clients to discover available options and usage. They have the same interface as their Lua counterpart.
+* command line clients `cli/tokenize` and `cli/detokenize`
+* [C++ API](include/onmt/Tokenizer.h)
+* [Python API](bindings/python)
 
-### Library
+All APIs expose the same set of options. See the [documentation](docs/options.md) for a complete description.
 
-This project is also a convenient way to apply OpenNMT tokenization in existing software.
+### Example
 
-See:
-
-* `include/onmt/Tokenizer.h` to apply OpenNMT's tokenization and detokenization
+```bash
+$ echo "Hello World!" | cli/tokenize --joiner_annotate
+Hello World ￭!
+```
 
 ## Testing
 
