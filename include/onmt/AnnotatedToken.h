@@ -9,9 +9,11 @@ namespace onmt
   {
   public:
     AnnotatedToken() = default;
+    AnnotatedToken(std::string&& str);
     AnnotatedToken(const std::string& str);
 
     void append(const std::string& str);
+    void set(std::string&& str);
     void set(const std::string& str);
     void clear();
     const std::string& str() const;

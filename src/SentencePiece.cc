@@ -21,21 +21,28 @@ namespace onmt
   {
     std::vector<std::string> encoded = encode(token.str());
     std::vector<AnnotatedToken> tokens;
+    tokens.reserve(encoded.size());
 
     for (size_t j = 0; j < encoded.size(); ++j)
     {
-      std::string piece = encoded[j];
-      bool is_marked = piece.find(sp_marker) == 0;
+      const auto& piece = encoded[j];
+      const bool is_marked = (piece.length() >= sp_marker.length()
+                              && piece.compare(0, sp_marker.length(), sp_marker) == 0);
+
+      tokens.emplace_back();
+      auto& new_token = tokens.back();
+
       if (is_marked)
-        piece.erase(0, sp_marker.length());
-      AnnotatedToken new_token(piece);
+        new_token.set(piece.substr(sp_marker.length()));
+      else
+        new_token.set(std::move(piece));
+
       if ((j == 0 && token.is_joined_left()) || (j > 0 && !is_marked))
         new_token.join_left();
       if (j + 1 == encoded.size() && token.is_joined_right())
         new_token.join_right();
       if (is_marked)
         new_token.spacer();
-      tokens.push_back(new_token);
     }
 
     return tokens;

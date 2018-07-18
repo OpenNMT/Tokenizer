@@ -3,6 +3,11 @@
 namespace onmt
 {
 
+  AnnotatedToken::AnnotatedToken(std::string&& str)
+    : _str(std::move(str))
+  {
+  }
+
   AnnotatedToken::AnnotatedToken(const std::string& str)
     : _str(str)
   {
@@ -11,6 +16,11 @@ namespace onmt
   void AnnotatedToken::append(const std::string& str)
   {
     _str += str;
+  }
+
+  void AnnotatedToken::set(std::string&& str)
+  {
+    _str = std::move(str);
   }
 
   void AnnotatedToken::set(const std::string& str)
