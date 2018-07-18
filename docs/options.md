@@ -76,6 +76,21 @@ When using `spacer_annotate`, make spacers independent tokens.
 
 Do not attach joiners or spacers to placeholders (character sequences encapsulated with ｟ and ｠).
 
+**Examples:**
+
+```bash
+$ echo "Hello World!" | cli/tokenize --joiner_annotate
+Hello World ￭!
+$ echo "Hello World!" | cli/tokenize --joiner_annotate --joiner_new
+Hello World ￭ !
+$ echo "Hello World!" | cli/tokenize --joiner_annotate --joiner_new --joiner @@
+Hello World @@ !
+$ echo "Hello World!" | cli/tokenize --spacer_annotate
+Hello ▁World !
+$ echo "Hello World!" | cli/tokenize --spacer_annotate --spacer_new
+Hello ▁ World !
+```
+
 ## Segmenting
 
 ### `segment_case` (boolean, default: `false`)
