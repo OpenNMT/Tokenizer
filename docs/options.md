@@ -1,4 +1,4 @@
-# Options
+# Tokenization options
 
 This file documents the options of the Tokenizer interface which can be used in:
 
@@ -8,7 +8,7 @@ This file documents the options of the Tokenizer interface which can be used in:
 
 *The exact name format of each option may be different depending on the API used.*
 
-## General options
+## General
 
 ### `mode` (string, required)
 
