@@ -2,7 +2,14 @@
 
 # Tokenizer
 
-Tokenizer is a C++ implementation of OpenNMT tokenization and detokenization.
+This project implements a generic and customizable text tokenization based on the original OpenNMT tokenization tools. It features:
+
+* Fast and generic text tokenization with minimal dependencies
+* Support for BPE or SentencePiece models
+* Customizable reversible tokenization: marking joints or spaces, with special characters or tokens
+* Advanced text segmentation options: case change, alphabet change, etc.
+* Protected sequences against tokenization with the special characters "｟" and "｠"
+* Easy to use C++ and Python APIs
 
 ## Dependencies
 
