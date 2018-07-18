@@ -99,12 +99,27 @@ Split token on case change.
 
 ### `segment_numbers` (boolean, default: `false`)
 
-Split numbers into single digits.
+Split numbers into single digits (requires the `aggressive` tokenization mode).
 
 ### `segment_alphabet` (list of strings, default: `[]`)
 
-List of alphabetss for which to split all letters. A complete list of supported alphabet is available in the source file `Alphabet.h`.
+List of alphabets for which to split all letters. A complete list of supported alphabets is available in the source file [`Alphabet.h`](../include/onmt/Alphabet.h).
 
 ### `segment_alphabet_change` (boolean, default: `false`)
 
 Split token on alphabet change.
+
+**Examples:**
+
+```bash
+$ echo "WiFi" | cli/tokenize --segment_case
+Wi Fi
+$ echo "1234" | cli/tokenize --mode aggressive --segment_numbers
+1 2 3 4
+$ echo "測試 abc" | cli/tokenize --segment_alphabet Han
+測 試 abc
+$ echo "測試 abc" | cli/tokenize --segment_alphabet Han,Latin
+測 試 a b c
+$ echo "測試abc" | cli/tokenize --segment_alphabet_change
+測試 abc
+```
