@@ -236,6 +236,9 @@ namespace onmt
 
   void BPE::init_bpe_vocab(const std::string& vocab_path, int bpe_vocab_threshold)
   {
+    if (!_bpe_vocab.empty())
+      return;
+
     std::ifstream in(vocab_path.c_str());
 
     if (!in.is_open())

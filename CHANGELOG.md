@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* Do not rebuild `bpe_vocab` if already loaded (e.g. when `CacheModel` is set)
+
 ## [v1.5.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.5.3) (2018-07-13)
 
 ### Fixes and improvements
