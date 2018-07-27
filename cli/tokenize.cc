@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
     ("spacer_annotate", po::bool_switch()->default_value(false), "mark spaces with spacer tokens (mutually exclusive with joiner_annotate)")
     ("spacer_new", po::bool_switch()->default_value(false), "make spacers independent tokens")
     ("preserve_placeholders", po::bool_switch()->default_value(false), "do not mark placeholders with joiners or spacers")
+    ("preserve_segmented_tokens", po::bool_switch()->default_value(false), "do not mark segmented tokens (segment_* options) with joiners or spacers")
     ("case_feature,c", po::bool_switch()->default_value(false), "lowercase corpus and generate case feature")
     ("segment_case", po::bool_switch()->default_value(false), "Segment case feature, splits AbC to Ab C to be able to restore case")
     ("segment_numbers", po::bool_switch()->default_value(false), "Segment numbers into single digits")
@@ -55,6 +56,8 @@ int main(int argc, char* argv[])
     flags |= onmt::Tokenizer::Flags::SpacerNew;
   if (vm["preserve_placeholders"].as<bool>())
     flags |= onmt::Tokenizer::Flags::PreservePlaceholders;
+  if (vm["preserve_segmented_tokens"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::PreserveSegmentedTokens;
   if (vm["segment_case"].as<bool>())
     flags |= onmt::Tokenizer::Flags::SegmentCase;
   if (vm["segment_numbers"].as<bool>())

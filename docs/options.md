@@ -174,3 +174,13 @@ Split token on alphabet change.
 $ echo "測試abc" | cli/tokenize --segment_alphabet_change
 測試 abc
 ```
+
+### `preserve_segmented_tokens` (boolean, default: `false`)
+
+Do not attach joiners or spacers to tokens that were segmented by any `segment_*` options above.
+
+```bash
+$ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_change \
+    --joiner_annotate --preserve_segmented_tokens
+測 ￭ 試 ￭ abc
+```

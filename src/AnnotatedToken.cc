@@ -33,6 +33,7 @@ namespace onmt
     _str.clear();
     _join_right = false;
     _join_left = false;
+    _preserved = false;
   }
 
   const std::string& AnnotatedToken::str() const
@@ -55,6 +56,11 @@ namespace onmt
     _spacer = true;
   }
 
+  void AnnotatedToken::preserve()
+  {
+    _preserved = true;
+  }
+
   bool AnnotatedToken::is_joined_right() const
   {
     return _join_right;
@@ -68,6 +74,11 @@ namespace onmt
   bool AnnotatedToken::is_spacer() const
   {
     return _spacer;
+  }
+
+  bool AnnotatedToken::should_preserve() const
+  {
+    return _preserved;
   }
 
 }
