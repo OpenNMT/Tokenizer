@@ -2,6 +2,8 @@
 
 ### New features
 
+* `PreserveSegmentedTokens` flag to not attach joiners or spacers to tokens segmented by any `Segment*` flags
+
 ### Fixes and improvements
 
 * Do not rebuild `bpe_vocab` if already loaded (e.g. when `CacheModel` is set)

@@ -267,6 +267,43 @@ TEST(TokenizerTest, SegmentAlphabetChange) {
   test_tok(tokenizer, "rawБ", "raw Б");
 }
 
+TEST(TokenizerTest, PreserveSegmentedNumbers) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Aggressive,
+                  Tokenizer::Flags::SegmentNumbers
+                  | Tokenizer::Flags::JoinerAnnotate
+                  | Tokenizer::Flags::PreserveSegmentedTokens));
+  test_tok_and_detok(tokenizer, "1234", "1 ￭ 2 ￭ 3 ￭ 4");
+}
+
+TEST(TokenizerTest, PreserveSegmentAlphabetChange) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Conservative,
+                  Tokenizer::Flags::SegmentAlphabetChange
+                  | Tokenizer::Flags::JoinerAnnotate
+                  | Tokenizer::Flags::PreserveSegmentedTokens));
+  test_tok_and_detok(tokenizer, "rawБ", "raw ￭ Б");
+}
+
+TEST(TokenizerTest, PreserveSegmentAlphabet) {
+  auto tokenizer_raw = new Tokenizer(Tokenizer::Mode::Conservative,
+                                     Tokenizer::Flags::JoinerAnnotate
+                                     | Tokenizer::Flags::SegmentAlphabetChange
+                                     | Tokenizer::Flags::PreserveSegmentedTokens);
+  tokenizer_raw->add_alphabet_to_segment("Han");
+  auto tokenizer = std::unique_ptr<ITokenizer>(tokenizer_raw);
+  test_tok_and_detok(tokenizer, "測試abc", "測 ￭ 試 ￭ abc");
+}
+
+TEST(TokenizerTest, PreserveSegmentCase) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Conservative,
+                  Tokenizer::Flags::SegmentCase
+                  | Tokenizer::Flags::JoinerAnnotate
+                  | Tokenizer::Flags::PreserveSegmentedTokens));
+  test_tok_and_detok(tokenizer, "WiFi", "Wi ￭ Fi");
+}
+
 TEST(TokenizerTest, BPEBasic) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate,

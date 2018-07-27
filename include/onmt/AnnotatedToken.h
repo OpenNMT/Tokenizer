@@ -21,16 +21,19 @@ namespace onmt
     void join_right();
     void join_left();
     void spacer();
+    void preserve();
 
     bool is_joined_left() const;
     bool is_joined_right() const;
     bool is_spacer() const;
+    bool should_preserve() const;
 
   private:
     std::string _str;
     bool _join_left = false;
     bool _join_right = false;
     bool _spacer = false;
+    bool _preserved = false;
   };
 
 }

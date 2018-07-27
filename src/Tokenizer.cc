@@ -71,6 +71,7 @@ namespace onmt
     , _spacer_annotate(flags & Flags::SpacerAnnotate)
     , _spacer_new(flags & Flags::SpacerNew)
     , _preserve_placeholders(flags & Flags::PreservePlaceholders)
+    , _preserve_segmented_tokens(flags & Flags::PreserveSegmentedTokens)
     , _subword_encoder(nullptr)
     , _joiner(joiner)
   {
@@ -218,6 +219,8 @@ namespace onmt
         if (placeholder) {
             if (c == Tokenizer::ph_marker_close) {
               token.append(c);
+              if (_preserve_placeholders)
+                token.preserve();
               letter = true;
               prev_alphabet = placeholder_alphabet;
               placeholder = false;
@@ -323,16 +326,22 @@ namespace onmt
             if (cur_letter && _mode != Mode::Char)
             {
               unicode::_type_letter type_letter = unicode::get_case(v);
+              bool segment_case = false;
+              bool segment_alphabet = false;
+              bool segment_alphabet_change = false;
               if ((!letter && !space)
                   || (letter && !is_mark &&
-                      ((prev_alphabet == alphabet && is_alphabet_to_segment(alphabet))
-                       || (prev_alphabet != alphabet && _segment_alphabet_change)
+                      ((segment_alphabet = (prev_alphabet == alphabet && is_alphabet_to_segment(alphabet)))
+                       || (segment_alphabet_change = (prev_alphabet != alphabet && _segment_alphabet_change))
                        || (prev_alphabet == placeholder_alphabet
-                           || (_segment_case && letter
+                           || (_segment_case && (segment_case = (letter
                                && ((type_letter == unicode::_letter_upper && !uppercase)
-                                   || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))
+                                   || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))))
               {
                 token.join_right();
+                if (_preserve_segmented_tokens
+                    && (segment_case || segment_alphabet || segment_alphabet_change))
+                  token.preserve();
                 annotated_tokens.emplace_back(std::move(token));
                 token.clear();
                 uppercase = (type_letter == unicode::_letter_upper);
@@ -364,6 +373,8 @@ namespace onmt
                   token.join_right();
                 else
                   next_token.join_left();
+                if (_preserve_segmented_tokens && number && _segment_numbers)
+                  token.preserve();
                 annotated_tokens.emplace_back(std::move(token));
                 std::swap(token, next_token);
               }
@@ -453,7 +464,7 @@ namespace onmt
       {
         if (token.is_joined_left() && i > 0)
         {
-          if (_joiner_new || (_preserve_placeholders && is_placeholder(str)))
+          if (_joiner_new || token.should_preserve())
           {
             tokens.push_back(_joiner);
             if (!str.empty())
@@ -466,7 +477,7 @@ namespace onmt
           tokens.emplace_back(std::move(str));
         if (token.is_joined_right() && i + 1 < annotated_tokens.size())
         {
-          if (_joiner_new || (_preserve_placeholders && is_placeholder(str)))
+          if (_joiner_new || token.should_preserve())
             tokens.push_back(_joiner);
           else
             tokens.back() += _joiner;
@@ -481,7 +492,7 @@ namespace onmt
           if (!str.empty())
             tokens.emplace_back(std::move(str));
         }
-        else if (_preserve_placeholders && is_placeholder(str))
+        else if (token.should_preserve())
         {
           tokens.push_back(spacer_marker);
           tokens.emplace_back(std::move(str));
