@@ -2,6 +2,12 @@
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.6.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.6.0) (2018-07-30)
+
+### New features
+
 * `PreserveSegmentedTokens` flag to not attach joiners or spacers to tokens segmented by any `Segment*` flags
 
 ### Fixes and improvements
