@@ -33,7 +33,7 @@ make install
 cd ..
 
 # Build SentencePiece.
-git clone --depth=1 --single-branch https://github.com/google/sentencepiece.git
+git clone --depth=1 --branch df2c033 --single-branch https://github.com/google/sentencepiece.git
 cd sentencepiece
 ./autogen.sh
 grep -v PKG_CHECK_MODULES configure > tmp
