@@ -4,6 +4,12 @@
 
 ### Fixes and improvements
 
+## [v1.6.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.6.1) (2018-07-31)
+
+### Fixes and improvements
+
+* Fix Python package
+
 ## [v1.6.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.6.0) (2018-07-30)
 
 ### New features
