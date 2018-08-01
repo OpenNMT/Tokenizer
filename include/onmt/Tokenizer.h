@@ -25,21 +25,21 @@ namespace onmt
     enum Flags
     {
       None = 0,
-      CaseFeature = 1,
-      JoinerAnnotate = 2,
-      JoinerNew = 4,
-      WithSeparators = 8,
-      SegmentCase = 16,
-      SegmentNumbers = 32,
-      SegmentAlphabetChange = 64,
-      CacheBPEModel = 128,  // Keeping for compatibility, replaced by CacheModel.
-      NoSubstitution = 256,  // Do not replace special characters.
-      SpacerAnnotate = 512,
-      CacheModel = 1024,
-      SentencePieceModel = 2048,
-      PreservePlaceholders = 4096,
-      SpacerNew = 8192,
-      PreserveSegmentedTokens = 16384
+      CaseFeature = 1 << 0,
+      JoinerAnnotate = 1 << 1,
+      JoinerNew = 1 << 2,
+      WithSeparators = 1 << 3,
+      SegmentCase = 1 << 4,
+      SegmentNumbers = 1 << 5,
+      SegmentAlphabetChange = 1 << 6,
+      CacheBPEModel = 1 << 7,  // Keeping for compatibility, replaced by CacheModel.
+      NoSubstitution = 1 << 8,  // Do not replace special characters.
+      SpacerAnnotate = 1 << 9,
+      CacheModel = 1 << 10,
+      SentencePieceModel = 1 << 11,
+      PreservePlaceholders = 1 << 12,
+      SpacerNew = 1 << 13,
+      PreserveSegmentedTokens = 1 << 14
     };
 
     static const std::string joiner_marker;
