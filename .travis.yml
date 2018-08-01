@@ -17,8 +17,6 @@ addons:
       - george-edison55-precise-backports
       - ubuntu-toolchain-r-test
     packages:
-      - autoconf
-      - automake
       - cmake
       - cmake-data
       - g++-4.8
@@ -51,8 +49,9 @@ before_install:
     if [ ! -d sentencepiece/ ]; then
       git clone https://github.com/google/sentencepiece.git sentencepiece-git
       cd sentencepiece-git
-      ./autogen.sh
-      ./configure --prefix=$ROOT_TRAVIS_DIR/sentencepiece
+      mkdir build
+      cd build
+      cmake -DCMAKE_INSTALL_PREFIX=$ROOT_TRAVIS_DIR/sentencepiece ..
       make
       make install
       cd $ROOT_TRAVIS_DIR
