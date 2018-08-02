@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Script to build Python wheels in the manylinux1 Docker environment.
 
@@ -6,28 +6,35 @@
 # mkdir docker
 # docker run --rm -ti -v $PWD/docker:/docker -w /docker quay.io/pypa/manylinux1_x86_64 bash
 # wget --no-check-certificate https://raw.githubusercontent.com/OpenNMT/Tokenizer/master/bindings/python/tools/build_wheel.sh
-# sh build_wheel.sh v1.3.0
+# bash build_wheel.sh v1.3.0
 # twine wheelhouse/*.whl
+
+set -x
 
 ROOT_DIR=$PWD
 
 TOKENIZER_BRANCH=${1:-master}
 TOKENIZER_REMOTE=https://github.com/OpenNMT/Tokenizer.git
 
-# Build SentencePiece dependencies.
-# See https://github.com/google/sentencepiece/blob/master/make_py_wheel.sh
-curl -fSsL -o libtool-2.4.6.tar.gz http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
-tar zxfv libtool-2.4.6.tar.gz
-cd libtool-2.4.6
-./configure
-make -j4
-make install
+BOOST_VERSION=1.66.0
+CMAKE_VERSION=3.12.0
+PROTOBUF_VERSION=3.6.0
+SENTENCEPIECE_VERSION=a0b734a4a2a2259e346f5b602ba807c5deef2f0b
+
+# Install protobuf.
+curl -L -O https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
+tar zxfv protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
+cd protobuf-${PROTOBUF_VERSION}
+./configure --disable-shared --with-pic
+make CXXFLAGS+="-std=c++11 -O3" CFLAGS+="-std=c++11 -O3" -j4
+make install || true
 cd ..
 
-git clone --depth=1 --single-branch --branch v3.5.2 https://github.com/google/protobuf.git
-cd protobuf
-./autogen.sh
-./configure
+# Install cmake.
+curl -L -O https://cmake.org/files/v3.12/cmake-${CMAKE_VERSION}.tar.gz
+tar zxfv cmake-${CMAKE_VERSION}.tar.gz
+cd cmake-${CMAKE_VERSION}
+./bootstrap
 make -j4
 make install
 cd ..
@@ -35,44 +42,37 @@ cd ..
 # Build SentencePiece.
 git clone --single-branch https://github.com/google/sentencepiece.git
 cd sentencepiece
-git checkout df2c033
-./autogen.sh
-grep -v PKG_CHECK_MODULES configure > tmp
-mv tmp -f configure
-chmod +x configure
-LIBS+="-lprotobuf -pthread" ./configure
+git checkout $SENTENCEPIECE_VERSION
+mkdir build
+cd build
+cmake ..
 make -j4
 make install
-cd ..
-
-# Fetch a binary release of cmake.
-mkdir -p cmake && cd cmake
-curl -fSsL -o cmake-3.1.0-Linux-x86_64.sh https://cmake.org/files/v3.1/cmake-3.1.0-Linux-x86_64.sh
-sh cmake-3.1.0-Linux-x86_64.sh --skip-license
-CMAKE=$PWD/bin/cmake
-cd ..
+cd ../..
 
 # Fetch Boost.
-curl -fSsL -o boost_1_66_0.tar.gz https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
-tar xf boost_1_66_0.tar.gz
+BOOST_VERSION_ARCHIVE=${BOOST_VERSION//./_}
+curl -fSsL -o boost_$BOOST_VERSION_ARCHIVE.tar.gz https://dl.bintray.com/boostorg/release/$BOOST_VERSION/source/boost_$BOOST_VERSION_ARCHIVE.tar.gz
 
 # Boost default search path do not include the "m" suffix.
-ln -s -f /opt/python/cp33-cp33m/include/python3.3m/ /opt/python/cp33-cp33m/include/python3.3
 ln -s -f /opt/python/cp34-cp34m/include/python3.4m/ /opt/python/cp34-cp34m/include/python3.4
 ln -s -f /opt/python/cp35-cp35m/include/python3.5m/ /opt/python/cp35-cp35m/include/python3.5
 ln -s -f /opt/python/cp36-cp36m/include/python3.6m/ /opt/python/cp36-cp36m/include/python3.6
+
+# Do not support Python 3.7 for now.
+unlink /opt/python/cp37-cp37m
 
 mkdir -p wheelhouse
 
 for PYTHON_ROOT in /opt/python/*
 do
     # Start from scratch to not deal with previously generated files.
-    rm -rf boost_1_66_0
+    rm -rf boost_$BOOST_VERSION_ARCHIVE
     rm -rf Tokenizer
 
     # Build Boost.Python.
-    tar xf boost_1_66_0.tar.gz
-    cd boost_1_66_0
+    tar xf boost_$BOOST_VERSION_ARCHIVE.tar.gz
+    cd boost_$BOOST_VERSION_ARCHIVE
     export BOOST_ROOT=$PWD/install
     ./bootstrap.sh --prefix=$BOOST_ROOT --with-libraries=python --with-python=$PYTHON_ROOT/bin/python
     ./b2 install
@@ -84,7 +84,7 @@ do
     export TOKENIZER_ROOT=$PWD/install
     mkdir build
     cd build
-    ${CMAKE} -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT -DCMAKE_BUILD_TYPE=Release -DLIB_ONLY=ON ..
+    cmake -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT -DCMAKE_BUILD_TYPE=Release -DLIB_ONLY=ON ..
     make -j4
     make install
     cd ..
