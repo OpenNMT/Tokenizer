@@ -1,4 +1,5 @@
 import os
+import sys
 
 from setuptools import setup, Extension
 
@@ -21,7 +22,10 @@ tokenizer_module = Extension(
     extra_compile_args=["-std=c++11"],
     include_dirs=include_dirs,
     library_dirs=library_dirs,
-    libraries=[os.getenv("BOOST_PYTHON_LIBRARY", "boost_python"), "OpenNMTTokenizer"])
+    libraries=[
+        os.getenv("BOOST_PYTHON_LIBRARY",
+                  "boost_python%d%d" % (sys.version_info[0], sys.version_info[1])),
+        "OpenNMTTokenizer"])
 
 setup(
     name="pyonmttok",
