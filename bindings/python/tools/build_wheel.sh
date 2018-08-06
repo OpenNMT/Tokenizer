@@ -9,6 +9,7 @@
 # bash build_wheel.sh v1.3.0
 # twine wheelhouse/*.whl
 
+set -e
 set -x
 
 ROOT_DIR=$PWD
@@ -16,7 +17,7 @@ ROOT_DIR=$PWD
 TOKENIZER_BRANCH=${1:-master}
 TOKENIZER_REMOTE=https://github.com/OpenNMT/Tokenizer.git
 
-BOOST_VERSION=1.66.0
+BOOST_VERSION=1.67.0
 CMAKE_VERSION=3.12.0
 PROTOBUF_VERSION=3.6.0
 SENTENCEPIECE_VERSION=a0b734a4a2a2259e346f5b602ba807c5deef2f0b
@@ -58,9 +59,7 @@ curl -fSsL -o boost_$BOOST_VERSION_ARCHIVE.tar.gz https://dl.bintray.com/boostor
 ln -s -f /opt/python/cp34-cp34m/include/python3.4m/ /opt/python/cp34-cp34m/include/python3.4
 ln -s -f /opt/python/cp35-cp35m/include/python3.5m/ /opt/python/cp35-cp35m/include/python3.5
 ln -s -f /opt/python/cp36-cp36m/include/python3.6m/ /opt/python/cp36-cp36m/include/python3.6
-
-# Do not support Python 3.7 for now.
-unlink /opt/python/cp37-cp37m
+ln -s -f /opt/python/cp37-cp37m/include/python3.7m/ /opt/python/cp37-cp37m/include/python3.7
 
 mkdir -p wheelhouse
 
@@ -91,12 +90,6 @@ do
 
     # Build Python wheel.
     cd bindings/python
-    $PYTHON_ROOT/bin/python -c 'import sys; exit(sys.version_info.major == 3)'
-    if [ $? -eq 0 ]; then
-        export BOOST_PYTHON_LIBRARY=boost_python
-    else
-        export BOOST_PYTHON_LIBRARY=boost_python3
-    fi
     $PYTHON_ROOT/bin/python setup.py bdist_wheel
     export LD_LIBRARY_PATH=/usr/local/lib:$BOOST_ROOT/lib:$TOKENIZER_ROOT/lib
     auditwheel repair dist/*.whl
