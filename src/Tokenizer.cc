@@ -35,6 +35,15 @@ namespace onmt
     { "none", onmt::Tokenizer::Mode::None }
   };
 
+  enum State
+  {
+    Letter = 1 << 0,
+    Number = 1 << 1,
+    Space = 1 << 2,
+    Other = 1 << 3,
+    Placeholder = 1 << 4
+  };
+
   static std::unordered_map<std::string, const SubwordEncoder*> cache;
   static std::mutex cache_mutex;
 
@@ -200,13 +209,9 @@ namespace onmt
 
       AnnotatedToken token;
 
-      bool letter = false;
       bool uppercase = false;
       bool uppercase_sequence = false;
-      bool number = false;
-      bool other = false;
-      bool space = true;
-      bool placeholder = false;
+      int state = State::Space;
       int prev_alphabet = -1;
 
       for (size_t i = 0; i < chars.size(); ++i)
@@ -216,15 +221,19 @@ namespace onmt
         unicode::code_point_t next_v = i + 1 < code_points.size() ? code_points[i + 1] : 0;
         bool isSeparator = unicode::is_separator(v);
 
+        const bool letter = state & State::Letter;
+        const bool space = state & State::Space;
+        const bool number = state & State::Number;
+        const bool other = state & State::Other;
+        const bool placeholder = state & State::Placeholder;
+
         if (placeholder) {
             if (c == Tokenizer::ph_marker_close) {
               token.append(c);
               if (_preserve_placeholders)
                 token.preserve();
-              letter = true;
               prev_alphabet = placeholder_alphabet;
-              placeholder = false;
-              space = false;
+              state = State::Letter;
             } else {
               if (isSeparator && !_no_substitution) {
                 char buffer[10];
@@ -248,7 +257,7 @@ namespace onmt
               annotated_tokens.back().join_right();
             }
             token.append(c);
-            placeholder = true;
+            state = State::Placeholder;
         }
         else if (isSeparator)
         {
@@ -278,12 +287,9 @@ namespace onmt
             }
           }
 
-          letter = false;
           uppercase = false;
           uppercase_sequence = false;
-          number = false;
-          other = false;
-          space = true;
+          state = State::Space;
         }
         else
         {
@@ -358,10 +364,7 @@ namespace onmt
               }
 
               token.append(sub_c);
-              letter = true;
-              number = false;
-              other = false;
-              space = false;
+              state = State::Letter;
               prev_alphabet = alphabet;
             }
             else if (cur_number && _mode != Mode::Char)
@@ -384,12 +387,9 @@ namespace onmt
               }
 
               token.append(sub_c);
-              letter = false;
               uppercase = false;
               uppercase_sequence = false;
-              number = true;
-              other = false;
-              space = false;
+              state = State::Number;
             }
             else
             {
@@ -408,12 +408,9 @@ namespace onmt
               token.append(sub_c);
               annotated_tokens.emplace_back(std::move(token));
               token.clear();
-              letter = false;
               uppercase = false;
               uppercase_sequence = false;
-              number = false;
-              other = true;
-              space = true;
+              state = State::Other | State::Space;
             }
           }
         }
