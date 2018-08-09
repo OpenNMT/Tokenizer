@@ -90,7 +90,7 @@ namespace onmt
   }
 
   Tokenizer::Tokenizer(const std::string& sp_model_path,
-                       size_t sp_nbest_size,
+                       int sp_nbest_size,
                        double sp_alpha,
                        Mode mode,
                        int flags,
@@ -104,7 +104,7 @@ namespace onmt
 #else
     read_flags(flags);
     set_sp_model(sp_model_path, _cache_model);
-    if (sp_nbest_size > 0)
+    if (sp_nbest_size != 0)
       ((SentencePiece*)_subword_encoder)->enable_regularization(sp_nbest_size, sp_alpha);
 #endif
   }

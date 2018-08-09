@@ -58,7 +58,7 @@ namespace onmt
 
     // SentencePiece-specific constructor.
     Tokenizer(const std::string& sp_model_path,
-              size_t sp_nbest_size = 0,
+              int sp_nbest_size = 0,
               double sp_alpha = 0.1,
               Mode mode = Mode::None,
               int flags = Flags::None,
