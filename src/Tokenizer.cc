@@ -105,7 +105,11 @@ namespace onmt
     read_flags(flags);
     set_sp_model(sp_model_path, _cache_model);
     if (sp_nbest_size != 0)
+#  ifdef SP_HAS_SAMPLE_ENCODE
       ((SentencePiece*)_subword_encoder)->enable_regularization(sp_nbest_size, sp_alpha);
+#  else
+      throw std::runtime_error("This version of SentencePiece does not include the sampling API");
+#  endif
 #endif
   }
 

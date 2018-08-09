@@ -22,10 +22,14 @@ namespace onmt
   {
     std::vector<std::string> pieces;
 
+#ifdef SP_HAS_SAMPLE_ENCODE
     if (_nbest_size != 0)
       _processor.SampleEncode(str, _nbest_size, _alpha, &pieces);
     else
+#endif
+    {
       _processor.Encode(str, &pieces);
+    }
 
     return pieces;
   }
