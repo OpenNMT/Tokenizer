@@ -57,12 +57,13 @@ namespace onmt
               int bpe_vocab_threshold = 50);
 
     // SentencePiece-specific constructor.
-    Tokenizer(Mode mode,
-              const std::string& sp_model_path,
+    Tokenizer(const std::string& sp_model_path,
               size_t sp_nbest_size = 0,
               double sp_alpha = 0.1,
+              Mode mode = Mode::None,
               int flags = Flags::None,
               const std::string& joiner = joiner_marker);
+
     ~Tokenizer();
 
     void tokenize(const std::string& text,

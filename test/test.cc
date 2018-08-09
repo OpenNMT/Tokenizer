@@ -416,10 +416,7 @@ TEST(TokenizerTest, SentencePiece) {
 
 TEST(TokenizerTest, SentencePieceSubwordRegularization) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
-    new Tokenizer(Tokenizer::Mode::None,
-                  get_data("sp-models/sp_regularization.model"),
-                  Tokenizer::Flags::None,
-                  1, 0.1));
+    new Tokenizer(get_data("sp-models/sp_regularization.model"), 1, 0.1));
   test_tok_and_detok(tokenizer,
                      "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
                      "▁The ▁ two ▁show s , ▁call ed ▁De si re ▁ and ▁Sec re t s , ▁w ill ▁be ▁one - h our ▁ pri me - t im e ▁show s .");

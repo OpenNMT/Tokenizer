@@ -89,10 +89,10 @@ namespace onmt
     }
   }
 
-  Tokenizer::Tokenizer(Mode mode,
-                       const std::string& sp_model_path,
+  Tokenizer::Tokenizer(const std::string& sp_model_path,
                        size_t sp_nbest_size,
                        double sp_alpha,
+                       Mode mode,
                        int flags,
                        const std::string& joiner)
     : _mode(mode)
