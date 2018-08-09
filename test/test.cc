@@ -414,6 +414,15 @@ TEST(TokenizerTest, SentencePiece) {
                      "The ▁two ▁shows , ▁called ▁De si re ▁and ▁S e c re t s , ▁will ▁be ▁one - hour ▁prime - time ▁shows .");
 }
 
+TEST(TokenizerTest, SentencePieceSubwordRegularization) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
+                  get_data("sp-models/sp_regularization.model.test.json")));
+  test_tok_and_detok(tokenizer,
+                     "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
+                     "▁The ▁ two ▁show s , ▁call ed ▁De si re ▁ and ▁Sec re t s , ▁w ill ▁be ▁one - h our ▁ pri me - t im e ▁show s .");
+}
+
 TEST(TokenizerTest, SentencePieceAlt) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
