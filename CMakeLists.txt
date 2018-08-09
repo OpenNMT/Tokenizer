@@ -53,7 +53,6 @@ endif()
 
 find_library(SP_LIBRARY NAMES sentencepiece)
 find_path(SP_INCLUDE_DIR NAMES sentencepiece_processor.h)
-find_library(PROTOBUF_LIBRARY NAMES protobuf)
 find_path(JSON_INCLUDE_DIR NAMES json/json.h)
 find_library(JSON_LIBRARY NAMES json)
 
@@ -66,18 +65,15 @@ else()
   list(APPEND SOURCES src/SentencePiece.cc)
   list(APPEND INCLUDE_DIRECTORIES ${SP_INCLUDE_DIR})
   list(APPEND LINK_LIBRARIES ${SP_LIBRARY})
-  list(APPEND LINK_LIBRARIES ${PROTOBUF_LIBRARY})
   list(APPEND INCLUDE_DIRECTORIES ${JSON_INCLUDE_DIR})
   list(APPEND LINK_LIBRARIES ${JSON_LIBRARY})
 endif()
 
-link_directories(${SP_LIBRARY})
-link_directories(${PROTOBUF_LIBRARY})
 link_directories(${JSON_LIBRARY})
 
 add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORIES})
-target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES} sentencepiece protobuf json)
+target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES} json)
 
 if (NOT LIB_ONLY)
   add_subdirectory(cli)
