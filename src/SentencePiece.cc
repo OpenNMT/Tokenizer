@@ -1,4 +1,7 @@
 #include "onmt/SentencePiece.h"
+#include <json/value.h>
+#include <json/json.h>
+#include <fstream>
 
 namespace onmt
 {
@@ -6,14 +9,35 @@ namespace onmt
   static const std::string sp_marker("▁");
 
   SentencePiece::SentencePiece(const std::string& model_path)
+    :sp_nbest_size(0),sp_alpha(0.0),sp_subword_regularization(false)
   {
-    _processor.Load(model_path);
+    try
+    {
+      std::ifstream model_file(model_path, std::ifstream::binary);
+      Json::Value model_json;
+      model_file >> model_json;
+
+      std::string sp_model_path = model_json["model"].asString();
+      sp_nbest_size = model_json["nbest_size"].asInt();
+      sp_alpha = model_json["alpha"].asDouble();
+
+      _processor.Load(sp_model_path);
+      sp_subword_regularization = true;
+    }
+    catch (...)
+    {
+      _processor.Load(model_path);
+    }
   }
 
   std::vector<std::string> SentencePiece::encode(const std::string& str) const
   {
     std::vector<std::string> pieces;
-    _processor.Encode(str, &pieces);
+    if(sp_subword_regularization)
+      _processor.SampleEncode(str, sp_nbest_size, sp_alpha, &pieces);
+    else
+      _processor.Encode(str, &pieces);
+
     return pieces;
   }
 

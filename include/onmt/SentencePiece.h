@@ -19,6 +19,11 @@ namespace onmt
 
   private:
     sentencepiece::SentencePieceProcessor _processor;
+
+  private:
+    int sp_nbest_size;
+    double sp_alpha;
+    bool sp_subword_regularization;
   };
 
 }
