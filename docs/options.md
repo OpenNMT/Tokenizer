@@ -74,6 +74,14 @@ When using `bpe_vocab`, any words with a frequency lower than `bpe_vocab_thresho
 
 Path to the SentencePiece model. To replicate `spm_encode`, the tokenization mode should be `none`.
 
+### `sp_nbest_size` (int, default: `0`)
+
+Number of candidates for the SentencePiece sampling API. When the value is 0, the standard SentencePiece encoding is used.
+
+### `sp_alpha` (float, default: `0.1`)
+
+Smoothing parameter for the SentencePiece sampling API.
+
 ## Marking joint tokens
 
 These options inject characters to make the tokenization reversible.

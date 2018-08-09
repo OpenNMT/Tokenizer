@@ -1,4 +1,4 @@
-#define BOOST_PYTHON_MAX_ARITY 19
+#define BOOST_PYTHON_MAX_ARITY 21
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 
@@ -33,6 +33,8 @@ public:
                    const std::string& bpe_vocab_path,
                    int bpe_vocab_threshold,
                    const std::string& sp_model_path,
+                   int sp_nbest_size,
+                   float sp_alpha,
                    const std::string& joiner,
                    bool joiner_annotate,
                    bool joiner_new,
@@ -71,19 +73,14 @@ public:
     if (segment_alphabet_change)
       flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
 
-    std::string model_path;
+    onmt::Tokenizer::Mode tok_mode = onmt::Tokenizer::mapMode.at(mode);
 
-    if (!bpe_model_path.empty())
-      model_path = bpe_model_path;
-    else if (!sp_model_path.empty())
-    {
-      flags |= onmt::Tokenizer::Flags::SentencePieceModel;
-      model_path = sp_model_path;
-    }
-
-    _tokenizer = new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(mode),
-                                     flags, model_path, joiner,
-                                     bpe_vocab_path, bpe_vocab_threshold);
+    if (!sp_model_path.empty())
+      _tokenizer = new onmt::Tokenizer(sp_model_path, sp_nbest_size, sp_alpha,
+                                       tok_mode, flags, joiner);
+    else
+      _tokenizer = new onmt::Tokenizer(tok_mode, flags, bpe_model_path, joiner,
+                                       bpe_vocab_path, bpe_vocab_threshold);
 
     for (auto it = py::stl_input_iterator<std::string>(segment_alphabet);
          it != py::stl_input_iterator<std::string>(); it++)
@@ -139,11 +136,13 @@ BOOST_PYTHON_MODULE(tokenizer)
 {
   py::class_<TokenizerWrapper>(
       "Tokenizer",
-      py::init<std::string, std::string, std::string, int, std::string, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
+      py::init<std::string, std::string, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
         (py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",
          py::arg("bpe_vocab_threshold")=50,
          py::arg("sp_model_path")="",
+         py::arg("sp_nbest_size")=0,
+         py::arg("sp_alpha")=0.1,
          py::arg("joiner")=onmt::Tokenizer::joiner_marker,
          py::arg("joiner_annotate")=false,
          py::arg("joiner_new")=false,
