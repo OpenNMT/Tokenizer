@@ -12,7 +12,7 @@ namespace onmt
     _processor.Load(model_path);
   }
 
-  void SentencePiece::enable_regularization(int nbest_size, double alpha)
+  void SentencePiece::enable_regularization(int nbest_size, float alpha)
   {
     _nbest_size = nbest_size;
     _alpha = alpha;

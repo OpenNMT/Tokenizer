@@ -91,7 +91,7 @@ namespace onmt
 
   Tokenizer::Tokenizer(const std::string& sp_model_path,
                        int sp_nbest_size,
-                       double sp_alpha,
+                       float sp_alpha,
                        Mode mode,
                        int flags,
                        const std::string& joiner)
