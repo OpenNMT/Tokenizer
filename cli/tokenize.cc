@@ -30,6 +30,8 @@ int main(int argc, char* argv[])
     ("bpe_vocab_threshold", po::value<int>()->default_value(50), "Vocabulary threshold. If vocabulary is provided, any word with frequency < threshold will be treated as OOV.")
 #ifdef WITH_SP
     ("sp_model,sp", po::value<std::string>()->default_value(""), "path to the SentencePiece model")
+    ("sp_nbest_size", po::value<int>()->default_value(0), "number of candidates for the SentencePiece sampling API")
+    ("sp_alpha", po::value<float>()->default_value(0.1), "smoothing parameter for the SentencePiece sampling API")
 #endif
     ;
 
@@ -70,28 +72,28 @@ int main(int argc, char* argv[])
                vm["segment_alphabet"].as<std::string>(),
                boost::is_any_of(","));
 
-  std::string model_path;
+  onmt::Tokenizer* tokenizer = nullptr;
 
-  if (!vm["bpe_model"].as<std::string>().empty())
-    model_path = vm["bpe_model"].as<std::string>();
 #ifdef WITH_SP
-  else if (!vm["sp_model"].as<std::string>().empty())
+  if (!vm["sp_model"].as<std::string>().empty())
   {
-    flags |= onmt::Tokenizer::Flags::SentencePieceModel;
-    model_path = vm["sp_model"].as<std::string>();
+    tokenizer = new onmt::Tokenizer(vm["sp_model"].as<std::string>(),
+                                    vm["sp_nbest_size"].as<int>(),
+                                    vm["sp_alpha"].as<float>(),
+                                    onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
+                                    flags,
+                                    vm["joiner"].as<std::string>());
   }
+  else
 #endif
-
-  std::string bpe_vocab_path = vm["bpe_vocab"].as<std::string>();
-  int bpe_vocab_threshold = vm["bpe_vocab_threshold"].as<int>();
-
-  onmt::Tokenizer* tokenizer = new onmt::Tokenizer(
-    onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
-    flags,
-    model_path,
-    vm["joiner"].as<std::string>(),
-    bpe_vocab_path,
-    bpe_vocab_threshold);
+  {
+    tokenizer = new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
+                                    flags,
+                                    vm["bpe_model"].as<std::string>(),
+                                    vm["joiner"].as<std::string>(),
+                                    vm["bpe_vocab"].as<std::string>(),
+                                    vm["bpe_vocab_threshold"].as<int>());
+  }
 
   for (const auto& alphabet : alphabets_to_segment)
   {

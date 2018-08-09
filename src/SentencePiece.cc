@@ -6,14 +6,31 @@ namespace onmt
   static const std::string sp_marker("▁");
 
   SentencePiece::SentencePiece(const std::string& model_path)
+    : _nbest_size(0)
+    , _alpha(0.0)
   {
     _processor.Load(model_path);
+  }
+
+  void SentencePiece::enable_regularization(int nbest_size, float alpha)
+  {
+    _nbest_size = nbest_size;
+    _alpha = alpha;
   }
 
   std::vector<std::string> SentencePiece::encode(const std::string& str) const
   {
     std::vector<std::string> pieces;
-    _processor.Encode(str, &pieces);
+
+#ifdef SP_HAS_SAMPLE_ENCODE
+    if (_nbest_size != 0)
+      _processor.SampleEncode(str, _nbest_size, _alpha, &pieces);
+    else
+#endif
+    {
+      _processor.Encode(str, &pieces);
+    }
+
     return pieces;
   }
 

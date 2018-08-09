@@ -63,6 +63,11 @@ else()
   list(APPEND SOURCES src/SentencePiece.cc)
   list(APPEND INCLUDE_DIRECTORIES ${SP_INCLUDE_DIR})
   list(APPEND LINK_LIBRARIES ${SP_LIBRARY})
+
+  file(STRINGS ${SP_INCLUDE_DIR}/sentencepiece_processor.h HAS_SAMPLE_ENCODE REGEX "SampleEncode")
+  if(HAS_SAMPLE_ENCODE)
+    add_definitions(-DSP_HAS_SAMPLE_ENCODE)
+  endif()
 endif()
 
 add_library(${PROJECT_NAME} ${SOURCES})

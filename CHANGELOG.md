@@ -2,6 +2,8 @@
 
 ### New features
 
+* Support SentencePiece sampling API
+
 ### Fixes and improvements
 
 ## [v1.6.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.6.1) (2018-07-31)
