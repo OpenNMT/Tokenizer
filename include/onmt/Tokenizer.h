@@ -55,6 +55,14 @@ namespace onmt
               const std::string& joiner = joiner_marker,
               const std::string& bpe_vocab_path = "",
               int bpe_vocab_threshold = 50);
+
+    // SentencePiece-specific constructor.
+    Tokenizer(Mode mode,
+              const std::string& sp_model_path,
+              size_t sp_nbest_size = 0,
+              double sp_alpha = 0.1,
+              int flags = Flags::None,
+              const std::string& joiner = joiner_marker);
     ~Tokenizer();
 
     void tokenize(const std::string& text,
@@ -107,6 +115,7 @@ namespace onmt
 
     std::set<int> _segment_alphabet;
 
+    void read_flags(int flags);
     std::vector<AnnotatedToken> encode_subword(const std::vector<AnnotatedToken>& tokens) const;
     void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
                          std::vector<std::string>& tokens) const;

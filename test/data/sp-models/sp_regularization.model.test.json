@@ -1,6 +1,0 @@
-{
-  "model" : "../test/data/sp-models/sp_regularization.model",
-  "nbest_size" : 1,
-  "alpha" : 0.1
-}
-

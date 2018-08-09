@@ -68,22 +68,10 @@ namespace onmt
                        const std::string& bpe_vocab_path,
                        int bpe_vocab_threshold)
     : _mode(mode)
-    , _case_feature(flags & Flags::CaseFeature)
-    , _joiner_annotate(flags & Flags::JoinerAnnotate)
-    , _joiner_new(flags & Flags::JoinerNew)
-    , _with_separators(flags & Flags::WithSeparators)
-    , _segment_case(flags & Flags::SegmentCase)
-    , _segment_numbers(flags & Flags::SegmentNumbers)
-    , _segment_alphabet_change(flags & Flags::SegmentAlphabetChange)
-    , _cache_model((flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel))
-    , _no_substitution(flags & Flags::NoSubstitution)
-    , _spacer_annotate(flags & Flags::SpacerAnnotate)
-    , _spacer_new(flags & Flags::SpacerNew)
-    , _preserve_placeholders(flags & Flags::PreservePlaceholders)
-    , _preserve_segmented_tokens(flags & Flags::PreserveSegmentedTokens)
     , _subword_encoder(nullptr)
     , _joiner(joiner)
   {
+    read_flags(flags);
     if (flags & Flags::SentencePieceModel)
 #ifdef WITH_SP
       set_sp_model(model_path, _cache_model);
@@ -99,6 +87,43 @@ namespace onmt
         ((BPE *)_subword_encoder)->set_joiner(joiner);
       }
     }
+  }
+
+  Tokenizer::Tokenizer(Mode mode,
+                       const std::string& sp_model_path,
+                       size_t sp_nbest_size,
+                       double sp_alpha,
+                       int flags,
+                       const std::string& joiner)
+    : _mode(mode)
+    , _subword_encoder(nullptr)
+    , _joiner(joiner)
+  {
+#ifndef WITH_SP
+    throw std::runtime_error("The Tokenizer was not built with SentencePiece support");
+#else
+    read_flags(flags);
+    set_sp_model(sp_model_path, _cache_model);
+    if (sp_nbest_size > 0)
+      ((SentencePiece*)_subword_encoder)->enable_regularization(sp_nbest_size, sp_alpha);
+#endif
+  }
+
+  void Tokenizer::read_flags(int flags)
+  {
+    _case_feature = flags & Flags::CaseFeature;
+    _joiner_annotate = flags & Flags::JoinerAnnotate;
+    _joiner_new = flags & Flags::JoinerNew;
+    _with_separators = flags & Flags::WithSeparators;
+    _segment_case = flags & Flags::SegmentCase;
+    _segment_numbers = flags & Flags::SegmentNumbers;
+    _segment_alphabet_change = flags & Flags::SegmentAlphabetChange;
+    _cache_model = (flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel);
+    _no_substitution = flags & Flags::NoSubstitution;
+    _spacer_annotate = flags & Flags::SpacerAnnotate;
+    _spacer_new = flags & Flags::SpacerNew;
+    _preserve_placeholders = flags & Flags::PreservePlaceholders;
+    _preserve_segmented_tokens = flags & Flags::PreserveSegmentedTokens;
   }
 
   Tokenizer::~Tokenizer()

@@ -53,8 +53,6 @@ endif()
 
 find_library(SP_LIBRARY NAMES sentencepiece)
 find_path(SP_INCLUDE_DIR NAMES sentencepiece_processor.h)
-find_path(JSON_INCLUDE_DIR NAMES json/json.h)
-find_library(JSON_LIBRARY NAMES json)
 
 if(NOT SP_LIBRARY OR NOT SP_INCLUDE_DIR)
   message(WARNING "sentencepiece not found; will not be supported")
@@ -65,15 +63,11 @@ else()
   list(APPEND SOURCES src/SentencePiece.cc)
   list(APPEND INCLUDE_DIRECTORIES ${SP_INCLUDE_DIR})
   list(APPEND LINK_LIBRARIES ${SP_LIBRARY})
-  list(APPEND INCLUDE_DIRECTORIES ${JSON_INCLUDE_DIR})
-  list(APPEND LINK_LIBRARIES ${JSON_LIBRARY})
 endif()
-
-link_directories(${JSON_LIBRARY})
 
 add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORIES})
-target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES} json)
+target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 
 if (NOT LIB_ONLY)
   add_subdirectory(cli)
