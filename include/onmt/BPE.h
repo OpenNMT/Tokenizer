@@ -37,6 +37,7 @@ namespace onmt
     std::unordered_map<std::string, std::pair<std::string, std::string> > _codes_reverse;
     std::unordered_set<std::string> _bpe_vocab;
 
+    void apply_merges(std::vector<std::string>& chars) const;
     int get_min_pair_index(const std::vector<std::string>& chars) const;
 
     void check_vocab_and_split(const std::vector<std::string> & orig, std::vector<std::string> & out) const;

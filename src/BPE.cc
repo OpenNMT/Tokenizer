@@ -110,55 +110,7 @@ namespace onmt
         chars.push_back(_end_of_word);
     }
 
-    std::vector<std::string> new_chars;
-    new_chars.reserve(chars.size());
-
-    while (true)
-    {
-      int min_index = get_min_pair_index(chars);
-
-      if (min_index < 0)
-        break;
-
-      const std::string& gram1 = chars[min_index];
-      const std::string& gram2 = chars[min_index + 1];
-
-      bool merge = false;
-      new_chars.clear();
-
-      for (size_t i = 0; i < chars.size(); ++i)
-      {
-        if (merge)
-        {
-          if (chars[i] == gram2)
-          {
-            new_chars.push_back(gram1 + gram2);
-            merge = false;
-          }
-          else if (chars[i] == gram1)
-          {
-            new_chars.push_back(gram1);
-          }
-          else
-          {
-            new_chars.push_back(gram1);
-            new_chars.push_back(chars[i]);
-            merge = false;
-          }
-        }
-        else
-        {
-          if (chars[i] == gram1)
-            merge = true;
-          else
-            new_chars.push_back(chars[i]);
-        }
-      }
-
-      chars.swap(new_chars);
-      if (chars.size() == 1)
-        break;
-    }
+    apply_merges(chars);
 
     if (_prefix)
     {
@@ -209,6 +161,59 @@ namespace onmt
     }
 
     return chars;
+  }
+
+  void BPE::apply_merges(std::vector<std::string>& chars) const
+  {
+    std::vector<std::string> new_chars;
+    new_chars.reserve(chars.size());
+
+    while (true)
+    {
+      int min_index = get_min_pair_index(chars);
+
+      if (min_index < 0)
+        break;
+
+      const std::string& gram1 = chars[min_index];
+      const std::string& gram2 = chars[min_index + 1];
+
+      bool merge = false;
+      new_chars.clear();
+
+      for (size_t i = 0; i < chars.size(); ++i)
+      {
+        if (merge)
+        {
+          if (chars[i] == gram2)
+          {
+            new_chars.push_back(gram1 + gram2);
+            merge = false;
+          }
+          else if (chars[i] == gram1)
+          {
+            new_chars.push_back(gram1);
+          }
+          else
+          {
+            new_chars.push_back(gram1);
+            new_chars.push_back(chars[i]);
+            merge = false;
+          }
+        }
+        else
+        {
+          if (chars[i] == gram1)
+            merge = true;
+          else
+            new_chars.push_back(chars[i]);
+        }
+      }
+
+      chars.swap(new_chars);
+      if (chars.size() == 1)
+        break;
+    }
   }
 
   int BPE::get_min_pair_index(const std::vector<std::string>& chars) const
