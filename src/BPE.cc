@@ -165,10 +165,7 @@ namespace onmt
 
   void BPE::apply_merges(std::vector<std::string>& chars) const
   {
-    std::vector<std::string> new_chars;
-    new_chars.reserve(chars.size());
-
-    while (true)
+    while (chars.size() > 1)
     {
       int min_index = get_min_pair_index(chars);
 
@@ -178,41 +175,23 @@ namespace onmt
       const std::string& gram1 = chars[min_index];
       const std::string& gram2 = chars[min_index + 1];
 
-      bool merge = false;
-      new_chars.clear();
+      size_t w = 0;
 
-      for (size_t i = 0; i < chars.size(); ++i)
+      for (size_t r = 0; r < chars.size(); ++r, ++w)
       {
-        if (merge)
+        if (r == static_cast<size_t>(min_index)
+            || (chars[r] == gram1 && r + 1 < chars.size() && chars[r + 1] == gram2))
         {
-          if (chars[i] == gram2)
-          {
-            new_chars.push_back(gram1 + gram2);
-            merge = false;
-          }
-          else if (chars[i] == gram1)
-          {
-            new_chars.push_back(gram1);
-          }
-          else
-          {
-            new_chars.push_back(gram1);
-            new_chars.push_back(chars[i]);
-            merge = false;
-          }
+          chars[w] = gram1 + gram2;
+          ++r;
         }
-        else
+        else if (r != w)
         {
-          if (chars[i] == gram1)
-            merge = true;
-          else
-            new_chars.push_back(chars[i]);
+          chars[w] = std::move(chars[r]);
         }
       }
 
-      chars.swap(new_chars);
-      if (chars.size() == 1)
-        break;
+      chars.resize(w);
     }
   }
 
