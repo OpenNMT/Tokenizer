@@ -1,4 +1,6 @@
 #include "onmt/BPE.h"
+
+#include <algorithm>
 #include <fstream>
 #include <limits>
 
@@ -110,55 +112,7 @@ namespace onmt
         chars.push_back(_end_of_word);
     }
 
-    std::vector<std::string> new_chars;
-    new_chars.reserve(chars.size());
-
-    while (true)
-    {
-      int min_index = get_min_pair_index(chars);
-
-      if (min_index < 0)
-        break;
-
-      const std::string& gram1 = chars[min_index];
-      const std::string& gram2 = chars[min_index + 1];
-
-      bool merge = false;
-      new_chars.clear();
-
-      for (size_t i = 0; i < chars.size(); ++i)
-      {
-        if (merge)
-        {
-          if (chars[i] == gram2)
-          {
-            new_chars.push_back(gram1 + gram2);
-            merge = false;
-          }
-          else if (chars[i] == gram1)
-          {
-            new_chars.push_back(gram1);
-          }
-          else
-          {
-            new_chars.push_back(gram1);
-            new_chars.push_back(chars[i]);
-            merge = false;
-          }
-        }
-        else
-        {
-          if (chars[i] == gram1)
-            merge = true;
-          else
-            new_chars.push_back(chars[i]);
-        }
-      }
-
-      chars.swap(new_chars);
-      if (chars.size() == 1)
-        break;
-    }
+    apply_merges(chars);
 
     if (_prefix)
     {
@@ -211,27 +165,63 @@ namespace onmt
     return chars;
   }
 
-  int BPE::get_min_pair_index(const std::vector<std::string>& chars) const
+  int BPE::get_score(const std::string& gram1, const std::string& gram2) const
   {
-    int min_index = -1;
-    int min_score = std::numeric_limits<int>::max();
+    auto it = _codes.find(gram1 + gram2);
+    if (it != _codes.end())
+      return it->second;
+    else
+      return std::numeric_limits<int>::max();
+  }
 
-    for (int i = 0; i + 1 < static_cast<int>(chars.size()); ++i)
+  void BPE::apply_merges(std::vector<std::string>& chars) const
+  {
+    // Compute score for all pairs.
+    std::vector<int> scores;
+    scores.reserve(chars.size() - 1);
+    for (size_t i = 0; i + 1 < chars.size(); ++i)
+      scores.push_back(get_score(chars[i], chars[i + 1]));
+
+    std::string gram1;
+    std::string gram2;
+
+    while (chars.size() > 1)
     {
-      auto it = _codes.find(chars[i] + chars[i + 1]);
+      // Get best score.
+      auto min_it = std::min_element(scores.begin(), scores.end());
+      if (*min_it == std::numeric_limits<int>::max())
+        break;
 
-      if (it != _codes.end())
+      size_t index = std::distance(scores.begin(), min_it);
+      gram1 = chars[index];
+      gram2 = chars[index + 1];
+
+      size_t r = index;  // Read index.
+      size_t w = index;  // Write index.
+      size_t score_invalidation_index = 0;
+
+      for (; r < chars.size(); ++r, ++w)
       {
-        int score = it->second;
-        if (score < min_score)
+        if (r == index || (r + 1 < chars.size() && chars[r] == gram1 && chars[r + 1] == gram2))
         {
-          min_score = score;
-          min_index = i;
+          chars[w] = gram1 + gram2;
+          score_invalidation_index = w + 1;  // Invalidate score of pairs (w-1,w) and (w,w+1)
+          ++r;  // Skip gram2.
         }
-      }
-    }
+        else
+        {
+          chars[w] = std::move(chars[r]);
+          if (r < scores.size())
+            scores[w] = scores[r];
+        }
 
-    return min_index;
+        if (w <= score_invalidation_index && w > 0)  // Maybe invalidate current score.
+          scores[w - 1] = get_score(chars[w - 1], chars[w]);
+      }
+
+      chars.resize(w);
+      scores.resize(chars.size() - 1);
+    }
   }
 
   void BPE::init_bpe_vocab(const std::string& vocab_path, int bpe_vocab_threshold)
