@@ -6,7 +6,7 @@
 
 ### Fixes and improvements
 
-* Additional +25% speedup for BPE encoding
+* Additional +30% speedup for BPE tokenization
 
 ## [v1.6.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.6.1) (2018-07-31)
 

@@ -182,10 +182,7 @@ namespace onmt
     for (size_t i = 0; i + 1 < chars.size(); ++i)
       scores.push_back(get_score(chars[i], chars[i + 1]));
 
-    std::string gram1;
-    std::string gram2;
-
-    while (chars.size() > 1)
+    while (true)
     {
       // Get best score.
       auto min_it = std::min_element(scores.begin(), scores.end());
@@ -193,34 +190,19 @@ namespace onmt
         break;
 
       size_t index = std::distance(scores.begin(), min_it);
-      gram1 = chars[index];
-      gram2 = chars[index + 1];
 
-      size_t r = index;  // Read index.
-      size_t w = index;  // Write index.
-      size_t score_invalidation_index = 0;
+      // Merge pair.
+      chars[index] += chars[index + 1];
+      chars.erase(chars.begin() + index + 1);
+      if (chars.size() == 1)
+        break;
 
-      for (; r < chars.size(); ++r, ++w)
-      {
-        if (r == index || (r + 1 < chars.size() && chars[r] == gram1 && chars[r + 1] == gram2))
-        {
-          chars[w] = gram1 + gram2;
-          score_invalidation_index = w + 1;  // Invalidate score of pairs (w-1,w) and (w,w+1)
-          ++r;  // Skip gram2.
-        }
-        else
-        {
-          chars[w] = std::move(chars[r]);
-          if (r < scores.size())
-            scores[w] = scores[r];
-        }
-
-        if (w <= score_invalidation_index && w > 0)  // Maybe invalidate current score.
-          scores[w - 1] = get_score(chars[w - 1], chars[w]);
-      }
-
-      chars.resize(w);
-      scores.resize(chars.size() - 1);
+      // Update score of pairs (index-1,index) and (index,index+1).
+      if (index > 0)
+        scores[index - 1] = get_score(chars[index - 1], chars[index]);
+      if (index + 1 < chars.size())
+        scores[index] = get_score(chars[index], chars[index + 1]);
+      scores.erase(scores.begin() + std::min(index + 1, chars.size() - 1));
     }
   }
 
