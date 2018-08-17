@@ -72,27 +72,27 @@ int main(int argc, char* argv[])
                vm["segment_alphabet"].as<std::string>(),
                boost::is_any_of(","));
 
-  onmt::Tokenizer* tokenizer = nullptr;
+  std::unique_ptr<onmt::Tokenizer> tokenizer;
 
 #ifdef WITH_SP
   if (!vm["sp_model"].as<std::string>().empty())
   {
-    tokenizer = new onmt::Tokenizer(vm["sp_model"].as<std::string>(),
-                                    vm["sp_nbest_size"].as<int>(),
-                                    vm["sp_alpha"].as<float>(),
-                                    onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
-                                    flags,
-                                    vm["joiner"].as<std::string>());
+    tokenizer.reset(new onmt::Tokenizer(vm["sp_model"].as<std::string>(),
+                                        vm["sp_nbest_size"].as<int>(),
+                                        vm["sp_alpha"].as<float>(),
+                                        onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
+                                        flags,
+                                        vm["joiner"].as<std::string>()));
   }
   else
 #endif
   {
-    tokenizer = new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
-                                    flags,
-                                    vm["bpe_model"].as<std::string>(),
-                                    vm["joiner"].as<std::string>(),
-                                    vm["bpe_vocab"].as<std::string>(),
-                                    vm["bpe_vocab_threshold"].as<int>());
+    tokenizer.reset(new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
+                                        flags,
+                                        vm["bpe_model"].as<std::string>(),
+                                        vm["joiner"].as<std::string>(),
+                                        vm["bpe_vocab"].as<std::string>(),
+                                        vm["bpe_vocab_threshold"].as<int>()));
   }
 
   for (const auto& alphabet : alphabets_to_segment)
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
   while (std::getline(std::cin, line))
   {
     if (!line.empty())
-      std::cout << reinterpret_cast<onmt::ITokenizer*>(tokenizer)->tokenize(line);
+      std::cout << reinterpret_cast<onmt::ITokenizer*>(tokenizer.get())->tokenize(line);
 
     std::cout << std::endl;
   }
