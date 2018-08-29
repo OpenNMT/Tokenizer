@@ -11,11 +11,24 @@ namespace onmt
     for (size_t j = 0; j < encoded.size(); ++j)
     {
       tokens.emplace_back(encoded[j]);
-      if (j == 0 && token.is_joined_left())
-        tokens.back().join_left();
-      if (j + 1 < encoded.size() || token.is_joined_right())
+      if (j + 1 < encoded.size())
         tokens.back().join_right();
     }
+
+    if (token.is_joined_left())
+    {
+      tokens.front().join_left();
+      if (token.should_preserve())
+        tokens.front().preserve();
+    }
+    if (token.is_joined_right())
+    {
+      tokens.back().join_right();
+      if (token.should_preserve())
+        tokens.back().preserve();
+    }
+
+
 
     return tokens;
   }

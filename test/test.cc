@@ -304,6 +304,16 @@ TEST(TokenizerTest, PreserveSegmentCase) {
   test_tok_and_detok(tokenizer, "WiFi", "Wi ￭ Fi");
 }
 
+TEST(TokenizerTest, PreserveSegmentCaseBPE) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::Conservative,
+                  Tokenizer::Flags::SegmentCase
+                  | Tokenizer::Flags::JoinerAnnotate
+                  | Tokenizer::Flags::PreserveSegmentedTokens,
+                  get_data("bpe-models/testcode.v0.1")));
+  test_tok_and_detok(tokenizer, "iF", "i ￭ F");
+}
+
 TEST(TokenizerTest, BPEBasic) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate,
