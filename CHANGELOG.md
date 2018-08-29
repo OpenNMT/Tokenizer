@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [v1.6.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.6.2) (2018-08-29)
+
 ### New features
 
 * Support SentencePiece sampling API
@@ -7,6 +9,7 @@
 ### Fixes and improvements
 
 * Additional +30% speedup for BPE tokenization
+* Fix BPE not respecting `PreserveSegmentedTokens` (#30)
 
 ## [v1.6.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.6.1) (2018-07-31)
 
