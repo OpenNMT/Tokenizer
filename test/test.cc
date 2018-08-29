@@ -75,6 +75,19 @@ TEST(TokenizerTest, None) {
   test_tok(tokenizer, "Hello World!", "Hello World!");
 }
 
+TEST(TokenizerTest, NoneWithPlaceholders1) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::JoinerAnnotate));
+  test_tok(tokenizer, "Hello:｟World｠!", "Hello:￭ ｟World｠￭ !");
+}
+
+TEST(TokenizerTest, NoneWithPlaceholders2) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::JoinerAnnotate |
+                                         Tokenizer::Flags::PreservePlaceholders));
+  test_tok(tokenizer, "Hello:｟World｠!", "Hello:￭ ｟World｠ ￭ !");
+}
+
 TEST(TokenizerTest, BasicSpace) {
   auto tokenizer = std::unique_ptr<ITokenizer>(
     new Tokenizer(Tokenizer::Mode::Space));

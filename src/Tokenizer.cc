@@ -197,6 +197,33 @@ namespace onmt
     return tokenize(text, words, features, alphabets);
   }
 
+  static void _tokenizeByPlaceholder(const std::string &text,
+                                     std::vector<AnnotatedToken> &annotated_tokens,
+                                     bool preserve_placeholders) {
+    size_t q = 0;
+    while (1) {
+      if (q != 0)
+        annotated_tokens.back().join_right();
+      size_t p = text.find(Tokenizer::ph_marker_open, q);
+      if (p == std::string::npos) {
+        annotated_tokens.emplace_back(text.substr(q));
+        break;
+      }
+      if (p != q)
+        annotated_tokens.emplace_back(text.substr(q, p-q));
+      annotated_tokens.back().join_right();
+      q = text.find(Tokenizer::ph_marker_close, p);
+      if (q == std::string::npos) {
+        annotated_tokens.emplace_back(text.substr(p));
+        break;
+      }
+      q += Tokenizer::ph_marker_close.length();
+      annotated_tokens.emplace_back(text.substr(p, q-p));
+      if (preserve_placeholders)
+        annotated_tokens.back().preserve();
+    }
+  }
+
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features,
@@ -206,7 +233,7 @@ namespace onmt
     annotated_tokens.reserve(text.size());
 
     if (_mode == Mode::None) {
-      annotated_tokens.emplace_back(text);
+      _tokenizeByPlaceholder(text, annotated_tokens, _preserve_placeholders);
     } else if (_mode == Mode::Space) {
       if (text.empty())
         return;
@@ -219,7 +246,7 @@ namespace onmt
 
         std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
 
-        annotated_tokens.emplace_back(fields[0]);
+        _tokenizeByPlaceholder(fields[0], annotated_tokens, _preserve_placeholders);
 
         for (size_t i = 1; i < fields.size(); ++i)
         {

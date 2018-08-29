@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixes and improvements
+
+* Preserve placeholders as independent tokens for all modes
+
 ## [v1.6.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.6.2) (2018-08-29)
 
 ### New features
