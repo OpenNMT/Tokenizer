@@ -54,12 +54,23 @@ namespace onmt
       else
         new_token.set(std::move(piece));
 
-      if ((j == 0 && token.is_joined_left()) || (j > 0 && !is_marked))
+      if (j > 0 && !is_marked)
         new_token.join_left();
-      if (j + 1 == encoded.size() && token.is_joined_right())
-        new_token.join_right();
       if (is_marked)
         new_token.spacer();
+    }
+
+    if (token.is_joined_left())
+    {
+      tokens.front().join_left();
+      if (token.should_preserve())
+        tokens.front().preserve();
+    }
+    if (token.is_joined_right())
+    {
+      tokens.back().join_right();
+      if (token.should_preserve())
+        tokens.back().preserve();
     }
 
     return tokens;

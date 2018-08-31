@@ -445,6 +445,20 @@ TEST(TokenizerTest, SentencePieceWithJoinersAndPh) {
   test_tok_and_detok(tokenizer,
                      "The two shows, called ｟Desire｠ and Secrets, will be one-hour prime-time shows.",
                      "The two shows ￭, called ｟Desire｠ and S ￭e ￭c ￭re ￭t ￭s ￭, will be one ￭- ￭hour prime ￭- ￭time shows ￭.");
+  test_tok_and_detok(tokenizer,
+                     "The two shows, called｟Desire｠and Secrets, will be one-hour prime-time shows.",
+                     "The two shows ￭, called￭ ｟Desire｠￭ and S ￭e ￭c ￭re ￭t ￭s ￭, will be one ￭- ￭hour prime ￭- ￭time shows ￭.");
+}
+
+TEST(TokenizerTest, SentencePieceWithJoinersAndPh_preserve) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(
+    new Tokenizer(Tokenizer::Mode::None,
+                  Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SentencePieceModel|
+                                         Tokenizer::Flags::PreservePlaceholders,
+                  get_data("sp-models/sp.model")));
+  test_tok_and_detok(tokenizer,
+                     "The two shows, called｟Desire｠and Secrets, will be one-hour prime-time shows.",
+                     "The two shows ￭, called￭ ｟Desire｠ ￭ and S ￭e ￭c ￭re ￭t ￭s ￭, will be one ￭- ￭hour prime ￭- ￭time shows ￭.");
 }
 
 #ifdef SP_HAS_SAMPLE_ENCODE
