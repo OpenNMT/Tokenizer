@@ -7,7 +7,7 @@ Reference:
 Rico Sennrich, Barry Haddow and Alexandra Birch (2016). Neural Machine Translation of Rare Words with Subword Units.
 Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (ACL 2016). Berlin, Germany.
 
-The code is converted from bpe_learn.py () - version 
+The code is converted from bpe_learn.py (https://github.com/rsennrich/subword-nmts) - version #6e67561
 */
 
 #include "onmt/BPELearner.h"
