@@ -17,6 +17,7 @@ namespace onmt
     void set(const std::string& str);
     void clear();
     const std::string& str() const;
+    std::string& get_str();
 
     void join_right();
     void join_left();

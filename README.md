@@ -6,6 +6,7 @@ This project implements a generic and customizable text tokenization based on th
 
 * Fast and generic text tokenization with minimal dependencies
 * Support for BPE or SentencePiece models
+* Efficient learner mode for learning subword models
 * Customizable reversible tokenization: marking joints or spaces, with special characters or tokens
 * Advanced text segmentation options: case change, alphabet change, etc.
 * Protected sequences against tokenization with the special characters "｟" and "｠"
@@ -38,7 +39,7 @@ It will produce the dynamic library `libOpenNMTTokenizer.{so,dylib,dll}`, and th
 
 The tokenizer can be used in several ways:
 
-* command line clients `cli/tokenize` and `cli/detokenize`
+* command line clients `cli/tokenize`, `cli/detokenize`, `cli/subword_learn`
 * [C++ API](include/onmt/Tokenizer.h)
 * [Python API](bindings/python)
 

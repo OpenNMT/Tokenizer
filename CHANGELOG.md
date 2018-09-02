@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### New features
+
+* Add BPE learning
+
 ### Fixes and improvements
 
 * Preserve placeholders as independent tokens for all modes

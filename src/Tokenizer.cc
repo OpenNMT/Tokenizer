@@ -206,17 +206,27 @@ namespace onmt
                                      bool preserve_placeholders) {
     size_t q = 0;
     while (1) {
-      if (q != 0 && text[q] != ' ')
-        annotated_tokens.back().join_right();
+      if (q != 0) {
+        if (text[q] != ' ')
+          annotated_tokens.back().join_right();
+        else
+          q++;
+      }
       size_t p = text.find(Tokenizer::ph_marker_open, q);
       if (p == std::string::npos) {
         annotated_tokens.emplace_back(text.substr(q));
         break;
       }
-      if (p != q)
+      if (p != q) {
         annotated_tokens.emplace_back(text.substr(q, p-q));
-      if (annotated_tokens.size() && !_endsWithSpace(annotated_tokens.back().str()))
-        annotated_tokens.back().join_right();
+        if (annotated_tokens.size()) {
+          /* add a joiner or remove space */
+          if (!_endsWithSpace(annotated_tokens.back().str()))
+            annotated_tokens.back().join_right();
+          else
+            annotated_tokens.back().get_str().erase(annotated_tokens.back().str().length()-1);
+        }
+      }
       q = text.find(Tokenizer::ph_marker_close, p);
       if (q == std::string::npos) {
         annotated_tokens.emplace_back(text.substr(p));
@@ -596,6 +606,10 @@ namespace onmt
   {
     _joiner = joiner;
     return *this;
+  }
+
+  void Tokenizer::unset_annotate() {
+    _joiner_annotate = _spacer_annotate = false;
   }
 
   template <typename T>
