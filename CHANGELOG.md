@@ -2,7 +2,7 @@
 
 ### New features
 
-* Add BPE learning
+* Add integrated Subword Learning with first support of BPE.
 
 ### Fixes and improvements
 
