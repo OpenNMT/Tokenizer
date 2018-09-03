@@ -215,6 +215,8 @@ namespace onmt
       }
       if (p != q)
         annotated_tokens.emplace_back(text.substr(q, p-q));
+      if (annotated_tokens.size() && !_endsWithSpace(annotated_tokens.back().str()))    
+         annotated_tokens.back().join_right();
       q = text.find(Tokenizer::ph_marker_close, p);
       if (q == std::string::npos) {
         annotated_tokens.emplace_back(text.substr(p));
