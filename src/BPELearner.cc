@@ -32,14 +32,17 @@ namespace onmt
     return "(" + t.substr(2) + ")";
   }
 
-  BPELearner::BPELearner(bool verbose, Tokenizer *pTokenizer,
+  BPELearner::BPELearner(bool verbose,
                          int symbols, int min_frequency, bool dict_input, bool total_symbols):
-              SubwordLearner(verbose, pTokenizer),
+              SubwordLearner(verbose),
               _symbols(symbols), _min_frequency(min_frequency),
               _dict_input(dict_input), _total_symbols(total_symbols) {
   }
 
-  void BPELearner::ingest(std::istream &is) {
+  void BPELearner::ingest(std::istream &is, Tokenizer *pTok) {
+    if (!pTok)
+      pTok = this->_pTokDefault;
+    pTok->unset_annotate();
     // get_vocabulary - builds vocabulary from file or dictionary
     while (!is.eof()) {
       std::string line;
@@ -55,7 +58,7 @@ namespace onmt
         } else {
           sequence words;
           std::vector<sequence> features;
-          _pTok->tokenize(line, words, features);
+          pTok->tokenize(line, words, features);
           for(auto w: words) {
             if (w.find(Tokenizer::ph_marker_open) == std::string::npos)
               _vocab[w]++;
@@ -232,8 +235,17 @@ namespace onmt
     }
   }
 
-  void BPELearner::learn(std::ostream &os) {
+  void BPELearner::learn(std::ostream &os, const char *description) {
     os << "#version: 0.2\n";    
+    if (description) {
+      std::string desc = std::string("# ") + description;
+      size_t p = desc.find("\n");
+      while (p != std::string::npos) {
+        desc.replace(p, 1, "\n# ");
+        p = desc.find("\n", p+1);
+      }
+      os << desc << std::endl;
+    }
 
     /* convert vocab into character sequence+</w> and sort by inv frequency */
     std::multimap<int, sequence > charvocab;

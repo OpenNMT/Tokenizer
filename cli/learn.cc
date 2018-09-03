@@ -119,7 +119,6 @@ int main(int argc, char* argv[])
     }
 
     learner = new onmt::BPELearner(vm["verbose"].as<bool>(),
-                                   &tokenizer,
                                    vm["symbols"].as<int>(),
                                    vm["min-frequency"].as<int>(),
                                    vm["dict-input"].as<bool>(),
@@ -147,10 +146,10 @@ int main(int argc, char* argv[])
         std::cout << "ERROR: cannot open file " << inputFileName << " for reading " << std::endl;
         return 0;
       }
-      learner->ingest(inputFile);
+      learner->ingest(inputFile, &tokenizer);
     }
   } else
-    learner->ingest(std::cin);
+    learner->ingest(std::cin, &tokenizer);
 
   std::ostream* pCout = &std::cout;
   std::ofstream outputFile;
@@ -163,7 +162,7 @@ int main(int argc, char* argv[])
     }
     pCout = &outputFile;
   }
-  learner->learn(*pCout);
+  learner->learn(*pCout, "Generated with subword_learn cli");
 
   return 1;
 }

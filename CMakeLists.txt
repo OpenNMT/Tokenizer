@@ -21,10 +21,12 @@ set(PUBLIC_HEADERS
   include/onmt/Alphabet.h
   include/onmt/AnnotatedToken.h
   include/onmt/BPE.h
+  include/onmt/BPELearner.h
   include/onmt/CaseModifier.h
   include/onmt/ITokenizer.h
   include/onmt/SpaceTokenizer.h
   include/onmt/SubwordEncoder.h
+  include/onmt/SubwordLearner.h
   include/onmt/Tokenizer.h
   )
 

@@ -10,10 +10,10 @@ namespace onmt
   class BPELearner: public SubwordLearner
   {
   public:
-    BPELearner(bool verbose, Tokenizer *pTokenizer,
+    BPELearner(bool verbose,
                int symbols, int min_frequency, bool dict_input, bool total_symbols);
-    void ingest(std::istream &is);
-    void learn(std::ostream &os);
+    void ingest(std::istream &is, Tokenizer *pTokenizer=0);
+    void learn(std::ostream &os, const char *description=0);
   private:
     int _symbols;
     int _min_frequency;

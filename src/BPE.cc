@@ -65,8 +65,13 @@ namespace onmt
         in.seekg(0);
     }
 
+    bool header = true;
     while (std::getline(in, line))
     {
+      /* line starting with '#' at the beginning of the file is a header */
+      if (header && line.length() && line[0] == '#')
+        continue;
+      header = false;
       size_t sep = line.find(' ');
       if (sep != std::string::npos && sep + 1 < line.size())
       {
