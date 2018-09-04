@@ -3,11 +3,9 @@
 #include <algorithm>
 #include <fstream>
 #include <limits>
-#include <list>
 
 #include "onmt/unicode/Unicode.h"
 #include "onmt/CaseModifier.h"
-#include "onmt/Tokenizer.h"
 
 namespace onmt
 {
