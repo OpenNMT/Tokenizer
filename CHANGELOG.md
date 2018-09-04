@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### New features
+
+* Add integrated Subword Learning with first support of BPE.
+
 ### Fixes and improvements
 
 * Preserve placeholders as independent tokens for all modes

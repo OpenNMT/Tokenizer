@@ -41,6 +41,11 @@ namespace onmt
     return _str;
   }
 
+  std::string& AnnotatedToken::get_str()
+  {
+    return _str;
+  }
+
   void AnnotatedToken::join_right()
   {
     _join_right = true;

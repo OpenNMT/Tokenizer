@@ -598,6 +598,10 @@ namespace onmt
     return *this;
   }
 
+  void Tokenizer::unset_annotate() {
+    _joiner_annotate = _spacer_annotate = false;
+  }
+
   template <typename T>
   Tokenizer& Tokenizer::set_subword_encoder_model(const std::string& model_path, bool cache_model)
   {

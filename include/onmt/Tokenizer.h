@@ -86,6 +86,7 @@ namespace onmt
 #ifdef WITH_SP
     Tokenizer& set_sp_model(const std::string& model_path, bool cache_model = false);
 #endif
+    void unset_annotate();
 
     bool add_alphabet_to_segment(const std::string& alphabet);
     bool is_alphabet_to_segment(const std::string& alphabet) const;
