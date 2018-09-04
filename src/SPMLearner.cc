@@ -78,17 +78,17 @@ DEFINE_int32(pad_id, kDefaultTrainerSpec.pad_id(),
 DEFINE_string(unk_surface, kDefaultTrainerSpec.unk_surface(),
   "Dummy surface string for <unk>. In decoding <unk> is decoded to "
   "`unk_surface`.");
- 
+
 namespace onmt
 {
-  SPMLearner::SPMLearner(bool verbose, Tokenizer *pTokenizer,
+  SPMLearner::SPMLearner(bool verbose,
                         int argc, char **argv):
-              SubwordLearner(verbose, pTokenizer), 
+              SubwordLearner(verbose),
               _argc(argc), _argv(argv),
               _trainer(nullptr) {
   }
 
-  void SPMLearner::ingest(std::istream &is) {
+  void SPMLearner::ingest(std::istream &is, Tokenizer *pTok) {
      sentencepiece::flags::ParseCommandLineFlags(_argc, _argv);
      sentencepiece::TrainerSpec trainer_spec;
      sentencepiece::NormalizerSpec normalizer_spec;
@@ -155,7 +155,7 @@ namespace onmt
      _trainer->LoadSentences(&is);
    }
 
-   void SPMLearner::learn(std::ostream &os) {
+   void SPMLearner::learn(std::ostream &os, const char *description) {
      _trainer->Train(&os);
    }
 }

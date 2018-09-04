@@ -155,7 +155,6 @@ int main(int argc, char* argv[])
     }
 
     learner = new onmt::SPMLearner(vm["verbose"].as<bool>(),
-      &tokenizer,
       opts.size()+5,
       (char **)p_argv);
       
