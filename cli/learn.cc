@@ -7,6 +7,7 @@
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPELearner.h>
+#include "onmt/SPMLearner.h"
 
 namespace po = boost::program_options;
 
@@ -127,8 +128,38 @@ int main(int argc, char* argv[])
   }
 #ifdef WITH_SP
   else if (subword == "sp") {
-    std::cerr << "ERROR: sp learning not supported yet..." << std::endl;
-    return 0;
+    // ls command has the following options:
+    po::options_description sp_desc("sp options");
+    sp_desc.add_options()
+    ("model_type", po::value<std::string>()->default_value("unigram"), "model algorithm: unigram, bpe, word or char.")
+    ("vocab_size", po::value<int>()->default_value(8000), "vocabulary size");
+
+    std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
+
+    int n = opts.size();
+    const char **p_argv = new const char *[n + 5];
+
+    for (int i = 0; i < opts.size(); i++)
+    {
+      p_argv[i + 1] = opts[i].c_str();
+      std::cout << p_argv[i + 1] << std::endl;
+    }
+    p_argv[n + 1] = "--input";
+    p_argv[n + 2] = vm["input"].as<std::vector<std::string> >()[0].c_str();
+    p_argv[n + 3] = "--model_prefix";
+    p_argv[n + 4] = vm["output"].as<std::string>().c_str();
+
+    if (vm.count("help")) {
+      std::cout << sp_desc << std::endl;
+      return 1;
+    }
+
+    learner = new onmt::SPMLearner(vm["verbose"].as<bool>(),
+      &tokenizer,
+      opts.size()+5,
+      (char **)p_argv);
+      
+    delete[] p_argv;
   }
 #endif
   else {
