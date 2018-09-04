@@ -17,7 +17,21 @@ set(INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
 
+find_package(Protobuf REQUIRED)
+include_directories(${Protobuf_INCLUDE_DIRS})
+protobuf_generate_cpp(SPM_PROTO_SRCS SPM_PROTO_HDRS ${SP_PROJECT_DIRS}/sentencepiece.proto)
+protobuf_generate_cpp(SPM_MODEL_PROTO_SRCS SPM_MODEL_PROTO_HDRS ${SP_PROJECT_DIRS}/sentencepiece_model.proto)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${PROTOBUF_INCLUDE_DIR})
+
+configure_file("${SP_PROJECT_DIRS}/config.h.in" "config.h")
+include_directories(${SP_PROJECT_DIRS}/src)
+include_directories(${SP_PROJECT_DIRS})
+  
 set(PUBLIC_HEADERS
+  ${SPM_PROTO_HDRS}
+  ${SPM_MODEL_PROTO_HDRS}
   include/onmt/Alphabet.h
   include/onmt/AnnotatedToken.h
   include/onmt/BPE.h
@@ -25,12 +39,15 @@ set(PUBLIC_HEADERS
   include/onmt/CaseModifier.h
   include/onmt/ITokenizer.h
   include/onmt/SpaceTokenizer.h
+  include/onmt/SPMLearner.h
   include/onmt/SubwordEncoder.h
   include/onmt/SubwordLearner.h
   include/onmt/Tokenizer.h
   )
 
 set(SOURCES
+  ${SPM_PROTO_SRCS}
+  ${SPM_MODEL_PROTO_SRCS}
   src/Alphabet.cc
   src/AnnotatedToken.cc
   src/BPE.cc
@@ -38,6 +55,7 @@ set(SOURCES
   src/CaseModifier.cc
   src/ITokenizer.cc
   src/SpaceTokenizer.cc
+  src/SPMLearner.cc
   src/SubwordEncoder.cc
   src/SubwordLearner.cc
   src/Tokenizer.cc
