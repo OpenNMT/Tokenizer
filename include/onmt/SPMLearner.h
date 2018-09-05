@@ -6,6 +6,7 @@
 
 namespace onmt
 {
+
   class SPMLearner: public SubwordLearner
   {
   public:
