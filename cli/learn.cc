@@ -36,6 +36,8 @@ int main(int argc, char* argv[])
       ("input,i", po::value<std::vector<std::string> >()->multitoken(),
                                              "input files (default standard input)")
       ("output,o", po::value<std::string>(), "output file (default standard output)")
+      ("tmpfile", po::value<std::string>()->default_value("input.tmp"),
+       "Temporary file for file-based learner")
       ("subword", po::value<std::string>(), "subword")
       ("subargs", po::value<std::vector<std::string> >(), "Arguments for subword learner");
 
@@ -130,26 +132,8 @@ int main(int argc, char* argv[])
   }
 #ifdef WITH_SP
   else if (subword == "sp") {
-    po::options_description sp_desc("SentencePiece options");
-    sp_desc.add_options()
-      ("tmp-file", po::value<std::string>()->default_value("sp.tmp"), "Temporary input file")
-      ;
     std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
-
-    // Parse again...
-    try {
-      po::store(po::command_line_parser(opts).options(sp_desc).run(), vm);
-    } catch (po::error &e) {
-      std::cerr << "ERROR: " << e.what() << std::endl;
-      return 0;
-    }
-
-    if (vm.count("help")) {
-      std::cout << sp_desc << std::endl;
-      return 1;
-    }
-
-    learner = new onmt::SPMLearner(vm["verbose"].as<bool>(), opts, vm["tmp-file"].as<std::string>());
+    learner = new onmt::SPMLearner(vm["verbose"].as<bool>(), opts, vm["tmpfile"].as<std::string>());
   }
 #endif
   else {
