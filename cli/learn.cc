@@ -7,7 +7,9 @@
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPELearner.h>
-#include "onmt/SPMLearner.h"
+#ifdef WITH_SP
+#  include <onmt/SPMLearner.h>
+#endif
 
 namespace po = boost::program_options;
 
