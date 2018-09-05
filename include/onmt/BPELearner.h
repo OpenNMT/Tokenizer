@@ -15,7 +15,6 @@ namespace onmt
 
     void ingest(std::istream& is, Tokenizer* pTokenizer = 0) override;
     void learn(std::ostream& os, const char* description = 0) override;
-    void learn(const std::string& output_filename, const char* description = 0) override;
   private:
     int _symbols;
     int _min_frequency;

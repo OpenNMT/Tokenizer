@@ -15,7 +15,6 @@ namespace onmt
     virtual ~SubwordLearner();
     virtual void ingest(std::istream &, Tokenizer *) = 0;
     virtual void learn(std::ostream &, const char *) = 0;
-    virtual void learn(const std::string & output_filename, const char *) = 0;
   protected:
     bool _verbose;
     Tokenizer *_pTokDefault;
