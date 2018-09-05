@@ -17,21 +17,7 @@ set(INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
 
-find_package(Protobuf REQUIRED)
-include_directories(${Protobuf_INCLUDE_DIRS})
-protobuf_generate_cpp(SPM_PROTO_SRCS SPM_PROTO_HDRS ${SP_PROJECT_DIRS}/src/sentencepiece.proto)
-protobuf_generate_cpp(SPM_MODEL_PROTO_SRCS SPM_MODEL_PROTO_HDRS ${SP_PROJECT_DIRS}/src/sentencepiece_model.proto)
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${PROTOBUF_INCLUDE_DIR})
-
-configure_file("${SP_PROJECT_DIRS}/config.h.in" "config.h")
-include_directories(${SP_PROJECT_DIRS}/src)
-include_directories(${SP_PROJECT_DIRS})
-  
 set(PUBLIC_HEADERS
-  ${SPM_PROTO_HDRS}
-  ${SPM_MODEL_PROTO_HDRS}
   include/onmt/Alphabet.h
   include/onmt/AnnotatedToken.h
   include/onmt/BPE.h
@@ -46,8 +32,6 @@ set(PUBLIC_HEADERS
   )
 
 set(SOURCES
-  ${SPM_PROTO_SRCS}
-  ${SPM_MODEL_PROTO_SRCS}
   src/Alphabet.cc
   src/AnnotatedToken.cc
   src/BPE.cc
@@ -84,7 +68,7 @@ else()
   list(APPEND PUBLIC_HEADERS include/onmt/SentencePiece.h)
   list(APPEND SOURCES src/SentencePiece.cc)
   list(APPEND INCLUDE_DIRECTORIES ${SP_INCLUDE_DIR})
-  list(APPEND LINK_LIBRARIES ${SP_LIBRARY})
+  list(APPEND LINK_LIBRARIES ${SP_LIBRARY} sentencepiece_train)
 
   file(STRINGS ${SP_INCLUDE_DIR}/sentencepiece_processor.h HAS_SAMPLE_ENCODE REGEX "SampleEncode")
   if(HAS_SAMPLE_ENCODE)
