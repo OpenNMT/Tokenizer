@@ -25,7 +25,6 @@ set(PUBLIC_HEADERS
   include/onmt/CaseModifier.h
   include/onmt/ITokenizer.h
   include/onmt/SpaceTokenizer.h
-  include/onmt/SPMLearner.h
   include/onmt/SubwordEncoder.h
   include/onmt/SubwordLearner.h
   include/onmt/Tokenizer.h
@@ -39,7 +38,6 @@ set(SOURCES
   src/CaseModifier.cc
   src/ITokenizer.cc
   src/SpaceTokenizer.cc
-  src/SPMLearner.cc
   src/SubwordEncoder.cc
   src/SubwordLearner.cc
   src/Tokenizer.cc
@@ -57,18 +55,24 @@ else()
   list(APPEND SOURCES src/unicode/Data.cc)
 endif()
 
-find_library(SP_LIBRARY NAMES sentencepiece)
+find_library(SP_TRAIN_LIBRARY NAMES sentencepiece_train)
 find_path(SP_INCLUDE_DIR NAMES sentencepiece_processor.h)
 
-if(NOT SP_LIBRARY OR NOT SP_INCLUDE_DIR)
+if(NOT SP_TRAIN_LIBRARY OR NOT SP_INCLUDE_DIR)
   message(WARNING "sentencepiece not found; will not be supported")
 else()
-  message(STATUS "Found sentencepiece: ${SP_LIBRARY}")
+  message(STATUS "Found sentencepiece: ${SP_TRAIN_LIBRARY}")
   add_definitions(-DWITH_SP)
-  list(APPEND PUBLIC_HEADERS include/onmt/SentencePiece.h)
-  list(APPEND SOURCES src/SentencePiece.cc)
+  list(APPEND PUBLIC_HEADERS
+    include/onmt/SentencePiece.h
+    include/onmt/SPMLearner.h
+    )
+  list(APPEND SOURCES
+    src/SentencePiece.cc
+    src/SPMLearner.cc
+    )
   list(APPEND INCLUDE_DIRECTORIES ${SP_INCLUDE_DIR})
-  list(APPEND LINK_LIBRARIES ${SP_LIBRARY} sentencepiece_train)
+  list(APPEND LINK_LIBRARIES ${SP_TRAIN_LIBRARY})
 
   file(STRINGS ${SP_INCLUDE_DIR}/sentencepiece_processor.h HAS_SAMPLE_ENCODE REGEX "SampleEncode")
   if(HAS_SAMPLE_ENCODE)
