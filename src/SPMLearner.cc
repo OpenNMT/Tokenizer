@@ -51,7 +51,7 @@ namespace onmt
     std::cerr << "INFO: If the process ends immediately after \"Parsing xxx ...\", "
               << "check input parameters for SentencePiece"
               << std::endl
-              << _args
+              << final_args
               << std::endl;
 
     _input_stream.reset();
