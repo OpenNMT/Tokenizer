@@ -55,24 +55,29 @@ else()
   list(APPEND SOURCES src/unicode/Data.cc)
 endif()
 
-find_library(SP_TRAIN_LIBRARY NAMES sentencepiece_train)
+find_library(SP_LIBRARY NAMES sentencepiece)
 find_path(SP_INCLUDE_DIR NAMES sentencepiece_processor.h)
 
-if(NOT SP_TRAIN_LIBRARY OR NOT SP_INCLUDE_DIR)
+if(NOT SP_LIBRARY OR NOT SP_INCLUDE_DIR)
   message(WARNING "sentencepiece not found; will not be supported")
 else()
-  message(STATUS "Found sentencepiece: ${SP_TRAIN_LIBRARY}")
+  message(STATUS "Found sentencepiece: ${SP_LIBRARY}")
   add_definitions(-DWITH_SP)
-  list(APPEND PUBLIC_HEADERS
-    include/onmt/SentencePiece.h
-    include/onmt/SPMLearner.h
-    )
-  list(APPEND SOURCES
-    src/SentencePiece.cc
-    src/SPMLearner.cc
-    )
+  list(APPEND PUBLIC_HEADERS include/onmt/SentencePiece.h)
+  list(APPEND SOURCES src/SentencePiece.cc)
   list(APPEND INCLUDE_DIRECTORIES ${SP_INCLUDE_DIR})
-  list(APPEND LINK_LIBRARIES ${SP_TRAIN_LIBRARY})
+
+  find_library(SP_TRAIN_LIBRARY NAMES sentencepiece_train)
+  if(SP_TRAIN_LIBRARY)
+    add_definitions(-DWITH_SP_TRAIN)
+    message(STATUS "Found sentencepiece_train: ${SP_TRAIN_LIBRARY}")
+    list(APPEND PUBLIC_HEADERS include/onmt/SPMLearner.h)
+    list(APPEND SOURCES src/SPMLearner.cc)
+    list(APPEND LINK_LIBRARIES ${SP_TRAIN_LIBRARY})
+  else()
+    message(WARNING "sentencepiece_train not found: training SentencePiece models will not be supported")
+    list(APPEND LINK_LIBRARIES ${SP_LIBRARY})
+  endif()
 
   file(STRINGS ${SP_INCLUDE_DIR}/sentencepiece_processor.h HAS_SAMPLE_ENCODE REGEX "SampleEncode")
   if(HAS_SAMPLE_ENCODE)

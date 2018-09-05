@@ -7,7 +7,7 @@
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPELearner.h>
-#ifdef WITH_SP
+#ifdef WITH_SP_TRAIN
 #  include <onmt/SPMLearner.h>
 #endif
 
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
                                    vm["total-symbols"].as<bool>());
 
   }
-#ifdef WITH_SP
+#ifdef WITH_SP_TRAIN
   else if (subword == "sp") {
     std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
     learner = new onmt::SPMLearner(vm["verbose"].as<bool>(), opts, vm["tmpfile"].as<std::string>());
