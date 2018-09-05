@@ -2,6 +2,12 @@
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.7.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.7.0) (2018-09-04)
+
+### New features
+
 * Add integrated Subword Learning with first support of BPE.
 
 ### Fixes and improvements
