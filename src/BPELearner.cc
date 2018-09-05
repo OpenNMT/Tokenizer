@@ -235,6 +235,11 @@ namespace onmt
     }
   }
 
+  void BPELearner::learn(const std::string& output_filename, const char* description) {
+    std::ofstream os(output_filename);
+    learn(os, description);
+  }
+
   void BPELearner::learn(std::ostream &os, const char *description) {
     os << "#version: 0.2\n";    
     if (description) {
