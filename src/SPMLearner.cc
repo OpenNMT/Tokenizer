@@ -47,14 +47,14 @@ namespace onmt
     final_args += " --input=" + _input_filename;
     final_args += " --model_prefix=" + model_prefix;
 
+    _input_stream.reset();
+
     sentencepiece::SentencePieceTrainer::Train(final_args);
     std::cerr << "INFO: If the process ends immediately after \"Parsing xxx ...\", "
               << "check input parameters for SentencePiece"
               << std::endl
               << final_args
               << std::endl;
-
-    _input_stream.reset();
 
     std::string sp_model_path = model_prefix + ".model";
     std::string sp_vocab_path = model_prefix + ".vocab";
