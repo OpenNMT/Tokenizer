@@ -7,6 +7,9 @@
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPELearner.h>
+#ifdef WITH_SP_TRAIN
+#  include <onmt/SPMLearner.h>
+#endif
 
 namespace po = boost::program_options;
 
@@ -33,6 +36,8 @@ int main(int argc, char* argv[])
       ("input,i", po::value<std::vector<std::string> >()->multitoken(),
                                              "input files (default standard input)")
       ("output,o", po::value<std::string>(), "output file (default standard output)")
+      ("tmpfile", po::value<std::string>()->default_value("input.tmp"),
+       "Temporary file for file-based learner")
       ("subword", po::value<std::string>(), "subword")
       ("subargs", po::value<std::vector<std::string> >(), "Arguments for subword learner");
 
@@ -125,10 +130,10 @@ int main(int argc, char* argv[])
                                    vm["total-symbols"].as<bool>());
 
   }
-#ifdef WITH_SP
+#ifdef WITH_SP_TRAIN
   else if (subword == "sp") {
-    std::cerr << "ERROR: sp learning not supported yet..." << std::endl;
-    return 0;
+    std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
+    learner = new onmt::SPMLearner(vm["verbose"].as<bool>(), opts, vm["tmpfile"].as<std::string>());
   }
 #endif
   else {
