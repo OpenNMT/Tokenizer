@@ -2,9 +2,13 @@
 
 ### New features
 
-* Add learning interface for SentencePiece
-
 ### Fixes and improvements
+
+## [v1.8.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.0) (2018-09-07)
+
+### New features
+
+* Add learning interface for SentencePiece
 
 ## [v1.7.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.7.0) (2018-09-04)
 
