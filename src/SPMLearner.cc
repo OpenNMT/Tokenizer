@@ -29,6 +29,16 @@ namespace onmt
       _args += opts[i] + "=" + opts[i + 1] + " ";
   }
 
+  SPMLearner::SPMLearner(bool verbose,
+                         const std::unordered_map<std::string, std::string>& opts,
+                         const std::string& input_filename)
+    : SubwordLearner(verbose)
+    , _input_filename(input_filename)
+  {
+    for (const auto& pair : opts)
+      _args += " --" + pair.first + "=" + pair.second;
+  }
+
   void SPMLearner::ingest(std::istream& is, Tokenizer*)
   {
     if (!_input_stream)
