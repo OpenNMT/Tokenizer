@@ -92,6 +92,8 @@ namespace onmt
     bool is_alphabet_to_segment(const std::string& alphabet) const;
     bool is_alphabet_to_segment(int alphabet) const;
 
+    static bool is_placeholder(const std::string& str);
+
   private:
     static const int placeholder_alphabet = -2;
     static const int number_alphabet = -3;
@@ -127,8 +129,6 @@ namespace onmt
 
     bool has_left_marker(const std::string& word, const std::string& marker) const;
     bool has_right_marker(const std::string& word, const std::string& marker) const;
-
-    static bool is_placeholder(const std::string& str);
   };
 
 }

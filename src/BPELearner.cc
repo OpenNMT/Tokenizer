@@ -60,7 +60,7 @@ namespace onmt
           std::vector<sequence> features;
           pTok->tokenize(line, words, features);
           for(auto w: words) {
-            if (w.find(Tokenizer::ph_marker_open) == std::string::npos)
+            if (!Tokenizer::is_placeholder(w))
               _vocab[w]++;
           }
         }
