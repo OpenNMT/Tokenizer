@@ -678,11 +678,11 @@ namespace onmt
 
   bool Tokenizer::is_placeholder(const std::string& str)
   {
-    size_t ph_begin = str.find(onmt::Tokenizer::ph_marker_open);
+    size_t ph_begin = str.find(ph_marker_open);
     if (ph_begin == std::string::npos)
       return false;
-    size_t min_ph_end = ph_begin + onmt::Tokenizer::ph_marker_open.length() + 1;
-    return str.find(onmt::Tokenizer::ph_marker_close, min_ph_end) != std::string::npos;
+    size_t min_ph_end = ph_begin + ph_marker_open.length() + 1;
+    return str.find(ph_marker_close, min_ph_end) != std::string::npos;
   }
 
 }
