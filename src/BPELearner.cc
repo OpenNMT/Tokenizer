@@ -27,7 +27,7 @@ namespace onmt
 
   std::string _S(const sequence &s) {
     std::string t;
-    for(auto w: s)
+    for(const auto& w: s)
       t += ", u'" + w + "'";
     return "(" + t.substr(2) + ")";
   }
@@ -59,7 +59,7 @@ namespace onmt
           sequence words;
           std::vector<sequence> features;
           pTok->tokenize(line, words, features);
-          for(auto w: words) {
+          for(const auto& w: words) {
             if (!Tokenizer::is_placeholder(w))
               _vocab[w]++;
           }
