@@ -4,6 +4,10 @@
 
 ### Fixes and improvements
 
+## [v1.8.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.1) (2018-09-07)
+
+### Fixes and improvements
+
 * Support training SentencePiece as a subtokenizer
 
 ## [v1.8.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.0) (2018-09-07)
