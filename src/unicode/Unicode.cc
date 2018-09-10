@@ -1,6 +1,7 @@
 #include "onmt/unicode/Unicode.h"
 
 #ifdef WITH_ICU
+#  include <unicode/uchar.h>
 #  include <unicode/unistr.h>
 #else
 #  include "onmt/unicode/Data.h"

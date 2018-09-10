@@ -1,27 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <unordered_map>
 #include <vector>
 #include <string>
-
-#ifdef WITH_ICU
-#  include <unicode/uchar.h>
-#endif
 
 namespace onmt
 {
   namespace unicode
   {
 
-#ifdef WITH_ICU
-    typedef UChar32 code_point_t;
-#else
-    typedef uint32_t code_point_t;
-    typedef std::vector<std::pair<code_point_t, std::vector<code_point_t>>> map_of_list_t;
-    typedef std::unordered_map<code_point_t, code_point_t> map_unicode;
-#endif
+    typedef int32_t code_point_t;
 
     std::string cp_to_utf8(code_point_t u);
     code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l);

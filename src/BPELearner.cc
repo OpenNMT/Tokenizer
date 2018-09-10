@@ -16,6 +16,7 @@ The code is converted from bpe_learn.py (https://github.com/rsennrich/subword-nm
 #include <fstream>
 #include <limits>
 #include <list>
+#include <map>
 
 #include "onmt/unicode/Unicode.h"
 #include "onmt/Tokenizer.h"
