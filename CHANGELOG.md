@@ -4,6 +4,12 @@
 
 ### Fixes and improvements
 
+## [v1.8.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.2) (2018-09-10)
+
+### Fixes and improvements
+
+* Minor fix to CMakeLists.txt for SentencePiece compilation
+
 ## [v1.8.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.1) (2018-09-07)
 
 ### Fixes and improvements
