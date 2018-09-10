@@ -68,9 +68,6 @@ else()
   list(APPEND INCLUDE_DIRECTORIES ${SP_INCLUDE_DIR})
   list(APPEND LINK_LIBRARIES ${SP_LIBRARY})
 
-  get_filename_component(SP_LIBRARY_DIR ${SP_LIBRARY} DIRECTORY)
-  set(CMAKE_INSTALL_RPATH ${SP_LIBRARY_DIR})
-
   find_library(SP_TRAIN_LIBRARY NAMES sentencepiece_train)
   if(SP_TRAIN_LIBRARY)
     add_definitions(-DWITH_SP_TRAIN)
