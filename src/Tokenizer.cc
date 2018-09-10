@@ -1,6 +1,7 @@
 #include "onmt/Tokenizer.h"
 
 #include <algorithm>
+#include <map>
 #include <mutex>
 
 #include "onmt/Alphabet.h"

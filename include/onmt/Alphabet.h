@@ -1,8 +1,7 @@
 #pragma once
 
 #include <set>
-#include <string>
-#include <vector>
+#include <unordered_map>
 
 #include "onmt/unicode/Unicode.h"
 
