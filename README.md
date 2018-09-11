@@ -5,8 +5,8 @@
 This project implements a generic and customizable text tokenization based on the original OpenNMT tokenization tools. It features:
 
 * Fast and generic text tokenization with minimal dependencies
-* Support for BPE or SentencePiece models
-* Efficient learner mode for learning subword models
+* Support for BPE and SentencePiece models
+* Efficient training mode for learning subword models
 * Customizable reversible tokenization: marking joints or spaces, with special characters or tokens
 * Advanced text segmentation options: case change, alphabet change, etc.
 * Protected sequences against tokenization with the special characters "｟" and "｠"
@@ -15,6 +15,7 @@ This project implements a generic and customizable text tokenization based on th
 ## Dependencies
 
 * (optional) [SentencePiece](https://github.com/google/sentencepiece)
+* (optional) [ICU](http://site.icu-project.org/)
 * (required by clients) [Boost](https://www.boost.org/) (`program_options`)
 
 ## Compiling
@@ -28,7 +29,7 @@ cmake -DCMAKE_BUILD_TYPE=<Release or Debug> ..
 make
 ```
 
-It will produce the dynamic library `libOpenNMTTokenizer.{so,dylib,dll}`, and the tokenization tools `cli/tokenize` and `cli/detokenize`.
+It will produce the dynamic library `libOpenNMTTokenizer` and tokenization clients in `cli/`.
 
 ### Options
 

@@ -8,6 +8,12 @@ This file documents the options of the Tokenizer interface which can be used in:
 
 *The exact name format of each option may be different depending on the API used.*
 
+## Terminology
+
+* **joiner**: special character indicating that the surrounding tokens should be merged when detokenized
+* **spacer**: special character indicating that a space should introduced when detokenized
+* **placeholder** (or **protected sequence**): sequence of characters delimited by ｟ and ｠ that should not be segmented
+
 ## General
 
 ### `mode` (string, required)
@@ -20,8 +26,6 @@ Defines the tokenization mode:
 * `space`: space tokenization
 * `none`: no tokenization is applied and the input is passed directly to the BPE or SP model if set.
 
-`space` and `none` modes are incompatible with options listed in the *Segmenting* section.
-
 ```bash
 $ echo "It costs £2,000" | cli/tokenize --mode conservative
 It costs £ 2,000 .
@@ -33,6 +37,18 @@ $ echo "It costs £2,000" | cli/tokenize --mode space
 It costs £2,000.
 $ echo "It costs £2,000" | cli/tokenize --mode none
 It costs £2,000.
+```
+
+**Notes:**
+
+* `space` and `none` modes are incompatible with options listed in the *Segmenting* section.
+* In all modes, the text at least segmented on placeholders:
+
+```bash
+$ echo "a｟b｠c" | cli/tokenize --mode space
+a ｟b｠ c
+$ echo "a｟b｠c" | cli/tokenize --mode none
+a ｟b｠ c
 ```
 
 ### `case_feature` (boolean, default: `false`)
@@ -56,7 +72,7 @@ Possible case types:
 
 Disable substitution of special characters defined by the Tokenizer and found in the input text (e.g. joiners, spacers, etc.).
 
-## Subtokenizer
+## Subword
 
 ### `bpe_model` (string, default: `""`)
 
@@ -134,7 +150,7 @@ Hello ▁ World !
 
 ### `preserve_placeholders` (boolean, default: `false`)
 
-Do not attach joiners or spacers to placeholders (character sequences encapsulated with ｟ and ｠).
+Do not attach joiners or spacers to placeholders.
 
 ```bash
 $ echo "Hello｟World｠" | cli/tokenize --joiner_annotate
