@@ -366,7 +366,7 @@ namespace onmt
             cur_number = unicode::is_number(v);
 
             int alphabet = get_alphabet_id(v);
-            if (alphabet > 0 && cur_letter)
+            if (alphabet >= 0 && cur_letter)
               alphabets[id_to_alphabet(static_cast<Alphabet>(alphabet))]++;
             else
               alphabets[cur_number ? "Numeric" : "Other"]++;

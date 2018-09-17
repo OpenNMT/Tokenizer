@@ -45,9 +45,10 @@ static void test_tok_alphabet(std::unique_ptr<ITokenizer>& tokenizer,
 
   EXPECT_EQ(output, expected);
 
-  for(auto it: expected_alphabets)
-    EXPECT_TRUE(alphabets.find(it.first) != alphabets.end() &&
-                alphabets[it.first] == it.second);
+  for (const auto& it: expected_alphabets) {
+    ASSERT_TRUE(alphabets.find(it.first) != alphabets.end());
+    EXPECT_EQ(alphabets[it.first], it.second);
+  }
 }
 
 static void test_tok_and_detok(std::unique_ptr<ITokenizer>& tokenizer,
@@ -401,6 +402,14 @@ TEST(TokenizerTest, Alphabets) {
   std::unordered_map<std::string, size_t> han2;
   han2["Han"] = 2;
   test_tok_alphabet(tokenizer, "有 入", "有 入", han2);
+}
+
+TEST(TokenizerTest, ArabicAlphabet) {
+  auto tokenizer = std::unique_ptr<ITokenizer>(new Tokenizer(Tokenizer::Mode::Conservative));
+  std::unordered_map<std::string, size_t> alphabets {
+    {"Arabic", 5}
+  };
+  test_tok_alphabet(tokenizer, "مرحبا", "مرحبا", alphabets);
 }
 
 TEST(TokenizerTest, NonbreakableSpace) {
