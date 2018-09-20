@@ -78,6 +78,9 @@ namespace onmt
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features) const override;
 
+    using ITokenizer::tokenize;
+    using ITokenizer::detokenize;
+
     Tokenizer& set_joiner(const std::string& joiner);
 
     template <typename T>
