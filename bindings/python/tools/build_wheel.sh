@@ -20,7 +20,7 @@ TOKENIZER_REMOTE=https://github.com/OpenNMT/Tokenizer.git
 BOOST_VERSION=1.67.0
 CMAKE_VERSION=3.12.0
 PROTOBUF_VERSION=3.6.0
-SENTENCEPIECE_VERSION=a0b734a4a2a2259e346f5b602ba807c5deef2f0b
+SENTENCEPIECE_VERSION=0.1.4
 
 # Install protobuf.
 curl -L -O https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
@@ -41,9 +41,9 @@ make install
 cd ..
 
 # Build SentencePiece.
-git clone --single-branch https://github.com/google/sentencepiece.git
-cd sentencepiece
-git checkout $SENTENCEPIECE_VERSION
+curl -L -o sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz -O https://github.com/google/sentencepiece/archive/v${SENTENCEPIECE_VERSION}.tar.gz
+tar zxfv sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz
+cd sentencepiece-${SENTENCEPIECE_VERSION}
 mkdir build
 cd build
 cmake ..
