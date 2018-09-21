@@ -34,18 +34,7 @@ namespace onmt
 
     tokenize(text, words, features);
 
-    std::string output;
-
-    for (size_t i = 0; i < words.size(); ++i)
-    {
-      if (i > 0)
-        output += " ";
-      output += words[i];
-      for (size_t j = 0; j < features.size(); ++j)
-        output += feature_marker + features[j][i];
-    }
-
-    return output;
+    return SpaceTokenizer::get_instance().detokenize(words, features);
   }
 
   std::string ITokenizer::detokenize(const std::string& text) const
