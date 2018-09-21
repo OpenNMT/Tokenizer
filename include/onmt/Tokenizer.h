@@ -86,9 +86,7 @@ namespace onmt
     template <typename T>
     Tokenizer& set_subword_encoder_model(const std::string& model_path, bool cache_model);
     Tokenizer& set_bpe_model(const std::string& model_path, bool cache_model = false);
-#ifdef WITH_SP
     Tokenizer& set_sp_model(const std::string& model_path, bool cache_model = false);
-#endif
     void unset_annotate();
 
     bool add_alphabet_to_segment(const std::string& alphabet);

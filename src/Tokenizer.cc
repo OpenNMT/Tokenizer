@@ -74,12 +74,8 @@ namespace onmt
   {
     read_flags(flags);
     if (flags & Flags::SentencePieceModel)
-#ifdef WITH_SP
       set_sp_model(model_path, _cache_model);
     else
-#else
-      throw std::runtime_error("The Tokenizer was not built with SentencePiece support");
-#endif
     {
       set_bpe_model(model_path, _cache_model);
       if (_subword_encoder != nullptr && !bpe_vocab_path.empty())
@@ -100,17 +96,13 @@ namespace onmt
     , _subword_encoder(nullptr)
     , _joiner(joiner)
   {
-#ifndef WITH_SP
-    throw std::runtime_error("The Tokenizer was not built with SentencePiece support");
-#else
     read_flags(flags);
     set_sp_model(sp_model_path, _cache_model);
     if (sp_nbest_size != 0)
-#  ifdef SP_HAS_SAMPLE_ENCODE
+#ifdef SP_HAS_SAMPLE_ENCODE
       ((SentencePiece*)_subword_encoder)->enable_regularization(sp_nbest_size, sp_alpha);
-#  else
+#else
       throw std::runtime_error("This version of SentencePiece does not include the sampling API");
-#  endif
 #endif
   }
 
@@ -629,14 +621,16 @@ namespace onmt
     return this->set_subword_encoder_model<BPE>(model_path, cache_model);
   }
 
-#ifdef WITH_SP
   Tokenizer& Tokenizer::set_sp_model(const std::string& model_path, bool cache_model)
   {
+#ifdef WITH_SP
     if (_mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
       _spacer_annotate = true;
     return this->set_subword_encoder_model<SentencePiece>(model_path, cache_model);
-  }
+#else
+    throw std::runtime_error("The Tokenizer was not built with SentencePiece support");
 #endif
+  }
 
   bool Tokenizer::add_alphabet_to_segment(const std::string& alphabet)
   {
