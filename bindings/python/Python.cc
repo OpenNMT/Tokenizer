@@ -84,7 +84,7 @@ public:
 
     for (auto it = py::stl_input_iterator<std::string>(segment_alphabet);
          it != py::stl_input_iterator<std::string>(); it++)
-      dynamic_cast<onmt::Tokenizer*>(_tokenizer)->add_alphabet_to_segment(*it);
+      _tokenizer->add_alphabet_to_segment(*it);
   }
 
   ~TokenizerWrapper()
@@ -129,7 +129,7 @@ public:
   }
 
 private:
-  onmt::ITokenizer* _tokenizer;
+  onmt::Tokenizer* _tokenizer;
 };
 
 BOOST_PYTHON_MODULE(tokenizer)
