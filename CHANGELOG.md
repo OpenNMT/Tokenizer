@@ -4,6 +4,10 @@
 
 ### Fixes and improvements
 
+## [v1.8.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.3) (2018-09-18)
+
+### Fixes and improvements
+
 * Fix count of Arabic characters in the map of detected alphabets
 
 ## [v1.8.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.2) (2018-09-10)
