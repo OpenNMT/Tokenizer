@@ -5,6 +5,7 @@
 ### Fixes and improvements
 
 * Expose base methods in `Tokenizer` class
+* Small performance improvements for standard use cases
 
 ## [v1.8.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.3) (2018-09-18)
 
