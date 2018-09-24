@@ -125,6 +125,11 @@ namespace onmt
     void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
                          std::vector<std::string>& tokens) const;
 
+    void tokenize(const std::string& text,
+                  std::vector<std::string>& words,
+                  std::vector<std::vector<std::string> >& features,
+                  std::unordered_map<std::string, size_t>* alphabets) const;
+
     bool has_left_join(const std::string& word) const;
     bool has_right_join(const std::string& word) const;
 

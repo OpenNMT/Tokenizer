@@ -186,8 +186,14 @@ namespace onmt
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features) const {
-    std::unordered_map<std::string, size_t> alphabets;
-    return tokenize(text, words, features, alphabets);
+    return tokenize(text, words, features, nullptr);
+  }
+
+  void Tokenizer::tokenize(const std::string& text,
+                           std::vector<std::string>& words,
+                           std::vector<std::vector<std::string> >& features,
+                           std::unordered_map<std::string, size_t>& alphabets) const {
+    return tokenize(text, words, features, &alphabets);
   }
 
   static bool _endsWithSpace(const std::string &s) {
@@ -225,7 +231,7 @@ namespace onmt
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features,
-                           std::unordered_map<std::string, size_t>& alphabets) const
+                           std::unordered_map<std::string, size_t>* alphabets) const
   {
     std::vector<AnnotatedToken> annotated_tokens;
     annotated_tokens.reserve(text.size());
@@ -358,10 +364,13 @@ namespace onmt
             cur_number = unicode::is_number(v);
 
             int alphabet = get_alphabet_id(v);
-            if (alphabet >= 0 && cur_letter)
-              alphabets[id_to_alphabet(static_cast<Alphabet>(alphabet))]++;
-            else
-              alphabets[cur_number ? "Numeric" : "Other"]++;
+            if (alphabets != nullptr)
+            {
+              if (alphabet >= 0 && cur_letter)
+                (*alphabets)[id_to_alphabet(static_cast<Alphabet>(alphabet))]++;
+              else
+                (*alphabets)[cur_number ? "Numeric" : "Other"]++;
+            }
 
             bool is_mark = unicode::is_mark(v);
 
