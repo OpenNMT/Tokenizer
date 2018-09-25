@@ -1,7 +1,43 @@
 #include "onmt/SubwordEncoder.h"
 
+#include <fstream>
+
 namespace onmt
 {
+
+  void SubwordEncoder::load_vocabulary(const std::string& path, int frequency_threshold)
+  {
+    std::ifstream in(path);
+    if (!in.is_open())
+      throw std::invalid_argument("Unable to open vocabulary file `" + path + "'");
+
+    std::vector<std::string> vocab;
+    std::string line;
+    while (std::getline(in, line))
+    {
+      size_t sep = line.find(' ');
+      if (sep == std::string::npos && frequency_threshold <= 1)
+        vocab.emplace_back(std::move(line));
+      else if (sep != std::string::npos)
+      {
+        int frequency = std::stoi(line.substr(sep + 1));
+        if (frequency >= frequency_threshold)
+          vocab.emplace_back(line.substr(0, sep));
+      }
+    }
+
+    set_vocabulary(vocab);
+  }
+
+  void SubwordEncoder::set_vocabulary(const std::vector<std::string>&)
+  {
+    return;
+  }
+
+  void SubwordEncoder::reset_vocabulary()
+  {
+    return;
+  }
 
   std::vector<AnnotatedToken> SubwordEncoder::encode_and_annotate(const AnnotatedToken& token) const
   {

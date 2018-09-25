@@ -4,6 +4,8 @@
 #include <boost/algorithm/string.hpp>
 
 #include <onmt/Tokenizer.h>
+#include <onmt/BPE.h>
+#include <onmt/SentencePiece.h>
 
 namespace po = boost::program_options;
 
@@ -26,8 +28,10 @@ int main(int argc, char* argv[])
     ("segment_alphabet", po::value<std::string>()->default_value(""), "comma-separated list of alphabets on which to segment all letters.")
     ("segment_alphabet_change", po::bool_switch()->default_value(false), "Segment if the alphabet changes between 2 letters.")
     ("bpe_model,bpe", po::value<std::string>()->default_value(""), "path to the BPE model")
-    ("bpe_vocab", po::value<std::string>()->default_value(""), "Vocabulary file (built with get_vocab.py). If provided, this script reverts any merge operations that produce an OOV.")
-    ("bpe_vocab_threshold", po::value<int>()->default_value(50), "Vocabulary threshold. If vocabulary is provided, any word with frequency < threshold will be treated as OOV.")
+    ("bpe_vocab", po::value<std::string>()->default_value(""), "Deprecated, see --vocabulary.")
+    ("bpe_vocab_threshold", po::value<int>()->default_value(50), "Depracted, see --vocabulary_threshold.")
+    ("vocabulary", po::value<std::string>()->default_value(""), "Vocabulary file. If provided, sentences are encoded to subword present in this vocabulary.")
+    ("vocabulary_threshold", po::value<int>()->default_value(0), "Vocabulary threshold. If vocabulary is provided, any word with frequency < threshold will be treated as OOV.")
 #ifdef WITH_SP
     ("sp_model,sp", po::value<std::string>()->default_value(""), "path to the SentencePiece model")
     ("sp_nbest_size", po::value<int>()->default_value(0), "number of candidates for the SentencePiece sampling API")
@@ -72,32 +76,41 @@ int main(int argc, char* argv[])
                vm["segment_alphabet"].as<std::string>(),
                boost::is_any_of(","));
 
-  std::unique_ptr<onmt::Tokenizer> tokenizer;
-
-#ifdef WITH_SP
-  if (!vm["sp_model"].as<std::string>().empty())
+  std::string vocabulary = vm["vocabulary"].as<std::string>();
+  int vocabulary_threshold = vm["vocabulary_threshold"].as<int>();
+  if (vocabulary.empty())
   {
-    tokenizer.reset(new onmt::Tokenizer(vm["sp_model"].as<std::string>(),
-                                        vm["sp_nbest_size"].as<int>(),
-                                        vm["sp_alpha"].as<float>(),
-                                        onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
-                                        flags,
+    // Backward compatibility with previous option names.
+    vocabulary = vm["bpe_vocab"].as<std::string>();
+    vocabulary_threshold = vm["bpe_vocab_threshold"].as<int>();
+  }
+
+  std::unique_ptr<onmt::SubwordEncoder> subword_encoder;
+  if (!vm["bpe_model"].as<std::string>().empty())
+  {
+    subword_encoder.reset(new onmt::BPE(vm["bpe_model"].as<std::string>(),
                                         vm["joiner"].as<std::string>()));
   }
-  else
-#endif
+#ifdef WITH_SP
+  else if (!vm["sp_model"].as<std::string>().empty())
   {
-    tokenizer.reset(new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
-                                        flags,
-                                        vm["bpe_model"].as<std::string>(),
-                                        vm["joiner"].as<std::string>(),
-                                        vm["bpe_vocab"].as<std::string>(),
-                                        vm["bpe_vocab_threshold"].as<int>()));
+    subword_encoder.reset(new onmt::SentencePiece(vm["sp_model"].as<std::string>(),
+                                                  vm["sp_nbest_size"].as<int>(),
+                                                  vm["sp_alpha"].as<float>()));
   }
+#endif
+
+  if (subword_encoder && !vocabulary.empty())
+    subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);
+
+  onmt::Tokenizer tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
+                            subword_encoder.get(),
+                            flags,
+                            vm["joiner"].as<std::string>());
 
   for (const auto& alphabet : alphabets_to_segment)
   {
-    if (!alphabet.empty() && !tokenizer->add_alphabet_to_segment(alphabet))
+    if (!alphabet.empty() && !tokenizer.add_alphabet_to_segment(alphabet))
       std::cerr << "WARNING: " << alphabet << " alphabet is not supported" << std::endl;
   }
 
@@ -106,7 +119,7 @@ int main(int argc, char* argv[])
   while (std::getline(std::cin, line))
   {
     if (!line.empty())
-      std::cout << tokenizer->tokenize(line);
+      std::cout << tokenizer.tokenize(line);
 
     std::cout << std::endl;
   }

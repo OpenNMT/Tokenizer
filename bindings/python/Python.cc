@@ -1,8 +1,10 @@
-#define BOOST_PYTHON_MAX_ARITY 21
+#define BOOST_PYTHON_MAX_ARITY 23
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 
 #include <onmt/Tokenizer.h>
+#include <onmt/BPE.h>
+#include <onmt/SentencePiece.h>
 
 namespace py = boost::python;
 
@@ -32,6 +34,8 @@ public:
                    const std::string& bpe_model_path,
                    const std::string& bpe_vocab_path,
                    int bpe_vocab_threshold,
+                   const std::string& vocabulary_path,
+                   int vocabulary_threshold,
                    const std::string& sp_model_path,
                    int sp_nbest_size,
                    float sp_alpha,
@@ -48,6 +52,8 @@ public:
                    bool segment_numbers,
                    bool segment_alphabet_change,
                    py::list segment_alphabet)
+  : _subword_encoder(nullptr)
+  , _tokenizer(nullptr)
   {
     int flags = 0;
     if (joiner_annotate)
@@ -73,14 +79,25 @@ public:
     if (segment_alphabet_change)
       flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
 
+    std::string vocabulary = vocabulary_path;
+    if (vocabulary.empty())
+    {
+      // Backward compatibility.
+      vocabulary = bpe_vocab_path;
+      vocabulary_threshold = bpe_vocab_threshold;
+    }
+
     onmt::Tokenizer::Mode tok_mode = onmt::Tokenizer::mapMode.at(mode);
 
     if (!sp_model_path.empty())
-      _tokenizer = new onmt::Tokenizer(sp_model_path, sp_nbest_size, sp_alpha,
-                                       tok_mode, flags, joiner);
-    else
-      _tokenizer = new onmt::Tokenizer(tok_mode, flags, bpe_model_path, joiner,
-                                       bpe_vocab_path, bpe_vocab_threshold);
+      _subword_encoder = new onmt::SentencePiece(sp_model_path, sp_nbest_size, sp_alpha);
+    else if (!bpe_model_path.empty())
+      _subword_encoder = new onmt::BPE(bpe_model_path, joiner);
+
+    if (_subword_encoder && !vocabulary.empty())
+      _subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);
+
+    _tokenizer = new onmt::Tokenizer(tok_mode, _subword_encoder, flags, joiner);
 
     for (auto it = py::stl_input_iterator<std::string>(segment_alphabet);
          it != py::stl_input_iterator<std::string>(); it++)
@@ -90,6 +107,7 @@ public:
   ~TokenizerWrapper()
   {
     delete _tokenizer;
+    delete _subword_encoder;
   }
 
   py::tuple tokenize(const std::string& text)
@@ -129,6 +147,7 @@ public:
   }
 
 private:
+  onmt::SubwordEncoder* _subword_encoder;
   onmt::Tokenizer* _tokenizer;
 };
 
@@ -136,10 +155,12 @@ BOOST_PYTHON_MODULE(tokenizer)
 {
   py::class_<TokenizerWrapper>(
       "Tokenizer",
-      py::init<std::string, std::string, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
+      py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
         (py::arg("bpe_model_path")="",
-         py::arg("bpe_vocab_path")="",
-         py::arg("bpe_vocab_threshold")=50,
+         py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
+         py::arg("bpe_vocab_threshold")=50,  // Keep for backward compatibility.
+         py::arg("vocabulary_path")="",
+         py::arg("vocabulary_threshold")=0,
          py::arg("sp_model_path")="",
          py::arg("sp_nbest_size")=0,
          py::arg("sp_alpha")=0.1,

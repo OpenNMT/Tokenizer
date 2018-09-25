@@ -13,7 +13,10 @@ namespace onmt
   {
   public:
     SentencePiece(const std::string& model_path);
+    SentencePiece(const std::string& model_path, int nbest_size, float alpha);
 
+    void set_vocabulary(const std::vector<std::string>& vocabulary) override;
+    void reset_vocabulary() override;
     void enable_regularization(int nbest_size, float alpha);
 
     std::vector<std::string> encode(const std::string& str) const override;

@@ -14,8 +14,10 @@ import pyonmttok
 tokenizer = pyonmt.Tokenizer(
     mode: str,
     bpe_model_path="",
-    bpe_vocab_path="",
-    bpe_vocab_threshold=50,
+    bpe_vocab_path="",  # Deprecated, use "vocabulary_path" instead.
+    bpe_vocab_threshold=50,  # Deprecated, use "vocabulary_threshold" instead.
+    vocabulary_path="",
+    vocabulary_threshold=0,
     sp_model_path="",
     sp_nbest_size=0,
     sp_alpha=0.1,

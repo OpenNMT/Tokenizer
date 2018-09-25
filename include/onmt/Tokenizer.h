@@ -56,6 +56,12 @@ namespace onmt
               const std::string& bpe_vocab_path = "",
               int bpe_vocab_threshold = 50);
 
+    // External subword encoder constructor.
+    Tokenizer(Mode mode,
+              const SubwordEncoder* subword_encoder,
+              int flags = Flags::None,
+              const std::string& joiner = joiner_marker);
+
     // SentencePiece-specific constructor.
     Tokenizer(const std::string& sp_model_path,
               int sp_nbest_size = 0,
