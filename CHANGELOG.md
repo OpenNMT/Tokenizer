@@ -2,6 +2,12 @@
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.9.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.9.0) (2018-09-25)
+
+### New features
+
 * Vocabulary restriction for SentencePiece encoding
 
 ### Fixes and improvements
