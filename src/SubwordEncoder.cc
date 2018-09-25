@@ -1,6 +1,7 @@
 #include "onmt/SubwordEncoder.h"
 
 #include <fstream>
+#include <stdexcept>
 
 namespace onmt
 {
