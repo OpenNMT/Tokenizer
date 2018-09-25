@@ -2,7 +2,11 @@
 
 ### New features
 
+* Vocabulary restriction for SentencePiece encoding
+
 ### Fixes and improvements
+
+* Improve Tokenizer constructor for subword configuration
 
 ## [v1.8.4](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.8.4) (2018-09-24)
 

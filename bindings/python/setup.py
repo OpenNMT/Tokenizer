@@ -7,14 +7,16 @@ from setuptools import setup, Extension
 include_dirs = []
 library_dirs = []
 
-def _maybe_add_library_root(lib_name):
+def _maybe_add_library_root(lib_name, header_only=False):
   if "%s_ROOT" % lib_name in os.environ:
     root = os.environ["%s_ROOT" % lib_name]
     include_dirs.append("%s/include" % root)
-    library_dirs.append("%s/lib" % root)
+    if not header_only:
+      library_dirs.append("%s/lib" % root)
 
 _maybe_add_library_root("BOOST")
 _maybe_add_library_root("TOKENIZER")
+_maybe_add_library_root("SENTENCEPIECE", header_only=True)
 
 tokenizer_module = Extension(
     "pyonmttok.tokenizer",

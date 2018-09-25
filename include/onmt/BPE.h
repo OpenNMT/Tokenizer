@@ -14,8 +14,12 @@ namespace onmt
   {
   public:
     BPE(const std::string& model_path);
+    BPE(const std::string& model_path, const std::string& joiner);
 
     std::vector<std::string> encode(const std::string& str) const override;
+
+    void set_vocabulary(const std::vector<std::string>& vocabulary) override;
+    void reset_vocabulary() override;
 
     void init_bpe_vocab(const std::string& vocab_path, int bpe_vocab_threshold);
     void set_joiner(std::string joiner)
@@ -36,6 +40,8 @@ namespace onmt
     std::unordered_map<std::string, int> _codes;
     std::unordered_map<std::string, std::pair<std::string, std::string> > _codes_reverse;
     std::unordered_set<std::string> _bpe_vocab;
+
+    void load_model(const std::string& model_path);
 
     int get_score(const std::string& gram1, const std::string& gram2) const;
     void apply_merges(std::vector<std::string>& chars) const;

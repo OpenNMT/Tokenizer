@@ -19,6 +19,23 @@ namespace onmt
     , _version(0, 0)
     , _joiner("")
   {
+    load_model(model_path);
+  }
+
+  BPE::BPE(const std::string& model_path, const std::string& joiner)
+    : _end_of_word("</w>")
+    , _begin_of_word("<w>")
+    , _prefix(false)
+    , _suffix(true)
+    , _case_insensitive(false)
+    , _version(0, 0)
+    , _joiner(joiner)
+  {
+    load_model(model_path);
+  }
+
+  void BPE::load_model(const std::string& model_path)
+  {
     std::ifstream in(model_path.c_str());
 
     if (!in.is_open())
@@ -216,21 +233,17 @@ namespace onmt
     if (!_bpe_vocab.empty())
       return;
 
-    std::ifstream in(vocab_path.c_str());
+    load_vocabulary(vocab_path, bpe_vocab_threshold);
+  }
 
-    if (!in.is_open())
-      throw std::invalid_argument("Unable to open BPE vocab file `" + vocab_path + "'");
+  void BPE::set_vocabulary(const std::vector<std::string>& vocabulary)
+  {
+    _bpe_vocab.insert(vocabulary.begin(), vocabulary.end());
+  }
 
-    std::string line;
-    while (std::getline(in, line))
-    {
-      size_t sep = line.find(' ');
-      if (sep != std::string::npos)
-      {
-        if(std::stoi(line.substr(sep + 1)) >= bpe_vocab_threshold)
-          _bpe_vocab.emplace(line.substr(0, sep));
-      }
-    }
+  void BPE::reset_vocabulary()
+  {
+    _bpe_vocab.clear();
   }
 
   void BPE::check_vocab_and_split(const std::vector<std::string> & orig, std::vector<std::string> & out) const

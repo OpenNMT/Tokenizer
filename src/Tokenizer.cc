@@ -86,6 +86,18 @@ namespace onmt
     }
   }
 
+  Tokenizer::Tokenizer(Mode mode,
+                       const SubwordEncoder* subword_encoder,
+                       int flags,
+                       const std::string& joiner)
+    : _mode(mode)
+    , _subword_encoder(subword_encoder)
+    , _joiner(joiner)
+  {
+    read_flags(flags);
+    _cache_model = true;
+  }
+
   Tokenizer::Tokenizer(const std::string& sp_model_path,
                        int sp_nbest_size,
                        float sp_alpha,

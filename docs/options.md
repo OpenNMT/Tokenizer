@@ -78,14 +78,6 @@ Disable substitution of special characters defined by the Tokenizer and found in
 
 Path to the BPE model trained with OpenNMT's `learn_bpe.lua` or the standard `learn_bpe.py`.
 
-### `bpe_vocab` (string, default: `""`)
-
-Path to the vocabulary file produced by `get_vocab.py`. If set, any merge operations that produce an OOV will be reverted.
-
-### `bpe_vocab_threshold` (int, default: `50`)
-
-When using `bpe_vocab`, any words with a frequency lower than `bpe_vocab_threshold` will be treated as OOV.
-
 ### `sp_model` (string, default: `""`)
 
 Path to the SentencePiece model. To replicate `spm_encode`, the tokenization mode should be `none`.
@@ -97,6 +89,14 @@ Number of candidates for the SentencePiece sampling API. When the value is 0, th
 ### `sp_alpha` (float, default: `0.1`)
 
 Smoothing parameter for the SentencePiece sampling API.
+
+### `vocabulary` (string, default: `""`)
+
+Path to the vocabulary file. If set, subword encoders will only generate tokens that exist in the vocabulary. Format is: `<token> <space> <frequency>`. A missing frequency is equivalent to 1.
+
+### `vocabulary_threshold` (int, default: `0`)
+
+When using `vocabulary`, any words with a frequency lower than `vocabulary_threshold` will be treated as OOV.
 
 ## Marking joint tokens
 

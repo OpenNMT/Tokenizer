@@ -12,6 +12,23 @@ namespace onmt
     _processor.Load(model_path);
   }
 
+  SentencePiece::SentencePiece(const std::string& model_path, int nbest_size, float alpha)
+    : _nbest_size(nbest_size)
+    , _alpha(alpha)
+  {
+    _processor.Load(model_path);
+  }
+
+  void SentencePiece::set_vocabulary(const std::vector<std::string>& vocabulary)
+  {
+    _processor.SetVocabulary(vocabulary);
+  }
+
+  void SentencePiece::reset_vocabulary()
+  {
+    _processor.ResetVocabulary();
+  }
+
   void SentencePiece::enable_regularization(int nbest_size, float alpha)
   {
     _nbest_size = nbest_size;
