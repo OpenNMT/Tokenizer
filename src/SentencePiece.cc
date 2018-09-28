@@ -87,19 +87,7 @@ namespace onmt
         new_token.spacer();
     }
 
-    if (token.is_joined_left())
-    {
-      tokens.front().join_left();
-      if (token.should_preserve())
-        tokens.front().preserve();
-    }
-    if (token.is_joined_right())
-    {
-      tokens.back().join_right();
-      if (token.should_preserve())
-        tokens.back().preserve();
-    }
-
+    propagate_token_properties(token, tokens);
     return tokens;
   }
 

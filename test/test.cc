@@ -215,6 +215,44 @@ TEST(TokenizerTest, CaseFeature) {
            "test￨L \\￨N ￭\\￨N ￭\\￨N ￭\\￭￨N a￨L capitalized￨C lowercased￨L uppercasé￨U mixêd￨M -￨N cyrillic-б￨M");
 }
 
+TEST(TokenizerTest, CaseMarkupWithJoiners) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::CaseMarkup | Tokenizer::Flags::JoinerAnnotate);
+  test_tok_and_detok(tokenizer,
+                     "Hello world!", "｟mrk_case_modifier_C｠ hello world ￭!");
+  test_tok_and_detok(tokenizer,
+                     "Hello WORLD!", "｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ world ｟mrk_end_case_region_U｠ ￭!");
+  test_tok_and_detok(tokenizer,
+                     "Hello WOrld!", "｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ wo￭ ｟mrk_end_case_region_U｠ rld ￭!");
+  test_tok_and_detok(tokenizer,
+                     "hello woRld!", "hello wo￭ ｟mrk_case_modifier_C｠ rld ￭!");
+}
+
+TEST(TokenizerTest, CaseMarkupWithSpacers) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::CaseMarkup | Tokenizer::Flags::SpacerAnnotate);
+  test_tok_and_detok(tokenizer,
+                     "Hello world!", "｟mrk_case_modifier_C｠ hello ▁world !");
+  test_tok_and_detok(tokenizer,
+                     "Hello WORLD!", "｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ ▁world ｟mrk_end_case_region_U｠ !");
+  test_tok_and_detok(tokenizer,
+                     "Hello WOrld!", "｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ ▁wo ｟mrk_end_case_region_U｠ rld !");
+  test_tok_and_detok(tokenizer,
+                     "hello woRld!", "hello ▁wo ｟mrk_case_modifier_C｠ rld !");
+}
+
+TEST(TokenizerTest, CaseMarkupWithBPE) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::CaseMarkup | Tokenizer::Flags::JoinerAnnotate,
+                      get_data("bpe-models/codes_suffix_case_insensitive.fr"));
+  test_tok_and_detok(tokenizer,
+                     "Bonjour monde", "｟mrk_case_modifier_C｠ bon￭ j￭ our mon￭ de");
+  test_tok_and_detok(tokenizer,
+                     "BONJOUR MONDE", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ ｟mrk_begin_case_region_U｠ mon￭ de ｟mrk_end_case_region_U｠");
+  test_tok_and_detok(tokenizer,
+                     "BONJOUR monde", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ mon￭ de");
+}
+
 TEST(TokenizerTest, SegmentCase) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       Tokenizer::Flags::CaseFeature | Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SegmentCase);

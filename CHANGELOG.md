@@ -2,6 +2,8 @@
 
 ### New features
 
+* `CaseMarkup` flag to inject case information as new tokens
+
 ### Fixes and improvements
 
 * Do not break compilation for users with old SentencePiece versions

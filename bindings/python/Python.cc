@@ -1,4 +1,4 @@
-#define BOOST_PYTHON_MAX_ARITY 23
+#define BOOST_PYTHON_MAX_ARITY 24
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 
@@ -45,6 +45,7 @@ public:
                    bool spacer_annotate,
                    bool spacer_new,
                    bool case_feature,
+                   bool case_markup,
                    bool no_substitution,
                    bool preserve_placeholders,
                    bool preserve_segmented_tokens,
@@ -66,6 +67,8 @@ public:
       flags |= onmt::Tokenizer::Flags::SpacerNew;
     if (case_feature)
       flags |= onmt::Tokenizer::Flags::CaseFeature;
+    if (case_markup)
+      flags |= onmt::Tokenizer::Flags::CaseMarkup;
     if (no_substitution)
       flags |= onmt::Tokenizer::Flags::NoSubstitution;
     if (preserve_placeholders)
@@ -155,7 +158,7 @@ BOOST_PYTHON_MODULE(tokenizer)
 {
   py::class_<TokenizerWrapper>(
       "Tokenizer",
-      py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
+      py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
         (py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
          py::arg("bpe_vocab_threshold")=50,  // Keep for backward compatibility.
@@ -170,6 +173,7 @@ BOOST_PYTHON_MODULE(tokenizer)
          py::arg("spacer_annotate")=false,
          py::arg("spacer_new")=false,
          py::arg("case_feature")=false,
+         py::arg("case_markup")=false,
          py::arg("no_substitution")=false,
          py::arg("preserve_placeholders")=false,
          py::arg("preserve_segmented_tokens")=false,
