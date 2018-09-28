@@ -9,8 +9,8 @@ env:
     - WITH_ICU="OFF"
 cache:
   directories:
-    - $HOME/googletest-release-1.8.0/
-    - $HOME/sentencepiece/
+    - $HOME/googletest-1.8.0/
+    - $HOME/sentencepiece-0.1.4/
 addons:
   apt:
     sources:
@@ -21,7 +21,6 @@ addons:
       - cmake-data
       - g++-4.8
       - gcc-4.8
-      - git
       - libboost-dev
       - libboost-program-options-dev
       - libicu-dev
@@ -33,32 +32,32 @@ addons:
 before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - export ROOT_TRAVIS_DIR=$(pwd)
-  - cd $ROOT_TRAVIS_DIR
   - |
-    if [ ! -d googletest-release-1.8.0/ ]; then
+    if [ ! -d $HOME/googletest-1.8.0/lib ]; then
       wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
       tar xf release-1.8.0.tar.gz
       cd googletest-release-1.8.0/
       mkdir install
       mkdir build && cd build
-      cmake -DCMAKE_INSTALL_PREFIX=../install ..
+      cmake -DCMAKE_INSTALL_PREFIX=$HOME/googletest-1.8.0/ ..
       make && make install
       cd $ROOT_TRAVIS_DIR
     fi
   - |
-    if [ ! -d sentencepiece/ ]; then
-      git clone https://github.com/google/sentencepiece.git sentencepiece-git
-      cd sentencepiece-git
+    if [ ! -d $HOME/sentencepiece-0.1.4/lib ]; then
+      wget https://github.com/google/sentencepiece/archive/v0.1.4.tar.gz
+      tar xf v0.1.4.tar.gz
+      cd sentencepiece-0.1.4
       mkdir build
       cd build
-      cmake -DCMAKE_INSTALL_PREFIX=$ROOT_TRAVIS_DIR/sentencepiece ..
+      cmake -DCMAKE_INSTALL_PREFIX=$HOME/sentencepiece-0.1.4 ..
       make
       make install
       cd $ROOT_TRAVIS_DIR
     fi
 install:
   - mkdir build && cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$ROOT_TRAVIS_DIR/sentencepiece -DGTEST_ROOT=$ROOT_TRAVIS_DIR/googletest-release-1.8.0/install/ -DWITH_ICU=$WITH_ICU ..
+  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$HOME/sentencepiece-0.1.4 -DGTEST_ROOT=$HOME/googletest-1.8.0 -DWITH_ICU=$WITH_ICU ..
   - make
 script:
   - test/onmt_tokenizer_test ../test/data
