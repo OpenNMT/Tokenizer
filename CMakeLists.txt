@@ -83,6 +83,11 @@ else()
   if(HAS_SAMPLE_ENCODE)
     add_definitions(-DSP_HAS_SAMPLE_ENCODE)
   endif()
+
+  file(STRINGS ${SP_INCLUDE_DIR}/sentencepiece_processor.h HAS_VOCAB_RESTRICTION REGEX "SetVocabulary")
+  if(HAS_VOCAB_RESTRICTION)
+    add_definitions(-DSP_HAS_VOCAB_RESTRICTION)
+  endif()
 endif()
 
 add_library(${PROJECT_NAME} ${SOURCES})

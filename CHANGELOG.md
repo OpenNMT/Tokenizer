@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* Do not break compilation for users with old SentencePiece versions
+
 ## [v1.9.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.9.0) (2018-09-25)
 
 ### New features
