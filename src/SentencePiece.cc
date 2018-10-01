@@ -21,12 +21,22 @@ namespace onmt
 
   void SentencePiece::set_vocabulary(const std::vector<std::string>& vocabulary)
   {
+#ifdef SP_HAS_VOCAB_RESTRICTION
     _processor.SetVocabulary(vocabulary);
+#else
+    throw std::runtime_error("The project was built against a SentencePiece version "
+                             "that does not support vocabulary restriction");
+#endif
   }
 
   void SentencePiece::reset_vocabulary()
   {
+#ifdef SP_HAS_VOCAB_RESTRICTION
     _processor.ResetVocabulary();
+#else
+    throw std::runtime_error("The project was built against a SentencePiece version "
+                             "that does not support vocabulary restriction");
+#endif
   }
 
   void SentencePiece::enable_regularization(int nbest_size, float alpha)
