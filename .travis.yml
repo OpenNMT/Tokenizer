@@ -23,12 +23,14 @@ addons:
       - gcc-4.8
       - libboost-dev
       - libboost-program-options-dev
+      - libboost-python-dev
       - libicu-dev
       - libprotobuf-c++
       - libprotobuf-dev
       - libtool
       - pkg-config
       - protobuf-compiler
+      - python-pip
 before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - export ROOT_TRAVIS_DIR=$(pwd)
@@ -55,9 +57,18 @@ before_install:
       make install
       cd $ROOT_TRAVIS_DIR
     fi
+  - pip install --user pytest setuptools
 install:
+  - export TOKENIZER_ROOT=$HOME/Tokenizer
+  - export SENTENCEPIECE_ROOT=$HOME/sentencepiece-0.1.4
   - mkdir build && cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$HOME/sentencepiece-0.1.4 -DGTEST_ROOT=$HOME/googletest-1.8.0 -DWITH_ICU=$WITH_ICU ..
+  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT -DCMAKE_PREFIX_PATH=$SENTENCEPIECE_ROOT -DGTEST_ROOT=$HOME/googletest-1.8.0 -DWITH_ICU=$WITH_ICU ..
   - make
+  - make install
+  - cd ../bindings/python
+  - BOOST_PYTHON_LIBRARY=boost_python python setup.py install --user
+  - cd $ROOT_TRAVIS_DIR
+  - export LD_LIBRARY_PATH=$SENTENCEPIECE_ROOT/lib:$TOKENIZER_ROOT/lib
 script:
-  - test/onmt_tokenizer_test ../test/data
+  - build/test/onmt_tokenizer_test test/data
+  - pytest bindings/python/test/test.py
