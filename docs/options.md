@@ -11,7 +11,7 @@ This file documents the options of the Tokenizer interface which can be used in:
 ## Terminology
 
 * **joiner**: special character indicating that the surrounding tokens should be merged when detokenized
-* **spacer**: special character indicating that a space should introduced when detokenized
+* **spacer**: special character indicating that a space should be introduced when detokenized
 * **placeholder** (or **protected sequence**): sequence of characters delimited by ｟ and ｠ that should not be segmented
 
 ## General
@@ -42,7 +42,7 @@ It costs £2,000.
 **Notes:**
 
 * `space` and `none` modes are incompatible with options listed in the *Segmenting* section.
-* In all modes, the text at least segmented on placeholders:
+* In all modes, the text is at least segmented on placeholders:
 
 ```bash
 $ echo "a｟b｠c" | cli/tokenize --mode space
