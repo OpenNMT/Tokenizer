@@ -2,6 +2,12 @@
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.10.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.0) (2018-10-05)
+
+### New features
+
 * `CaseMarkup` flag to inject case information as new tokens
 
 ### Fixes and improvements
