@@ -86,4 +86,49 @@ namespace onmt
     return _preserved;
   }
 
+  bool AnnotatedToken::begin_case_region() const
+  {
+    return _begin_case_region != CaseModifier::Type::None;
+  }
+
+  bool AnnotatedToken::end_case_region() const
+  {
+    return _end_case_region != CaseModifier::Type::None;
+  }
+
+  bool AnnotatedToken::has_case() const
+  {
+    return _case != CaseModifier::Type::None;
+  }
+
+  void AnnotatedToken::set_case(CaseModifier::Type type)
+  {
+    _case = type;
+  }
+
+  void AnnotatedToken::set_case_region_begin(CaseModifier::Type type)
+  {
+    _begin_case_region = type;
+  }
+
+  void AnnotatedToken::set_case_region_end(CaseModifier::Type type)
+  {
+    _end_case_region = type;
+  }
+
+  CaseModifier::Type AnnotatedToken::get_case() const
+  {
+    return _case;
+  }
+
+  CaseModifier::Type AnnotatedToken::get_case_region_begin() const
+  {
+    return _begin_case_region;
+  }
+
+  CaseModifier::Type AnnotatedToken::get_case_region_end() const
+  {
+    return _end_case_region;
+  }
+
 }

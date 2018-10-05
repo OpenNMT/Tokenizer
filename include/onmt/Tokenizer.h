@@ -39,7 +39,8 @@ namespace onmt
       SentencePieceModel = 1 << 11,
       PreservePlaceholders = 1 << 12,
       SpacerNew = 1 << 13,
-      PreserveSegmentedTokens = 1 << 14
+      PreserveSegmentedTokens = 1 << 14,
+      CaseMarkup = 1 << 15,
     };
 
     static const std::string joiner_marker;
@@ -108,6 +109,7 @@ namespace onmt
     Mode _mode;
 
     bool _case_feature;
+    bool _case_markup;
     bool _joiner_annotate;
     bool _joiner_new;
     bool _with_separators;

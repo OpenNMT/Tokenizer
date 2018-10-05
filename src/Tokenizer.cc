@@ -121,10 +121,11 @@ namespace onmt
   void Tokenizer::read_flags(int flags)
   {
     _case_feature = flags & Flags::CaseFeature;
+    _case_markup = flags & Flags::CaseMarkup;
     _joiner_annotate = flags & Flags::JoinerAnnotate;
     _joiner_new = flags & Flags::JoinerNew;
     _with_separators = flags & Flags::WithSeparators;
-    _segment_case = flags & Flags::SegmentCase;
+    _segment_case = (flags & Flags::SegmentCase) | (flags & Flags::CaseMarkup);
     _segment_numbers = flags & Flags::SegmentNumbers;
     _segment_alphabet_change = flags & Flags::SegmentAlphabetChange;
     _cache_model = (flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel);
@@ -147,10 +148,46 @@ namespace onmt
     std::string line;
     line.reserve(words.size() * 10);
 
+    CaseModifier::Type case_region = CaseModifier::Type::None;
+    ssize_t previous_token = -1;
+
     for (size_t i = 0; i < words.size(); ++i)
     {
-      if (i > 0 && !has_right_join(words[i - 1]) && !has_left_join(words[i]) &&
-        !_spacer_annotate)
+      CaseModifier::Type case_modifier = case_region;
+
+      if (_case_feature)
+      {
+        if (features.empty())
+          throw std::runtime_error("Missing case feature");
+        case_modifier = CaseModifier::char_to_type(features[0][i][0]);
+      }
+      else
+      {
+        auto case_markup = CaseModifier::get_case_markup(words[i]);
+        if (case_markup != CaseModifier::Markup::None)
+        {
+          if (case_markup == CaseModifier::Markup::RegionEnd)
+          {
+            case_region = CaseModifier::Type::None;
+            continue;
+          }
+          else
+          {
+            case_modifier = CaseModifier::get_case_modifier_from_markup(words[i]);
+            if (case_markup == CaseModifier::Markup::RegionBegin)
+            {
+              case_region = case_modifier;
+              continue;
+            }
+            else
+              ++i;
+          }
+        }
+      }
+
+      if (previous_token >= 0
+          && !has_right_join(words[previous_token]) && !has_left_join(words[i])
+          && !_spacer_annotate)
         line += ' ';
 
       const std::string& word = words[i];
@@ -170,26 +207,24 @@ namespace onmt
         if (has_right_marker(word, spacer_marker))
         {
           sublen -= spacer_marker.length();
-          if (i > 0)
+          if (previous_token >= 0)
             line += ' ';
         }
         else if (has_left_marker(word, spacer_marker))
         {
           subpos += spacer_marker.length();
           sublen -= spacer_marker.length();
-          if (i > 0)
+          if (previous_token >= 0)
             line += ' ';
         }
       }
 
-      if (_case_feature)
-      {
-        if (features.empty())
-          throw std::runtime_error("Missing case feature");
-        line.append(CaseModifier::apply_case(word.substr(subpos, sublen), features[0][i][0]));
-      }
+      if (case_modifier != CaseModifier::Type::None)
+        line.append(CaseModifier::apply_case(word.substr(subpos, sublen), case_modifier));
       else
         line.append(word, subpos, sublen);
+
+      previous_token = i;
     }
 
     return line;
@@ -495,6 +530,27 @@ namespace onmt
         annotated_tokens.emplace_back(std::move(token));
     }
 
+    if (_case_markup)
+    {
+      for (auto& token : annotated_tokens)
+      {
+        if (is_placeholder(token.str()))
+          continue;
+        auto pair = CaseModifier::extract_case_type(token.str());
+        if (pair.second == CaseModifier::Type::Uppercase
+            || pair.second == CaseModifier::Type::Capitalized)
+        {
+          token.set(std::move(pair.first));
+          token.set_case(pair.second);
+          if (pair.second == CaseModifier::Type::Uppercase)
+          {
+            token.set_case_region_begin(pair.second);
+            token.set_case_region_end(pair.second);
+          }
+        }
+      }
+    }
+
     if (_subword_encoder)
       annotated_tokens = encode_subword(annotated_tokens);
 
@@ -531,6 +587,11 @@ namespace onmt
     {
       const auto& token = annotated_tokens[i];
       const auto& str = token.str();
+
+      if (token.begin_case_region())
+        tokens.emplace_back(CaseModifier::generate_case_markup_begin(token.get_case_region_begin()));
+      else if (token.has_case())
+        tokens.emplace_back(CaseModifier::generate_case_markup(token.get_case()));
 
       if (_joiner_annotate)
       {
@@ -584,6 +645,9 @@ namespace onmt
       {
         tokens.emplace_back(std::move(str));
       }
+
+      if (token.end_case_region())
+        tokens.emplace_back(CaseModifier::generate_case_markup_end(token.get_case_region_end()));
     }
   }
 

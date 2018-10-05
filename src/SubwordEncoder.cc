@@ -52,6 +52,13 @@ namespace onmt
         tokens.back().join_right();
     }
 
+    propagate_token_properties(token, tokens);
+    return tokens;
+  }
+
+  void SubwordEncoder::propagate_token_properties(const AnnotatedToken& token,
+                                                  std::vector<AnnotatedToken>& tokens)
+  {
     if (token.is_joined_left())
     {
       tokens.front().join_left();
@@ -65,9 +72,16 @@ namespace onmt
         tokens.back().preserve();
     }
 
-
-
-    return tokens;
+    if (token.has_case())
+    {
+      if (tokens.size() == 1 || token.get_case() == CaseModifier::Type::Capitalized)
+        tokens.front().set_case(token.get_case());
+      else
+      {
+        tokens.front().set_case_region_begin(token.get_case());
+        tokens.back().set_case_region_end(token.get_case());
+      }
+    }
   }
 
 }

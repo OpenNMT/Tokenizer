@@ -68,6 +68,21 @@ Possible case types:
 * `M`: mixed
 * `N`: none
 
+### `case_markup` (boolean, default: `false`)
+
+Lowercase text input and inject case markups as additional tokens. This option also enables `segment_case`.
+
+```bash
+$ echo "Hello world!" | cli/tokenize --case_markup
+｟mrk_case_modifier_C｠ hello world !
+$ echo "Hello WORLD!" | cli/tokenize --case_markup
+｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ world ｟mrk_end_case_region_U｠ !
+$ echo "Hello WOrld!" | cli/tokenize --case_markup
+｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ wo ｟mrk_end_case_region_U｠ rld !
+$ echo "Hello WORLD!" | cli/tokenize --case_markup --bpe_model model.bpe
+｟mrk_case_modifier_C｠ he llo ｟mrk_begin_case_region_U｠ wo rld ｟mrk_end_case_region_U｠ !
+```
+
 ### `no_substitution` (boolean, default: `false`)
 
 Disable substitution of special characters defined by the Tokenizer and found in the input text (e.g. joiners, spacers, etc.).
