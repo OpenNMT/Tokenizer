@@ -96,6 +96,9 @@ namespace onmt
   {
     read_flags(flags);
     _cache_model = true;
+    if (dynamic_cast<const SentencePiece*>(subword_encoder) != nullptr
+        && _mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
+      _spacer_annotate = true;
   }
 
   Tokenizer::Tokenizer(const std::string& sp_model_path,

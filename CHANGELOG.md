@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* Fix regression for SentencePiece: spacer annotation was not automatically enabled in tokenization mode "none"
+
 ## [v1.10.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.0) (2018-10-05)
 
 ### New features
