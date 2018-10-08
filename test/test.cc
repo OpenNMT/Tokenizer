@@ -431,9 +431,19 @@ TEST(TokenizerTest, CharModeSpacerNew) {
 
 #ifdef WITH_SP
 
+#  include <onmt/SentencePiece.h>
+
 TEST(TokenizerTest, SentencePiece) {
   Tokenizer tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
                       get_data("sp-models/sp.model"));
+  test_tok_and_detok(tokenizer,
+                     "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
+                     "The ▁two ▁shows , ▁called ▁De si re ▁and ▁S e c re t s , ▁will ▁be ▁one - hour ▁prime - time ▁shows .");
+}
+
+TEST(TokenizerTest, SentencePieceObject) {
+  SentencePiece sp(get_data("sp-models/sp.model"));
+  Tokenizer tokenizer(Tokenizer::Mode::None, &sp);
   test_tok_and_detok(tokenizer,
                      "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
                      "The ▁two ▁shows , ▁called ▁De si re ▁and ▁S e c re t s , ▁will ▁be ▁one - hour ▁prime - time ▁shows .");
