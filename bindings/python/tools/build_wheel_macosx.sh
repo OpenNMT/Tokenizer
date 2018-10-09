@@ -1,7 +1,6 @@
 #! /bin/bash
 
-# Assuming local installation of protobug 3.6.0 and cmake 3.12+
-# install for current version of python
+# Assuming local installation of cmake 3.12+
 
 set -e
 set -x
@@ -13,12 +12,23 @@ TOKENIZER_REMOTE=https://github.com/OpenNMT/Tokenizer.git
 
 BOOST_VERSION=1.67.0
 SENTENCEPIECE_VERSION=0.1.4
+PROTOBUF_VERSION=3.6.0
+
+# Install protobuf
+curl -L -O https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
+tar zxfv protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
+cd protobuf-${PROTOBUF_VERSION}
+./configure --disable-shared --with-pic
+make CXXFLAGS+="-std=c++11 -O3 -DGOOGLE_PROTOBUF_NO_THREADLOCAL=1" \
+CFLAGS+="-std=c++11 -O3 -DGOOGLE_PROTOBUF_NO_THREADLOCAL=1" -j4
+make install || true
+cd ..
 
 # Build SentencePiece.
 curl -L -o sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz -O https://github.com/google/sentencepiece/archive/v${SENTENCEPIECE_VERSION}.tar.gz
 tar zxfv sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz
 cd sentencepiece-${SENTENCEPIECE_VERSION}
-mkdir build
+mkdir -p build
 cd build
 export SENTENCEPIECE_ROOT=$PWD/install
 cmake -DCMAKE_INSTALL_PREFIX=$SENTENCEPIECE_ROOT ..
@@ -32,8 +42,37 @@ curl -fSsL -o boost_$BOOST_VERSION_ARCHIVE.tar.gz https://dl.bintray.com/boostor
 
 mkdir -p wheelhouse
 
-# Only build for current python installation
-PYTHON_ROOT=/usr/local
+curl -L -O https://bootstrap.pypa.io/get-pip.py
+
+for URL in https://www.python.org/ftp/python/2.7.15/python-2.7.15-macosx10.6.pkg \
+           https://www.python.org/ftp/python/3.4.4/python-3.4.4-macosx10.6.pkg \
+           https://www.python.org/ftp/python/3.5.4/python-3.5.4-macosx10.6.pkg \
+           https://www.python.org/ftp/python/3.6.6/python-3.6.6-macosx10.6.pkg \
+           https://www.python.org/ftp/python/3.7.0/python-3.7.0-macosx10.6.pkg ; do
+
+    VERSION=$(echo $URL | perl -pe 's/.*python\/(.*?).\d+\/python.*/$1/')
+    PYTHON_INSTALL_PATH="/Library/Frameworks/Python.framework/Versions/${VERSION}/bin"
+    CURRENT_PATH=${PATH}
+    curl -L -o python.pkg ${URL}
+    sudo installer -pkg python.pkg -target /
+
+    if [ -f "${PYTHON_INSTALL_PATH}/python3" ]; then
+      ln -s ${PYTHON_INSTALL_PATH}/python3        ${PYTHON_INSTALL_PATH}/python
+      ln -s ${PYTHON_INSTALL_PATH}/python3-config ${PYTHON_INSTALL_PATH}/python-config
+      ln -s ${PYTHON_INSTALL_PATH}/pip3           ${PYTHON_INSTALL_PATH}/pip
+    fi
+    
+    echo "${PYTHON_INSTALL_PATH}"
+    export PATH="${PYTHON_INSTALL_PATH}:${CURRENT_PATH}"
+    ls -l ${PYTHON_INSTALL_PATH}
+    which python
+    which pip
+    python --version
+    sudo python get-pip.py --no-setuptools --no-wheel --ignore-installed
+    pip install --upgrade setuptools
+    pip install wheel
+    pip install delocate
+
 
     # Start from scratch to not deal with previously generated files.
     rm -rf boost_$BOOST_VERSION_ARCHIVE
@@ -43,7 +82,7 @@ PYTHON_ROOT=/usr/local
     tar xf boost_$BOOST_VERSION_ARCHIVE.tar.gz
     cd boost_$BOOST_VERSION_ARCHIVE
     export BOOST_ROOT=$PWD/install_boost
-    ./bootstrap.sh --prefix=$BOOST_ROOT --with-libraries=python --with-python=$PYTHON_ROOT/bin/python
+    ./bootstrap.sh --prefix=$BOOST_ROOT --with-libraries=python --with-python=$PYTHON_INSTALL_PATH/python
     ./b2 install
     cd ..
 
@@ -65,14 +104,14 @@ PYTHON_ROOT=/usr/local
 
     # Build Python wheel first time to build tokenizer.so
     cd bindings/python
-    $PYTHON_ROOT/bin/python setup.py bdist_wheel
+    CC=clang python setup.py bdist_wheel
 
     # Adjust @rpath to absolute path
     install_name_tool -change "@rpath/libOpenNMTTokenizer.dylib" ${TOKENIZER_ROOT}/lib/libOpenNMTTokenizer.dylib build/lib.*/pyonmttok/tokenizer.so
     install_name_tool -change "libboost_python27.dylib" ${BOOST_ROOT}/lib/libboost_python27.dylib build/lib.*/pyonmttok/tokenizer.so
 
     # rebuild the wheel
-    $PYTHON_ROOT/bin/python setup.py bdist_wheel
+    CC=clang python setup.py bdist_wheel
 
     # introduce in the wheel all of the local libraries
     delocate-wheel -w fixed_wheels -v dist/*.whl
@@ -80,3 +119,5 @@ PYTHON_ROOT=/usr/local
     mv -f fixed_wheels/*.whl $ROOT_DIR/wheelhouse
 
     cd $ROOT_DIR
+
+done
