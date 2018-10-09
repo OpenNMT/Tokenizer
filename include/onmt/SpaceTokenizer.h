@@ -1,5 +1,6 @@
 #pragma once
 
+#include "opennmttokenizer_export.h"
 #include "onmt/ITokenizer.h"
 
 namespace onmt
@@ -7,7 +8,7 @@ namespace onmt
 
   // This Tokenizer simply splits on spaces. Useful when the text was tokenized
   // with an external tool.
-  class SpaceTokenizer: public ITokenizer
+  class OPENNMTTOKENIZER_EXPORT SpaceTokenizer: public ITokenizer
   {
   public:
     static ITokenizer& get_instance();

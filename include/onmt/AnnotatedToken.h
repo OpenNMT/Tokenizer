@@ -2,12 +2,13 @@
 
 #include <string>
 
+#include "opennmttokenizer_export.h"
 #include "onmt/CaseModifier.h"
 
 namespace onmt
 {
 
-  class AnnotatedToken
+  class OPENNMTTOKENIZER_EXPORT AnnotatedToken
   {
   public:
     AnnotatedToken() = default;

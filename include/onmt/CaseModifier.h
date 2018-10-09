@@ -2,10 +2,12 @@
 
 #include <string>
 
+#include "opennmttokenizer_export.h"
+
 namespace onmt
 {
 
-  class CaseModifier
+  class OPENNMTTOKENIZER_EXPORT CaseModifier
   {
   public:
     enum class Type

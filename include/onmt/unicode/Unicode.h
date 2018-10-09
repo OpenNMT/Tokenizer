@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "opennmttokenizer_export.h"
+
 namespace onmt
 {
   namespace unicode
@@ -11,15 +13,15 @@ namespace onmt
 
     typedef int32_t code_point_t;
 
-    std::string cp_to_utf8(code_point_t u);
-    code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l);
+    OPENNMTTOKENIZER_EXPORT std::string cp_to_utf8(code_point_t u);
+    OPENNMTTOKENIZER_EXPORT code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l);
 
-    std::vector<std::string> split_utf8(const std::string& str, const std::string& sep);
-    void explode_utf8(const std::string& str,
+    OPENNMTTOKENIZER_EXPORT std::vector<std::string> split_utf8(const std::string& str, const std::string& sep);
+    OPENNMTTOKENIZER_EXPORT void explode_utf8(const std::string& str,
                       std::vector<std::string>& chars,
                       std::vector<code_point_t>& code_points);
 
-    size_t utf8len(const std::string& str);
+    OPENNMTTOKENIZER_EXPORT size_t utf8len(const std::string& str);
 
     enum _type_letter
     {
@@ -28,15 +30,15 @@ namespace onmt
       _letter_upper
     };
 
-    bool is_separator(code_point_t u);
-    bool is_letter(code_point_t u, _type_letter &tl);
-    bool is_letter(code_point_t u);
-    bool is_number(code_point_t u);
-    bool is_mark(code_point_t u);
+    OPENNMTTOKENIZER_EXPORT bool is_separator(code_point_t u);
+    OPENNMTTOKENIZER_EXPORT bool is_letter(code_point_t u, _type_letter &tl);
+    OPENNMTTOKENIZER_EXPORT bool is_letter(code_point_t u);
+    OPENNMTTOKENIZER_EXPORT bool is_number(code_point_t u);
+    OPENNMTTOKENIZER_EXPORT bool is_mark(code_point_t u);
 
-    _type_letter get_case(code_point_t u);
-    code_point_t get_upper(code_point_t u);
-    code_point_t get_lower(code_point_t u);
+    OPENNMTTOKENIZER_EXPORT _type_letter get_case(code_point_t u);
+    OPENNMTTOKENIZER_EXPORT code_point_t get_upper(code_point_t u);
+    OPENNMTTOKENIZER_EXPORT code_point_t get_lower(code_point_t u);
 
   }
 }

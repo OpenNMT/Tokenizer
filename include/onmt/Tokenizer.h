@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <set>
 
+#include "opennmttokenizer_export.h"
 #include "onmt/ITokenizer.h"
 #include "onmt/SubwordEncoder.h"
 
@@ -10,7 +11,7 @@ namespace onmt
 {
 
   // This Tokenizer implements the behaviour of OpenNMT's tools/tokenize.lua.
-  class Tokenizer: public ITokenizer
+  class OPENNMTTOKENIZER_EXPORT Tokenizer: public ITokenizer
   {
   public:
     enum class Mode
