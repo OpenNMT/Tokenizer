@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "opennmttokenizer_export.h"
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/AnnotatedToken.h"
 
 namespace onmt

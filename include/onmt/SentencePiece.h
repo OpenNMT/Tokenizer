@@ -4,7 +4,7 @@
 
 #include <sentencepiece_processor.h>
 
-#include "opennmttokenizer_export.h"
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/SubwordEncoder.h"
 
 namespace onmt

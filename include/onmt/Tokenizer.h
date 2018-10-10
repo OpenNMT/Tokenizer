@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <set>
 
-#include "opennmttokenizer_export.h"
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/ITokenizer.h"
 #include "onmt/SubwordEncoder.h"
 

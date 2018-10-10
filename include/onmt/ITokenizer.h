@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "opennmttokenizer_export.h"
+#include "onmt/opennmttokenizer_export.h"
 
 namespace onmt
 {

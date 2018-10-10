@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "opennmttokenizer_export.h"
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/SubwordEncoder.h"
 
 namespace onmt

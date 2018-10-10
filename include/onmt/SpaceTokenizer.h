@@ -1,6 +1,6 @@
 #pragma once
 
-#include "opennmttokenizer_export.h"
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/ITokenizer.h"
 
 namespace onmt

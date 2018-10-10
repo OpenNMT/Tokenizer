@@ -95,7 +95,7 @@ add_library(${PROJECT_NAME} ${SOURCES})
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
-generate_export_header(${PROJECT_NAME} BASE_NAME ${PROJECT_NAME_LOWER})
+generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/onmt/${PROJECT_NAME_LOWER}_export.h)
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORIES})
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 
@@ -112,7 +112,7 @@ install(
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   )
 install(FILES
-  ${PUBLIC_HEADERS} "${PROJECT_BINARY_DIR}/${PROJECT_NAME_LOWER}_export.h"
+  ${PUBLIC_HEADERS} "${PROJECT_BINARY_DIR}/onmt/${PROJECT_NAME_LOWER}_export.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/onmt"
   )
 install(FILES

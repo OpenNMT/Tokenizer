@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "opennmttokenizer_export.h"
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/CaseModifier.h"
 
 namespace onmt

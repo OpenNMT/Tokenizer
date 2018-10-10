@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 
-#include "opennmttokenizer_export.h"
+#include "onmt/opennmttokenizer_export.h"
 
 namespace onmt
 {
