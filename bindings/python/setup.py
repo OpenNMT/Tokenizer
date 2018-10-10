@@ -18,10 +18,14 @@ _maybe_add_library_root("BOOST")
 _maybe_add_library_root("TOKENIZER")
 _maybe_add_library_root("SENTENCEPIECE", header_only=True)
 
+cflags = ["-std=c++11"]
+if sys.platform == 'darwin':
+    cflags.append('-mmacosx-version-min=10.9')
+
 tokenizer_module = Extension(
     "pyonmttok.tokenizer",
     sources=["Python.cc"],
-    extra_compile_args=["-std=c++11"],
+    extra_compile_args=cflags,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
     libraries=[
@@ -31,7 +35,7 @@ tokenizer_module = Extension(
 
 setup(
     name="pyonmttok",
-    version="1.10.0",
+    version="1.10.1",
     license="MIT",
     description="OpenNMT tokenization library",
     author="OpenNMT",
