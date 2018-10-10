@@ -108,7 +108,7 @@ for URL in https://www.python.org/ftp/python/2.7.15/python-2.7.15-macosx10.9.pkg
 
     # Adjust @rpath to absolute path
     install_name_tool -change "@rpath/libOpenNMTTokenizer.dylib" ${TOKENIZER_ROOT}/lib/libOpenNMTTokenizer.dylib build/lib.*/pyonmttok/tokenizer*.so
-    LIBBOOST_PYTHON=`otool -L build/lib.*/pyonmttok/tokenizer*.so | grep boost_python | perl -pe 's/.*(libboost.*\.dylib).*/$1/'`
+    LIBBOOST_PYTHON=$(otool -L build/lib.*/pyonmttok/tokenizer*.so | grep boost_python | perl -pe 's/.*(libboost.*\.dylib).*/$1/')
     install_name_tool -change ${LIBBOOST_PYTHON} ${BOOST_ROOT}/lib/${LIBBOOST_PYTHON} build/lib.*/pyonmttok/tokenizer*.so
 
     # rebuild the wheel
