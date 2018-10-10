@@ -44,11 +44,9 @@ mkdir -p wheelhouse
 
 curl -L -O https://bootstrap.pypa.io/get-pip.py
 
-for URL in https://www.python.org/ftp/python/2.7.15/python-2.7.15-macosx10.6.pkg \
-           https://www.python.org/ftp/python/3.4.4/python-3.4.4-macosx10.6.pkg \
-           https://www.python.org/ftp/python/3.5.4/python-3.5.4-macosx10.6.pkg \
-           https://www.python.org/ftp/python/3.6.6/python-3.6.6-macosx10.6.pkg \
-           https://www.python.org/ftp/python/3.7.0/python-3.7.0-macosx10.6.pkg ; do
+for URL in https://www.python.org/ftp/python/2.7.15/python-2.7.15-macosx10.9.pkg \
+           https://www.python.org/ftp/python/3.6.6/python-3.6.6-macosx10.9.pkg \
+           https://www.python.org/ftp/python/3.7.0/python-3.7.0-macosx10.9.pkg ; do
 
     VERSION=$(echo $URL | perl -pe 's/.*python\/(.*?).\d+\/python.*/$1/')
     PYTHON_INSTALL_PATH="/Library/Frameworks/Python.framework/Versions/${VERSION}/bin"
@@ -57,9 +55,11 @@ for URL in https://www.python.org/ftp/python/2.7.15/python-2.7.15-macosx10.6.pkg
     sudo installer -pkg python.pkg -target /
 
     if [ -f "${PYTHON_INSTALL_PATH}/python3" ]; then
-      ln -s ${PYTHON_INSTALL_PATH}/python3        ${PYTHON_INSTALL_PATH}/python
-      ln -s ${PYTHON_INSTALL_PATH}/python3-config ${PYTHON_INSTALL_PATH}/python-config
-      ln -s ${PYTHON_INSTALL_PATH}/pip3           ${PYTHON_INSTALL_PATH}/pip
+      ln -sf ${PYTHON_INSTALL_PATH}/python3        ${PYTHON_INSTALL_PATH}/python
+      ln -sf ${PYTHON_INSTALL_PATH}/python3-config ${PYTHON_INSTALL_PATH}/python-config
+      ln -sf ${PYTHON_INSTALL_PATH}/pip3           ${PYTHON_INSTALL_PATH}/pip
+      ln -sf /Library/Frameworks/Python.framework/Versions/${VERSION}/include/python${VERSION}m \
+             /Library/Frameworks/Python.framework/Versions/${VERSION}/include/python${VERSION}
     fi
     
     echo "${PYTHON_INSTALL_PATH}"
@@ -104,14 +104,15 @@ for URL in https://www.python.org/ftp/python/2.7.15/python-2.7.15-macosx10.6.pkg
 
     # Build Python wheel first time to build tokenizer.so
     cd bindings/python
-    CC=clang python setup.py bdist_wheel
+    python setup.py bdist_wheel
 
     # Adjust @rpath to absolute path
-    install_name_tool -change "@rpath/libOpenNMTTokenizer.dylib" ${TOKENIZER_ROOT}/lib/libOpenNMTTokenizer.dylib build/lib.*/pyonmttok/tokenizer.so
-    install_name_tool -change "libboost_python27.dylib" ${BOOST_ROOT}/lib/libboost_python27.dylib build/lib.*/pyonmttok/tokenizer.so
+    install_name_tool -change "@rpath/libOpenNMTTokenizer.dylib" ${TOKENIZER_ROOT}/lib/libOpenNMTTokenizer.dylib build/lib.*/pyonmttok/tokenizer*.so
+    LIBBOOST_PYTHON=`otool -L build/lib.*/pyonmttok/tokenizer*.so | grep boost_python | perl -pe 's/.*(libboost.*\.dylib).*/$1/'`
+    install_name_tool -change ${LIBBOOST_PYTHON} ${BOOST_ROOT}/lib/${LIBBOOST_PYTHON} build/lib.*/pyonmttok/tokenizer*.so
 
     # rebuild the wheel
-    CC=clang python setup.py bdist_wheel
+    python setup.py bdist_wheel
 
     # introduce in the wheel all of the local libraries
     delocate-wheel -w fixed_wheels -v dist/*.whl
