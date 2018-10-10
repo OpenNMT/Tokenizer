@@ -3,42 +3,72 @@ language: cpp
 compiler:
   - gcc
   - clang
+env:
+  matrix:
+    - WITH_ICU="ON"
+    - WITH_ICU="OFF"
 cache:
   directories:
-    - $HOME/googletest-release-1.8.0/
+    - $HOME/googletest-1.8.0/
+    - $HOME/sentencepiece-0.1.4/
 addons:
   apt:
     sources:
       - george-edison55-precise-backports
       - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.8
-      - g++-4.8
       - cmake
       - cmake-data
+      - g++-4.8
+      - gcc-4.8
       - libboost-dev
       - libboost-program-options-dev
       - libboost-python-dev
+      - libicu-dev
+      - libprotobuf-c++
+      - libprotobuf-dev
+      - libtool
+      - pkg-config
+      - protobuf-compiler
+      - python-pip
 before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - export ROOT_TRAVIS_DIR=$(pwd)
-  - cd $ROOT_TRAVIS_DIR
   - |
-    if [ ! -d googletest-release-1.8.0/ ]; then
+    if [ ! -d $HOME/googletest-1.8.0/lib ]; then
       wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
       tar xf release-1.8.0.tar.gz
       cd googletest-release-1.8.0/
       mkdir install
       mkdir build && cd build
-      cmake -DCMAKE_INSTALL_PREFIX=../install ..
+      cmake -DCMAKE_INSTALL_PREFIX=$HOME/googletest-1.8.0/ ..
       make && make install
       cd $ROOT_TRAVIS_DIR
     fi
+  - |
+    if [ ! -d $HOME/sentencepiece-0.1.4/lib ]; then
+      wget https://github.com/google/sentencepiece/archive/v0.1.4.tar.gz
+      tar xf v0.1.4.tar.gz
+      cd sentencepiece-0.1.4
+      mkdir build
+      cd build
+      cmake -DCMAKE_INSTALL_PREFIX=$HOME/sentencepiece-0.1.4 ..
+      make
+      make install
+      cd $ROOT_TRAVIS_DIR
+    fi
+  - pip install --user pytest setuptools
 install:
+  - export TOKENIZER_ROOT=$HOME/Tokenizer
+  - export SENTENCEPIECE_ROOT=$HOME/sentencepiece-0.1.4
   - mkdir build && cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release -DGTEST_ROOT=$ROOT_TRAVIS_DIR/googletest-release-1.8.0/install/ -DWITH_PYTHON_BINDINGS=ON -DPYTHON_VERSION=2.7 ..
+  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT -DCMAKE_PREFIX_PATH=$SENTENCEPIECE_ROOT -DGTEST_ROOT=$HOME/googletest-1.8.0 -DWITH_ICU=$WITH_ICU ..
   - make
-  - export PYTHONPATH="$PYTHONPATH:$(pwd)/bindings/python"
+  - make install
+  - cd ../bindings/python
+  - BOOST_PYTHON_LIBRARY=boost_python python setup.py install --user
+  - cd $ROOT_TRAVIS_DIR
+  - export LD_LIBRARY_PATH=$SENTENCEPIECE_ROOT/lib:$TOKENIZER_ROOT/lib
 script:
-  - test/onmt_tokenizer_test ../test/data
-  - python ../bindings/python/example.py
+  - build/test/onmt_tokenizer_test test/data
+  - pytest bindings/python/test/test.py

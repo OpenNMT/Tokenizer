@@ -17,23 +17,36 @@ namespace onmt
                                 std::vector<std::string>& words,
                                 std::vector<std::vector<std::string> >& features) const
   {
-    std::vector<std::string> chunks = unicode::split_utf8(text, " ");
+    words.reserve(text.length());
 
-    for (const auto& chunk: chunks)
+    size_t offset = 0;
+
+    while (true)
     {
-      if (chunk.empty())
-        continue;
-
-      std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
-
-      words.push_back(fields[0]);
-
-      for (size_t i = 1; i < fields.size(); ++i)
+      size_t space_pos = text.find(' ', offset);
+      if (space_pos == std::string::npos)
       {
-        if (features.size() < i)
-          features.emplace_back(1, fields[i]);
-        else
-          features[i - 1].push_back(fields[i]);
+        words.emplace_back(text, offset);
+        break;
+      }
+      else if (space_pos != offset)
+        words.emplace_back(text, offset, space_pos - offset);
+      offset = space_pos + 1;
+    }
+
+    if (words[0].find(ITokenizer::feature_marker) != std::string::npos)
+    {
+      for (auto& word : words)
+      {
+        std::vector<std::string> fields = unicode::split_utf8(word, ITokenizer::feature_marker);
+        word = fields[0];
+        for (size_t i = 1; i < fields.size(); ++i)
+        {
+          if (features.size() < i)
+            features.emplace_back(1, fields[i]);
+          else
+            features[i - 1].emplace_back(std::move(fields[i]));
+        }
       }
     }
   }

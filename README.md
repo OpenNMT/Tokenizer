@@ -2,17 +2,21 @@
 
 # Tokenizer
 
-Tokenizer is a C++ implementation of OpenNMT tokenization and detokenization.
+This project implements a generic and customizable text tokenization based on the original OpenNMT tokenization tools. It features:
+
+* Fast and generic text tokenization with minimal dependencies
+* Support for BPE and SentencePiece models
+* Efficient training mode for learning subword models
+* Customizable reversible tokenization: marking joints or spaces, with special characters or tokens
+* Advanced text segmentation options: case change, alphabet change, etc.
+* Protected sequences against tokenization with the special characters "｟" and "｠"
+* Easy to use C++ and Python APIs
 
 ## Dependencies
 
-Compiling executables requires:
-
-* `Boost` (`program_options`)
-
-Compiling tests requires:
-
-* [Google Test](https://github.com/google/googletest)
+* (optional) [SentencePiece](https://github.com/google/sentencepiece)
+* (optional) [ICU](http://site.icu-project.org/)
+* (required by clients) [Boost](https://www.boost.org/) (`program_options`)
 
 ## Compiling
 
@@ -25,25 +29,29 @@ cmake -DCMAKE_BUILD_TYPE=<Release or Debug> ..
 make
 ```
 
-It will produce the dynamic library `libOpenNMTTokenizer.so` (or `.dylib` on Mac OS, `.dll` on Windows), and the tokenization tools `cli/tokenize` and `cli/detokenize`.
+It will produce the dynamic library `libOpenNMTTokenizer` and tokenization clients in `cli/`.
 
 ### Options
 
 * To compile only the library, use the `-DLIB_ONLY=ON` flag.
+* To compile with the ICU unicode backend, use the `-DWITH_ICU=ON` flag.
 
 ## Using
 
-### Clients
+The tokenizer can be used in several ways:
 
-See `--help` on the clients to discover available options and usage. They have the same interface as their Lua counterpart.
+* command line clients `cli/tokenize`, `cli/detokenize`, `cli/subword_learn`
+* [C++ API](include/onmt/Tokenizer.h)
+* [Python API](bindings/python)
 
-### Library
+All APIs expose the same set of options. See the [documentation](docs/options.md) for a complete description.
 
-This project is also a convenient way to apply OpenNMT tokenization in existing software.
+### Example
 
-See:
-
-* `include/onmt/Tokenizer.h` to apply OpenNMT's tokenization and detokenization
+```bash
+$ echo "Hello World!" | cli/tokenize --joiner_annotate
+Hello World ￭!
+```
 
 ## Testing
 

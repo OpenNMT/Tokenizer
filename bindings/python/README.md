@@ -1,9 +1,10 @@
 ## Python bindings
 
-### Requirements
+### Installation
 
-* Python
-* Boost (`python`)
+```bash
+pip install pyonmttok
+```
 
 ### API
 
@@ -13,10 +14,23 @@ import pyonmttok
 tokenizer = pyonmt.Tokenizer(
     mode: str,
     bpe_model_path="",
+    bpe_vocab_path="",  # Deprecated, use "vocabulary_path" instead.
+    bpe_vocab_threshold=50,  # Deprecated, use "vocabulary_threshold" instead.
+    vocabulary_path="",
+    vocabulary_threshold=0,
+    sp_model_path="",
+    sp_nbest_size=0,
+    sp_alpha=0.1,
     joiner="￭",
     joiner_annotate=False,
     joiner_new=False,
+    spacer_annotate=False,
+    spacer_new=False,
     case_feature=False,
+    case_markup=False,
+    no_substitution=False,
+    preserve_placeholders=False,
+    preserve_segmented_tokens=False,
     segment_case=False,
     segment_numbers=False,
     segment_alphabet_change=False,
@@ -28,26 +42,4 @@ text = tokenizer.detokenize(tokens, features)
 text = tokenizer.detokenize(tokens)  # will fail if case_feature is set.
 ```
 
-### Guide
-
-1\. Compile with Python bindings enabled:
-
-```bash
-mkdir build && cd build
-cmake -DLIB_ONLY=ON -DWITH_PYTHON_BINDINGS=ON -DPYTHON_VERSION=3.5 ..
-make -j4
-```
-
-2\. Extend `PYTHONPATH` to the directory containing the `pyonmttok.so` library, e.g.:
-
-```bash
-export PYTHONPATH="$PYTHONPATH:$HOME/dev/Tokenizer/build/bindings/python"
-```
-
-3\. Test the example script:
-
-```bash
-$ python3 ../bindings/python/example.py
-tokenized:   ['Hello', 'World', '￭', '!']
-detokenized: Hello World!
-```
+See the [documentation](../../docs/options.md) for a description of each option.
