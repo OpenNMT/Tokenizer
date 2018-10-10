@@ -5,7 +5,9 @@
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPE.h>
-#include <onmt/SentencePiece.h>
+#ifdef WITH_SP
+#  include <onmt/SentencePiece.h>
+#endif
 
 namespace po = boost::program_options;
 
