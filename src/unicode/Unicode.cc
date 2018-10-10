@@ -196,7 +196,10 @@ namespace onmt
       if (!u)
         return false;
       return (u >= 9 && u <= 13) || _find_codepoint(u, unidata_Separator);
+<<<<<<< HEAD
+=======
 #endif
+>>>>>>> upstream/master
     }
 
     bool is_letter(code_point_t u, _type_letter &tl)

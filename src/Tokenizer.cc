@@ -96,9 +96,11 @@ namespace onmt
   {
     read_flags(flags);
     _cache_model = true;
+#ifdef WITH_SP
     if (dynamic_cast<const SentencePiece*>(subword_encoder) != nullptr
         && _mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
       _spacer_annotate = true;
+#endif
   }
 
   Tokenizer::Tokenizer(const std::string& sp_model_path,
@@ -484,6 +486,21 @@ namespace onmt
             {
               if (letter || (number && _segment_numbers) || (!number && !space))
               {
+<<<<<<< HEAD
+                bool addjoiner = false;
+                if (_joiner_annotate) {
+                  if (_joiner_new) addjoiner = true;
+                  else {
+                    if (!letter || prev_alphabet == "placeholder")
+                      token += _joiner;
+                    else
+                      c = _joiner + c;
+                  }
+                }
+                words.push_back(token);
+                if (addjoiner) words.push_back(_joiner);
+                token.clear();
+=======
                 AnnotatedToken next_token;
                 if (!letter || prev_alphabet == placeholder_alphabet)
                   token.join_right();
@@ -493,6 +510,7 @@ namespace onmt
                   token.preserve();
                 annotated_tokens.emplace_back(std::move(token));
                 std::swap(token, next_token);
+>>>>>>> upstream/master
               }
               else if (other)
               {
