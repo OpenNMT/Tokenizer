@@ -4,12 +4,13 @@
 
 #include <sentencepiece_processor.h>
 
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/SubwordEncoder.h"
 
 namespace onmt
 {
 
-  class SentencePiece: public SubwordEncoder
+  class OPENNMTTOKENIZER_EXPORT SentencePiece: public SubwordEncoder
   {
   public:
     SentencePiece(const std::string& model_path);

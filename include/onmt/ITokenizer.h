@@ -4,10 +4,12 @@
 #include <string>
 #include <unordered_map>
 
+#include "onmt/opennmttokenizer_export.h"
+
 namespace onmt
 {
 
-  class ITokenizer
+  class OPENNMTTOKENIZER_EXPORT ITokenizer
   {
   public:
     static const std::string feature_marker;

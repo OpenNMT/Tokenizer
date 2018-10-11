@@ -4,11 +4,13 @@
 #include <vector>
 #include <iostream>
 
+#include "onmt/opennmttokenizer_export.h"
+
 namespace onmt
 {
   class Tokenizer;
 
-  class SubwordLearner
+  class OPENNMTTOKENIZER_EXPORT SubwordLearner
   {
   public:
     SubwordLearner(bool verbose);

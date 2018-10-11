@@ -5,12 +5,13 @@
 #include <unordered_set>
 #include <vector>
 
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/SubwordEncoder.h"
 
 namespace onmt
 {
 
-  class BPE: public SubwordEncoder
+  class OPENNMTTOKENIZER_EXPORT BPE: public SubwordEncoder
   {
   public:
     BPE(const std::string& model_path);

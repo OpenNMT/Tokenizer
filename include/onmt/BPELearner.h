@@ -3,11 +3,12 @@
 #include <string>
 #include <unordered_map>
 
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/SubwordLearner.h"
 
 namespace onmt
 {
-  class BPELearner: public SubwordLearner
+  class OPENNMTTOKENIZER_EXPORT BPELearner: public SubwordLearner
   {
   public:
     BPELearner(bool verbose,

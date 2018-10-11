@@ -5,12 +5,13 @@
 #include <memory>
 #include <unordered_map>
 
+#include "onmt/opennmttokenizer_export.h"
 #include "onmt/SubwordLearner.h"
 
 namespace onmt
 {
 
-  class SPMLearner: public SubwordLearner
+  class OPENNMTTOKENIZER_EXPORT SPMLearner: public SubwordLearner
   {
   public:
     SPMLearner(bool verbose, const std::string& opts, const std::string& input_filename);
