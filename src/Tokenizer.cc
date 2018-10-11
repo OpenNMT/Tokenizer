@@ -154,7 +154,7 @@ namespace onmt
     line.reserve(words.size() * 10);
 
     CaseModifier::Type case_region = CaseModifier::Type::None;
-    ssize_t previous_token = -1;
+    int previous_token = -1;
 
     for (size_t i = 0; i < words.size(); ++i)
     {
