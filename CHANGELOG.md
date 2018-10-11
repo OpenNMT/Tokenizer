@@ -5,6 +5,7 @@
 ### Fixes and improvements
 
 * Fix compilations errors when SentencePiece is not installed
+* Fix DLLs builds using Visual Studio
 
 ## [v1.10.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.1) (2018-10-08)
 
