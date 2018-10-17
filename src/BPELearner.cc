@@ -26,7 +26,7 @@ namespace onmt
   typedef std::pair<std::string, std::string> bigram;
   typedef std::vector<std::string> sequence;
 
-  std::string _S(const sequence &s) {
+  std::string _s(const sequence &s) {
     std::string t;
     for(const auto& w: s)
       t += ", u'" + w + "'";
