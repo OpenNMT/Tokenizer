@@ -161,6 +161,8 @@ When using `spacer_annotate`, make spacers independent tokens.
 ```bash
 $ echo "Hello World!" | cli/tokenize --spacer_annotate --spacer_new
 Hello ▁ World !
+$ echo "Hello World!" | cli/tokenize --spacer_annotate --spacer_new --mode char
+H e l l o ▁ W o r l d !
 ```
 
 ### `preserve_placeholders` (boolean, default: `false`)
