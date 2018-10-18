@@ -65,6 +65,12 @@ namespace onmt
   {
     std::vector<std::string> encoded = encode(token.str());
     std::vector<AnnotatedToken> tokens;
+    if (encoded.empty())
+    {
+      tokens.push_back(token);
+      return tokens;
+    }
+
     tokens.reserve(encoded.size());
 
     for (size_t j = 0; j < encoded.size(); ++j)
