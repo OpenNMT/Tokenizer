@@ -543,7 +543,8 @@ namespace onmt
           continue;
         auto pair = CaseModifier::extract_case_type(token.str());
         if (pair.second == CaseModifier::Type::Uppercase
-            || pair.second == CaseModifier::Type::Capitalized)
+            || pair.second == CaseModifier::Type::Capitalized
+            || pair.second == CaseModifier::Type::CapitalizedFirst)
         {
           token.set(std::move(pair.first));
           token.set_case(pair.second);
