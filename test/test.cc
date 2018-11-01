@@ -226,6 +226,8 @@ TEST(TokenizerTest, CaseMarkupWithJoiners) {
                      "Hello WOrld!", "｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ wo￭ ｟mrk_end_case_region_U｠ rld ￭!");
   test_tok_and_detok(tokenizer,
                      "hello woRld!", "hello wo￭ ｟mrk_case_modifier_C｠ rld ￭!");
+  test_tok_and_detok(tokenizer,
+                     "hello woRlD!", "hello wo￭ ｟mrk_case_modifier_C｠ rl￭ ｟mrk_case_modifier_C｠ d ￭!");
 }
 
 TEST(TokenizerTest, CaseMarkupWithSpacers) {
