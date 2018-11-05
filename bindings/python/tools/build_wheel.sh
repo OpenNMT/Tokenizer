@@ -91,7 +91,7 @@ do
     # Build Python wheel.
     cd bindings/python
     $PYTHON_ROOT/bin/python setup.py bdist_wheel
-    export LD_LIBRARY_PATH=/usr/local/lib:$BOOST_ROOT/lib:$TOKENIZER_ROOT/lib
+    export LD_LIBRARY_PATH=/usr/local/lib:$BOOST_ROOT/lib:$TOKENIZER_ROOT/lib64
     auditwheel repair dist/*.whl
     mv -f wheelhouse/*.whl $ROOT_DIR/wheelhouse
 
