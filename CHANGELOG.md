@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* Fix case markup for 1 letter words
+
 ## [v1.10.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.2) (2018-10-18)
 
 ### Fixes and improvements
