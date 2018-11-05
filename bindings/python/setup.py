@@ -12,7 +12,10 @@ def _maybe_add_library_root(lib_name, header_only=False):
     root = os.environ["%s_ROOT" % lib_name]
     include_dirs.append("%s/include" % root)
     if not header_only:
-      library_dirs.append("%s/lib" % root)
+      lib_dir = "%s/lib64" % root
+      if not os.path.isdir(lib_dir):
+        lib_dir = "%s/lib" % root
+      library_dirs.append(lib_dir)
 
 _maybe_add_library_root("BOOST")
 _maybe_add_library_root("TOKENIZER")
