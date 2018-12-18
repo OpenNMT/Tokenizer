@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* Harden detokenization on invalid case markups combination
+
 ## [v1.10.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.3) (2018-11-05)
 
 ### Fixes and improvements

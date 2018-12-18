@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <onmt/Tokenizer.h>
+#include <onmt/SpaceTokenizer.h>
 #include <onmt/Alphabet.h>
 
 using namespace onmt;
@@ -21,6 +22,13 @@ static void test_tok(ITokenizer& tokenizer,
     auto detok = tokenizer.detokenize(joined_tokens);
     EXPECT_EQ(detok, in);
   }
+}
+
+static void test_detok(ITokenizer& tokenizer, const std::string& in, const std::string& expected) {
+  std::vector<std::string> tokens;
+  onmt::SpaceTokenizer::get_instance().tokenize(in, tokens);
+  auto detok = tokenizer.detokenize(tokens);
+  EXPECT_EQ(detok, expected);
 }
 
 static void test_tok_alphabet(ITokenizer& tokenizer,
@@ -253,6 +261,30 @@ TEST(TokenizerTest, CaseMarkupWithBPE) {
                      "BONJOUR MONDE", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ ｟mrk_begin_case_region_U｠ mon￭ de ｟mrk_end_case_region_U｠");
   test_tok_and_detok(tokenizer,
                      "BONJOUR monde", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ mon￭ de");
+}
+
+TEST(TokenizerTest, CaseMarkupDetokMissingModifiedToken) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::CaseMarkup);
+  test_detok(tokenizer, "hello ｟mrk_case_modifier_C｠", "hello");
+  test_detok(tokenizer, "｟mrk_case_modifier_C｠ ｟mrk_case_modifier_C｠ hello", "Hello");
+  test_detok(tokenizer, "｟mrk_case_modifier_C｠ ｟mrk_begin_case_region_U｠ hello ｟mrk_end_case_region_U｠", "HELLO");
+}
+
+TEST(TokenizerTest, CaseMarkupDetokMissingRegionMarker) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::CaseMarkup);
+  test_detok(tokenizer, "｟mrk_begin_case_region_U｠ hello", "HELLO");
+  test_detok(tokenizer,
+             "｟mrk_begin_case_region_U｠ hello ｟mrk_case_modifier_C｠ world", "HELLO World");
+  test_detok(tokenizer,
+             "｟mrk_end_case_region_U｠ hello ｟mrk_case_modifier_C｠ world", "hello World");
+}
+
+TEST(TokenizerTest, CaseMarkupDetokNestedMarkers) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::CaseMarkup);
+  test_detok(tokenizer,
+             "｟mrk_begin_case_region_U｠ ｟mrk_case_modifier_C｠ hello world ｟mrk_end_case_region_U｠", "Hello WORLD");
+  test_detok(tokenizer,
+             "｟mrk_begin_case_region_U｠ hello ｟mrk_case_modifier_C｠ ｟mrk_end_case_region_U｠ world", "HELLO world");
 }
 
 TEST(TokenizerTest, SegmentCase) {

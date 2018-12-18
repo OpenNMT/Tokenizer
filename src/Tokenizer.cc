@@ -154,12 +154,11 @@ namespace onmt
     line.reserve(words.size() * 10);
 
     CaseModifier::Type case_region = CaseModifier::Type::None;
+    CaseModifier::Type case_modifier = CaseModifier::Type::None;
     int previous_token = -1;
 
     for (size_t i = 0; i < words.size(); ++i)
     {
-      CaseModifier::Type case_modifier = case_region;
-
       if (_case_feature)
       {
         if (features.empty())
@@ -169,24 +168,22 @@ namespace onmt
       else
       {
         auto case_markup = CaseModifier::get_case_markup(words[i]);
-        if (case_markup != CaseModifier::Markup::None)
+        switch (case_markup)
         {
-          if (case_markup == CaseModifier::Markup::RegionEnd)
-          {
-            case_region = CaseModifier::Type::None;
-            continue;
-          }
-          else
-          {
-            case_modifier = CaseModifier::get_case_modifier_from_markup(words[i]);
-            if (case_markup == CaseModifier::Markup::RegionBegin)
-            {
-              case_region = case_modifier;
-              continue;
-            }
-            else
-              ++i;
-          }
+        case CaseModifier::Markup::RegionBegin:
+          case_region = CaseModifier::get_case_modifier_from_markup(words[i]);
+          case_modifier = CaseModifier::Type::None;
+          continue;
+        case CaseModifier::Markup::RegionEnd:
+          case_region = CaseModifier::Type::None;
+          case_modifier = CaseModifier::Type::None;
+          continue;
+        case CaseModifier::Markup::Modifier:
+          case_modifier = CaseModifier::get_case_modifier_from_markup(words[i]);
+          continue;
+        default:
+          case_modifier = (case_modifier != CaseModifier::Type::None ? case_modifier : case_region);
+          break;
         }
       }
 
@@ -230,6 +227,7 @@ namespace onmt
         line.append(word, subpos, sublen);
 
       previous_token = i;
+      case_modifier = CaseModifier::Type::None;
     }
 
     return line;
