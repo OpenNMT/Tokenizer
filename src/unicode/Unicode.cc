@@ -151,6 +151,32 @@ namespace onmt
       }
     }
 
+    void explode_utf8_with_marks(const std::string& str,
+                      std::vector<std::string>& chars,
+                      std::vector<std::list<code_point_t>>& code_points)
+    {
+      const char* c_str = str.c_str();
+
+      chars.reserve(str.length());
+      code_points.reserve(str.length());
+
+      while (*c_str)
+      {
+        unsigned int char_size = 0;
+        code_point_t code_point = utf8_to_cp(
+          reinterpret_cast<const unsigned char*>(c_str), char_size);
+        if (is_mark(code_point) && chars.size()) {
+          chars.back().append(std::string(c_str, char_size));
+        }
+        else {
+          code_points.push_back(std::list<code_point_t>());
+          chars.emplace_back(c_str, char_size);
+        }
+        code_points.back().push_back(code_point);
+        c_str += char_size;
+      }
+    }
+
     size_t utf8len(const std::string& str)
     {
 #ifdef WITH_ICU

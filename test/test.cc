@@ -214,6 +214,17 @@ TEST(TokenizerTest, CombiningMark) {
                      "वर्तमान लिपि (￭ स्क्रिप्ट ￭) खो जाएगी ￭।");
 }
 
+TEST(TokenizerTest, MarkOnSpace) {
+  Tokenizer tokenizer_joiner(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate);
+  test_tok_and_detok(tokenizer_joiner,
+                     "b ̇c",
+                     "b ￭％0020̇￭ c");
+  Tokenizer tokenizer_spacer(Tokenizer::Mode::Conservative, Tokenizer::Flags::SpacerAnnotate);
+  test_tok_and_detok(tokenizer_spacer,
+                     "b ̇c",
+                     "b ％0020̇ c");
+}
+
 TEST(TokenizerTest, CaseFeature) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       Tokenizer::Flags::CaseFeature | Tokenizer::Flags::JoinerAnnotate);

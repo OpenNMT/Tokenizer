@@ -221,10 +221,24 @@ namespace onmt
         }
       }
 
+      std::string prep_word = word.substr(subpos, sublen);
+
       if (case_modifier != CaseModifier::Type::None)
-        line.append(CaseModifier::apply_case(word.substr(subpos, sublen), case_modifier));
-      else
-        line.append(word, subpos, sublen);
+        prep_word = CaseModifier::apply_case(prep_word, case_modifier);
+
+      size_t p = prep_word.find(protected_character, 0);
+
+      if (!is_placeholder(prep_word)) {
+        while (p != std::string::npos && p+protected_character.size()+4 < prep_word.size()) {
+          std::string code = prep_word.substr(p+protected_character.size(), 4);
+          int v;
+          if (sscanf(code.c_str(), "%x", &v) == 1)
+            prep_word.replace(p, protected_character.size()+4, unicode::cp_to_utf8(v));
+          p = prep_word.find(protected_character, p+protected_character.size());
+        }
+      }
+
+      line.append(prep_word);
 
       previous_token = i;
       case_modifier = CaseModifier::Type::None;
@@ -313,9 +327,9 @@ namespace onmt
     }
     else {
       std::vector<std::string> chars;
-      std::vector<unicode::code_point_t> code_points;
+      std::vector<std::list<unicode::code_point_t>> code_points_seq;
 
-      unicode::explode_utf8(text, chars, code_points);
+      unicode::explode_utf8_with_marks(text, chars, code_points_seq);
 
       AnnotatedToken token;
 
@@ -327,9 +341,9 @@ namespace onmt
       for (size_t i = 0; i < chars.size(); ++i)
       {
         const std::string& c = chars[i];
-        unicode::code_point_t v = code_points[i];
-        unicode::code_point_t next_v = i + 1 < code_points.size() ? code_points[i + 1] : 0;
-        bool isSeparator = unicode::is_separator(v);
+        unicode::code_point_t v = code_points_seq[i].front();
+        unicode::code_point_t next_v = i + 1 < code_points_seq.size() ? code_points_seq[i + 1].front() : 0;
+        bool isSeparator = unicode::is_separator(v) && code_points_seq[i].size() == 1;
 
         const bool letter = state & State::Letter;
         const bool space = state & State::Space;
@@ -406,7 +420,7 @@ namespace onmt
           bool cur_letter = false;
           bool cur_number = false;
           // skip special characters and BOM
-          if (v > 32 && v != 0xFEFF)
+          if (v >= 32 && v != 0xFEFF)
           {
             const std::string& sub_c(!_no_substitution && substitutes.find(c) != substitutes.end() ?
                                      substitutes.at(c) : c);
@@ -420,14 +434,6 @@ namespace onmt
                 (*alphabets)[id_to_alphabet(static_cast<Alphabet>(alphabet))]++;
               else
                 (*alphabets)[cur_number ? "Numeric" : "Other"]++;
-            }
-
-            bool is_mark = unicode::is_mark(v);
-
-            if (is_mark) {
-              // if we have a mark, we keep type of previous character
-              cur_letter = letter;
-              cur_number = number;
             }
 
             if (_mode == Mode::Conservative)
@@ -449,7 +455,7 @@ namespace onmt
               bool segment_alphabet = false;
               bool segment_alphabet_change = false;
               if ((!letter && !space)
-                  || (letter && !is_mark &&
+                  || (letter &&
                       ((segment_alphabet = (prev_alphabet == alphabet && is_alphabet_to_segment(alphabet)))
                        || (segment_alphabet_change = (prev_alphabet != alphabet && _segment_alphabet_change))
                        || (prev_alphabet == placeholder_alphabet
@@ -518,7 +524,11 @@ namespace onmt
                 token.join_left();
               }
 
-              token.append(sub_c);
+              if (sub_c[0] == ' ')
+                token.append(protected_character + "0020" + sub_c.substr(1));
+              else
+                token.append(sub_c);
+
               annotated_tokens.emplace_back(std::move(token));
               token.clear();
               uppercase = false;
