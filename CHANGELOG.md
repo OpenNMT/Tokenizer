@@ -4,6 +4,8 @@
 
 ### Fixes and improvements
 
+* More strict handle of combining marks - fixes #57 and #58
+
 ## [v1.10.4](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.4) (2018-12-18)
 
 ### Fixes and improvements
