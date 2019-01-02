@@ -104,7 +104,7 @@ namespace onmt
   std::vector<std::string> BPE::encode(const std::string& str) const
   {
     std::vector<std::string> chars;
-    std::vector<std::list<unicode::code_point_t>> code_points;
+    std::vector<std::vector<unicode::code_point_t>> code_points;
 
     if (_case_insensitive)
       unicode::explode_utf8_with_marks(CaseModifier::extract_case(str).first, chars, code_points);

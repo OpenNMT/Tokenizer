@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <vector>
 #include <string>
-#include <list>
 
 #include "onmt/opennmttokenizer_export.h"
 
@@ -21,9 +20,10 @@ namespace onmt
     OPENNMTTOKENIZER_EXPORT void explode_utf8(const std::string& str,
                       std::vector<std::string>& chars,
                       std::vector<code_point_t>& code_points);
-    OPENNMTTOKENIZER_EXPORT void explode_utf8_with_marks(const std::string& str,
-                      std::vector<std::string>& chars,
-                      std::vector<std::list<code_point_t>>& code_points);
+    OPENNMTTOKENIZER_EXPORT void
+    explode_utf8_with_marks(const std::string& str,
+                            std::vector<std::string>& chars,
+                            std::vector<std::vector<code_point_t>>& code_points);
 
     OPENNMTTOKENIZER_EXPORT size_t utf8len(const std::string& str);
 

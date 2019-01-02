@@ -226,9 +226,8 @@ namespace onmt
       if (case_modifier != CaseModifier::Type::None)
         prep_word = CaseModifier::apply_case(prep_word, case_modifier);
 
-      size_t p = prep_word.find(protected_character, 0);
-
       if (!is_placeholder(prep_word)) {
+        size_t p = prep_word.find(protected_character, 0);
         while (p != std::string::npos && p+protected_character.size()+4 < prep_word.size()) {
           std::string code = prep_word.substr(p+protected_character.size(), 4);
           int v;
@@ -327,7 +326,7 @@ namespace onmt
     }
     else {
       std::vector<std::string> chars;
-      std::vector<std::list<unicode::code_point_t>> code_points_seq;
+      std::vector<std::vector<unicode::code_point_t>> code_points_seq;
 
       unicode::explode_utf8_with_marks(text, chars, code_points_seq);
 

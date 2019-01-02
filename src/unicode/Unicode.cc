@@ -152,8 +152,8 @@ namespace onmt
     }
 
     void explode_utf8_with_marks(const std::string& str,
-                      std::vector<std::string>& chars,
-                      std::vector<std::list<code_point_t>>& code_points)
+                                 std::vector<std::string>& chars,
+                                 std::vector<std::vector<code_point_t>>& code_points)
     {
       const char* c_str = str.c_str();
 
@@ -165,11 +165,13 @@ namespace onmt
         unsigned int char_size = 0;
         code_point_t code_point = utf8_to_cp(
           reinterpret_cast<const unsigned char*>(c_str), char_size);
-        if (is_mark(code_point) && chars.size()) {
-          chars.back().append(std::string(c_str, char_size));
+        if (!chars.empty() && is_mark(code_point))
+        {
+          chars.back().append(c_str, char_size);
         }
-        else {
-          code_points.push_back(std::list<code_point_t>());
+        else
+        {
+          code_points.emplace_back();
           chars.emplace_back(c_str, char_size);
         }
         code_points.back().push_back(code_point);
