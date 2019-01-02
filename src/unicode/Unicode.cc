@@ -153,12 +153,14 @@ namespace onmt
 
     void explode_utf8_with_marks(const std::string& str,
                                  std::vector<std::string>& chars,
-                                 std::vector<std::vector<code_point_t>>& code_points)
+                                 std::vector<std::vector<code_point_t>>& code_points,
+                                 bool keep_code_points)
     {
       const char* c_str = str.c_str();
 
       chars.reserve(str.length());
-      code_points.reserve(str.length());
+      if (keep_code_points)
+        code_points.reserve(str.length());
 
       while (*c_str)
       {
@@ -171,10 +173,12 @@ namespace onmt
         }
         else
         {
-          code_points.emplace_back();
+          if (keep_code_points)
+            code_points.emplace_back();
           chars.emplace_back(c_str, char_size);
         }
-        code_points.back().push_back(code_point);
+        if (keep_code_points)
+          code_points.back().push_back(code_point);
         c_str += char_size;
       }
     }

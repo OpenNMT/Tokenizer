@@ -107,9 +107,9 @@ namespace onmt
     std::vector<std::vector<unicode::code_point_t>> code_points;
 
     if (_case_insensitive)
-      unicode::explode_utf8_with_marks(CaseModifier::extract_case(str).first, chars, code_points);
+      unicode::explode_utf8_with_marks(CaseModifier::extract_case(str).first, chars, code_points, false);
     else
-      unicode::explode_utf8_with_marks(str, chars, code_points);
+      unicode::explode_utf8_with_marks(str, chars, code_points, false);
 
     if (chars.size() == 1)
     {
