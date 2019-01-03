@@ -252,8 +252,7 @@ namespace onmt
     std::multimap<int, sequence > charvocab;
     for(auto it = _vocab.begin(); it != _vocab.end(); it++) {
       sequence chars;
-      std::vector<std::vector<unicode::code_point_t>> code_points;
-      unicode::explode_utf8_with_marks(it->first, chars, code_points);
+      unicode::explode_utf8_with_marks(it->first, chars);
       chars.back().append("</w>");
       charvocab.insert(std::make_pair(-it->second, chars));
     }

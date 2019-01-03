@@ -326,9 +326,10 @@ namespace onmt
     }
     else {
       std::vector<std::string> chars;
-      std::vector<std::vector<unicode::code_point_t>> code_points_seq;
+      std::vector<unicode::code_point_t> code_points_main;
+      std::vector<std::vector<unicode::code_point_t>> code_points_combining;
 
-      unicode::explode_utf8_with_marks(text, chars, code_points_seq);
+      unicode::explode_utf8_with_marks(text, chars, code_points_main, code_points_combining);
 
       AnnotatedToken token;
 
@@ -340,9 +341,9 @@ namespace onmt
       for (size_t i = 0; i < chars.size(); ++i)
       {
         const std::string& c = chars[i];
-        unicode::code_point_t v = code_points_seq[i].front();
-        unicode::code_point_t next_v = i + 1 < code_points_seq.size() ? code_points_seq[i + 1].front() : 0;
-        bool isSeparator = unicode::is_separator(v) && code_points_seq[i].size() == 1;
+        unicode::code_point_t v = code_points_main[i];
+        unicode::code_point_t next_v = i + 1 < code_points_main.size() ? code_points_main[i + 1] : 0;
+        bool isSeparator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
 
         const bool letter = state & State::Letter;
         const bool space = state & State::Space;
