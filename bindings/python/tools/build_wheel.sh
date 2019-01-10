@@ -19,17 +19,7 @@ TOKENIZER_REMOTE=https://github.com/OpenNMT/Tokenizer.git
 
 BOOST_VERSION=1.67.0
 CMAKE_VERSION=3.12.0
-PROTOBUF_VERSION=3.6.0
-SENTENCEPIECE_VERSION=0.1.4
-
-# Install protobuf.
-curl -L -O https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
-tar zxfv protobuf-cpp-${PROTOBUF_VERSION}.tar.gz
-cd protobuf-${PROTOBUF_VERSION}
-./configure --disable-shared --with-pic
-make CXXFLAGS+="-std=c++11 -O3" CFLAGS+="-std=c++11 -O3" -j4
-make install || true
-cd ..
+SENTENCEPIECE_VERSION=0.1.8
 
 # Install cmake.
 curl -L -O https://cmake.org/files/v3.12/cmake-${CMAKE_VERSION}.tar.gz

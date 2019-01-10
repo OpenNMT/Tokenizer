@@ -4,13 +4,15 @@ compiler:
   - gcc
   - clang
 env:
+  global:
+    - SENTENCEPIECE_VERSION="0.1.8"
   matrix:
     - WITH_ICU="ON"
     - WITH_ICU="OFF"
 cache:
   directories:
     - $HOME/googletest-1.8.0/
-    - $HOME/sentencepiece-0.1.4/
+    - $HOME/sentencepiece-$SENTENCEPIECE_VERSION/
 addons:
   apt:
     sources:
@@ -25,11 +27,7 @@ addons:
       - libboost-program-options-dev
       - libboost-python-dev
       - libicu-dev
-      - libprotobuf-c++
-      - libprotobuf-dev
       - libtool
-      - pkg-config
-      - protobuf-compiler
       - python-pip
 before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
@@ -46,13 +44,13 @@ before_install:
       cd $ROOT_TRAVIS_DIR
     fi
   - |
-    if [ ! -d $HOME/sentencepiece-0.1.4/lib ]; then
-      wget https://github.com/google/sentencepiece/archive/v0.1.4.tar.gz
-      tar xf v0.1.4.tar.gz
-      cd sentencepiece-0.1.4
+    if [ ! -d $HOME/sentencepiece-$SENTENCEPIECE_VERSION/lib ]; then
+      wget https://github.com/google/sentencepiece/archive/v$SENTENCEPIECE_VERSION.tar.gz
+      tar xf v$SENTENCEPIECE_VERSION.tar.gz
+      cd sentencepiece-$SENTENCEPIECE_VERSION
       mkdir build
       cd build
-      cmake -DCMAKE_INSTALL_PREFIX=$HOME/sentencepiece-0.1.4 ..
+      cmake -DCMAKE_INSTALL_PREFIX=$HOME/sentencepiece-$SENTENCEPIECE_VERSION ..
       make
       make install
       cd $ROOT_TRAVIS_DIR
@@ -60,7 +58,7 @@ before_install:
   - pip install --user pytest setuptools
 install:
   - export TOKENIZER_ROOT=$HOME/Tokenizer
-  - export SENTENCEPIECE_ROOT=$HOME/sentencepiece-0.1.4
+  - export SENTENCEPIECE_ROOT=$HOME/sentencepiece-$SENTENCEPIECE_VERSION
   - mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT -DCMAKE_PREFIX_PATH=$SENTENCEPIECE_ROOT -DGTEST_ROOT=$HOME/googletest-1.8.0 -DWITH_ICU=$WITH_ICU ..
   - make
