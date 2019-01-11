@@ -4,6 +4,9 @@
 
 ### Fixes and improvements
 
+* Update SentencePiece to 0.1.8 in the Python package
+* Allow naming positional arguments in the Python API
+
 ## [v1.10.5](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.5) (2019-01-03)
 
 ### Fixes and improvements
