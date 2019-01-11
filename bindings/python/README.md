@@ -36,7 +36,7 @@ tokenizer = pyonmt.Tokenizer(
     segment_alphabet_change=False,
     segment_alphabet=[])
 
-tokens, features = tokenizer.tokenize(test: str)
+tokens, features = tokenizer.tokenize(text: str)
 
 text = tokenizer.detokenize(tokens, features)
 text = tokenizer.detokenize(tokens)  # will fail if case_feature is set.
