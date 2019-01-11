@@ -14,3 +14,10 @@ def test_simple():
     assert features is None
     detok = tokenizer.detokenize(tokens)
     assert detok == text
+
+def test_named_arguments():
+    tokenizer = pyonmttok.Tokenizer(mode="aggressive", joiner_annotate=True)
+    text = "Hello World!"
+    tokens, features = tokenizer.tokenize(text=text)
+    assert tokens == ["Hello", "World", "￭!"]
+    assert text == tokenizer.detokenize(tokens=tokens)

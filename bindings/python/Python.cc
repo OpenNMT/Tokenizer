@@ -159,7 +159,8 @@ BOOST_PYTHON_MODULE(tokenizer)
   py::class_<TokenizerWrapper>(
       "Tokenizer",
       py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(
-        (py::arg("bpe_model_path")="",
+        (py::arg("mode"),
+         py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
          py::arg("bpe_vocab_threshold")=50,  // Keep for backward compatibility.
          py::arg("vocabulary_path")="",
@@ -181,7 +182,9 @@ BOOST_PYTHON_MODULE(tokenizer)
          py::arg("segment_numbers")=false,
          py::arg("segment_alphabet_change")=false,
          py::arg("segment_alphabet")=py::list())))
-    .def("tokenize", &TokenizerWrapper::tokenize)
-    .def("detokenize", &TokenizerWrapper::detokenize, (py::arg("features")=py::object()))
+    .def("tokenize", &TokenizerWrapper::tokenize,
+         (py::arg("text")))
+    .def("detokenize", &TokenizerWrapper::detokenize,
+         (py::arg("tokens"), py::arg("features")=py::object()))
     ;
 }
