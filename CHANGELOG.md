@@ -21,6 +21,10 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.10.6](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.6) (2019-01-15)
+
+### Fixes and improvements
+
 * Update SentencePiece to 0.1.8 in the Python package
 * Allow naming positional arguments in the Python API
 
