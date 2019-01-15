@@ -1,3 +1,20 @@
+**Notes on versioning:**
+
+The project follows [semantic versioning 2.0.0](https://semver.org/). The API covers the following symbols:
+
+* C++
+  * `onmt::BPELearner`
+  * `onmt::BPE`
+  * `onmt::SPMLearner`
+  * `onmt::SentencePiece`
+  * `onmt::SpaceTokenizer`
+  * `onmt::Tokenizer`
+  * `onmt::unicode::*`
+* Python
+  * `pyonmttok.Tokenizer`
+
+---
+
 ## [Unreleased]
 
 ### New features
