@@ -19,7 +19,6 @@ def _maybe_add_library_root(lib_name, header_only=False):
 
 _maybe_add_library_root("BOOST")
 _maybe_add_library_root("TOKENIZER")
-_maybe_add_library_root("SENTENCEPIECE", header_only=True)
 
 cflags = ["-std=c++11"]
 if sys.platform == 'darwin':
