@@ -1,28 +1,41 @@
 #include "onmt/SentencePiece.h"
 
+#include <sentencepiece_processor.h>
+
 namespace onmt
 {
 
   static const std::string sp_marker("▁");
 
+  class SentencePieceProcessor : public sentencepiece::SentencePieceProcessor
+  {
+  };
+
   SentencePiece::SentencePiece(const std::string& model_path)
-    : _nbest_size(0)
+    : _processor(new SentencePieceProcessor())
+    , _nbest_size(0)
     , _alpha(0.0)
   {
-    _processor.Load(model_path);
+    _processor->Load(model_path);
   }
 
   SentencePiece::SentencePiece(const std::string& model_path, int nbest_size, float alpha)
-    : _nbest_size(nbest_size)
+    : _processor(new SentencePieceProcessor())
+    , _nbest_size(nbest_size)
     , _alpha(alpha)
   {
-    _processor.Load(model_path);
+    _processor->Load(model_path);
+  }
+
+  SentencePiece::~SentencePiece()
+  {
+    delete _processor;
   }
 
   void SentencePiece::set_vocabulary(const std::vector<std::string>& vocabulary)
   {
 #ifdef SP_HAS_VOCAB_RESTRICTION
-    _processor.SetVocabulary(vocabulary);
+    _processor->SetVocabulary(vocabulary);
 #else
     throw std::runtime_error("The project was built against a SentencePiece version "
                              "that does not support vocabulary restriction");
@@ -32,7 +45,7 @@ namespace onmt
   void SentencePiece::reset_vocabulary()
   {
 #ifdef SP_HAS_VOCAB_RESTRICTION
-    _processor.ResetVocabulary();
+    _processor->ResetVocabulary();
 #else
     throw std::runtime_error("The project was built against a SentencePiece version "
                              "that does not support vocabulary restriction");
@@ -51,11 +64,11 @@ namespace onmt
 
 #ifdef SP_HAS_SAMPLE_ENCODE
     if (_nbest_size != 0)
-      _processor.SampleEncode(str, _nbest_size, _alpha, &pieces);
+      _processor->SampleEncode(str, _nbest_size, _alpha, &pieces);
     else
 #endif
     {
-      _processor.Encode(str, &pieces);
+      _processor->Encode(str, &pieces);
     }
 
     return pieces;
