@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import copy
 import pytest
 import pyonmttok
 
@@ -21,3 +22,14 @@ def test_named_arguments():
     tokens, features = tokenizer.tokenize(text=text)
     assert tokens == ["Hello", "World", "￭!"]
     assert text == tokenizer.detokenize(tokens=tokens)
+
+def test_deepcopy():
+    text = "Hello World!"
+    tok1 = pyonmttok.Tokenizer("aggressive")
+    tokens1, _ = tok1.tokenize(text)
+    tok2 = copy.deepcopy(tok1)
+    tokens2, _ = tok2.tokenize(text)
+    assert tokens1 == tokens2
+    del tok1
+    tokens2, _ = tok2.tokenize(text)
+    assert tokens1 == tokens2

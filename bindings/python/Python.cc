@@ -27,6 +27,18 @@ static py::list to_py_list(const std::vector<T> vec)
   return list;
 }
 
+template <typename T>
+T copy(const T& v)
+{
+  return v;
+}
+
+template <typename T>
+T deepcopy(const T& v, const py::object& dict)
+{
+  return v;
+}
+
 static onmt::SubwordEncoder* make_subword_encoder(const std::string& bpe_model_path,
                                                   const std::string& joiner,
                                                   const std::string& sp_model_path,
@@ -103,6 +115,12 @@ static onmt::Tokenizer* make_tokenizer(const std::string& mode,
 class TokenizerWrapper
 {
 public:
+  TokenizerWrapper(const TokenizerWrapper& other)
+    : _subword_encoder(other._subword_encoder)
+    , _tokenizer(other._tokenizer)
+  {
+  }
+
   TokenizerWrapper(const std::string& mode,
                    const std::string& bpe_model_path,
                    const std::string& bpe_vocab_path,
@@ -227,5 +245,7 @@ BOOST_PYTHON_MODULE(tokenizer)
          (py::arg("text")))
     .def("detokenize", &TokenizerWrapper::detokenize,
          (py::arg("tokens"), py::arg("features")=py::object()))
+    .def("__copy__", copy<TokenizerWrapper>)
+    .def("__deepcopy__", deepcopy<TokenizerWrapper>)
     ;
 }
