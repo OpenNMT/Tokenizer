@@ -19,7 +19,11 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### New features
 
+* Support copy operators on the Python client
+
 ### Fixes and improvements
+
+* Hide SentencePiece dependency in public headers
 
 ## [v1.10.6](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.10.6) (2019-01-15)
 
