@@ -40,6 +40,11 @@ tokens, features = tokenizer.tokenize(text: str)
 
 text = tokenizer.detokenize(tokens, features)
 text = tokenizer.detokenize(tokens)  # will fail if case_feature is set.
+
+# Function that also returns a dictionary mapping a token index to a range in
+# the detokenized text. Set merge_ranges=True to merge consecutive ranges, e.g.
+# subwords of the same token in case of subword tokenization.
+text, ranges = tokenizer.detokenize_with_ranges(tokens, merge_ranges=True)
 ```
 
 See the [documentation](../../docs/options.md) for a description of each option.

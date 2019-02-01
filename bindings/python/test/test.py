@@ -33,3 +33,11 @@ def test_deepcopy():
     del tok1
     tokens2, _ = tok2.tokenize(text)
     assert tokens1 == tokens2
+
+def test_detok_with_ranges():
+    tokenizer = pyonmttok.Tokenizer("conservative")
+    text, ranges = tokenizer.detokenize_with_ranges(["a", "b"])
+    assert text == "a b"
+    assert len(ranges) == 2
+    assert ranges[0] == (0, 0)
+    assert ranges[1] == (2, 2)

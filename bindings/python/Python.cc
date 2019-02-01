@@ -193,6 +193,17 @@ public:
     }
   }
 
+  py::tuple detokenize_with_ranges(const py::object& words, bool merge_ranges) const
+  {
+    onmt::Ranges ranges;
+    std::string text = _tokenizer->detokenize(to_std_vector<std::string>(words),
+                                              ranges, merge_ranges);
+    py::dict ranges_py;
+    for (const auto& pair : ranges)
+      ranges_py[pair.first] = py::make_tuple(pair.second.first, pair.second.second);
+    return py::make_tuple(text, ranges_py);
+  }
+
   std::string detokenize(const py::object& words, const py::object& features) const
   {
     std::vector<std::string> words_vec = to_std_vector<std::string>(words);
@@ -245,6 +256,8 @@ BOOST_PYTHON_MODULE(tokenizer)
          (py::arg("text")))
     .def("detokenize", &TokenizerWrapper::detokenize,
          (py::arg("tokens"), py::arg("features")=py::object()))
+    .def("detokenize_with_ranges", &TokenizerWrapper::detokenize_with_ranges,
+         (py::arg("tokens"), py::arg("merge_ranges")=false))
     .def("__copy__", copy<TokenizerWrapper>)
     .def("__deepcopy__", deepcopy<TokenizerWrapper>)
     ;

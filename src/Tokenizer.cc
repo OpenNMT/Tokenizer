@@ -150,6 +150,82 @@ namespace onmt
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,
                                     const std::vector<std::vector<std::string> >& features) const
   {
+    return detokenize(words, features, nullptr);
+  }
+
+  std::string
+  Tokenizer::detokenize(const std::vector<std::string>& words,
+                        const std::vector<std::vector<std::string> >& features,
+                        Ranges& ranges, bool merge_ranges) const
+  {
+    return detokenize(words, features, &ranges, merge_ranges);
+  }
+
+  static Ranges merge_consecutive_ranges(const std::string& text, const Ranges& ranges)
+  {
+    // We do not want to merge ranges that represent different tokens. To do so, we run a
+    // basic tokenization on consecutive characters. If there are tokenized, we do not
+    // merge the ranges.
+    Tokenizer tokenizer(Tokenizer::Mode::Conservative);
+    std::vector<std::string> chars;
+    std::vector<unicode::code_point_t> code_points;
+
+    Ranges merged_ranges;
+    std::vector<size_t> current_token;
+    int start = 0;
+    int end = -1;
+    for (auto it = ranges.begin(); it != ranges.end(); ++it)
+    {
+      const auto& index = it->first;
+      const auto& range = it->second;
+      bool split = static_cast<int>(range.first) != end + 1;
+      if (!split && it != ranges.begin())
+      {
+        const auto& prev_range = std::prev(it)->second;
+        std::string prev(text, prev_range.first, prev_range.second - prev_range.first + 1);
+        std::string curr(text, range.first, range.second - range.first + 1);
+        std::string bridge;
+        bridge.reserve(8);
+        unicode::explode_utf8(prev, chars, code_points);
+        bridge += chars.back();
+        chars.clear();
+        code_points.clear();
+        unicode::explode_utf8(curr, chars, code_points);
+        bridge += chars.front();
+        chars.clear();
+        tokenizer.tokenize(bridge, chars);
+        split = chars.size() > 1;
+      }
+
+      if (split)
+      {
+        for (size_t id : current_token)
+          merged_ranges.emplace(std::piecewise_construct,
+                                std::forward_as_tuple(id),
+                                std::forward_as_tuple(start, end));
+        current_token.clear();
+        start = range.first;
+      }
+
+      end = range.second;
+      current_token.push_back(index);
+    }
+
+    if (!current_token.empty())
+    {
+      for (size_t id : current_token)
+        merged_ranges.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(id),
+                              std::forward_as_tuple(start, end));
+    }
+
+    return merged_ranges;
+  }
+
+  std::string Tokenizer::detokenize(const std::vector<std::string>& words,
+                                    const std::vector<std::vector<std::string> >& features,
+                                    Ranges* ranges, bool merge_ranges) const
+  {
     std::string line;
     line.reserve(words.size() * 10);
 
@@ -237,11 +313,22 @@ namespace onmt
         }
       }
 
-      line.append(prep_word);
+      if (!prep_word.empty())
+      {
+        if (ranges)
+          ranges->emplace(std::piecewise_construct,
+                          std::forward_as_tuple(i),
+                          std::forward_as_tuple(line.size(), line.size() + prep_word.size() - 1));
+
+        line.append(prep_word);
+      }
 
       previous_token = i;
       case_modifier = CaseModifier::Type::None;
     }
+
+    if (ranges && merge_ranges)
+      *ranges = merge_consecutive_ranges(line, *ranges);
 
     return line;
   }
