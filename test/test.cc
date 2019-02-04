@@ -63,6 +63,32 @@ static void test_tok_and_detok(ITokenizer& tokenizer,
   return test_tok(tokenizer, in, expected, true);
 }
 
+TEST(TokenizerTest, DetokenizeWithRanges) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative);
+  Ranges ranges;
+  tokenizer.detokenize({"Hel￭", "lo", "｟mrk_case_modifier_C｠", "w", "￭", "orld", "￭!"}, ranges);
+  // Result: Hello World!
+  ASSERT_EQ(ranges.size(), 5);
+  EXPECT_EQ(ranges[0], (std::pair<size_t, size_t>(0, 2)));
+  EXPECT_EQ(ranges[1], (std::pair<size_t, size_t>(3, 4)));
+  EXPECT_EQ(ranges[3], (std::pair<size_t, size_t>(6, 6)));
+  EXPECT_EQ(ranges[5], (std::pair<size_t, size_t>(7, 10)));
+  EXPECT_EQ(ranges[6], (std::pair<size_t, size_t>(11, 11)));
+}
+
+TEST(TokenizerTest, DetokenizeWithMergedRanges) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative);
+  Ranges ranges;
+  tokenizer.detokenize({"Hel￭", "lo", "w￭", "orld", "￭!"}, ranges, true);
+  // Result: Hello World!
+  ASSERT_EQ(ranges.size(), 5);
+  EXPECT_EQ(ranges[0], (std::pair<size_t, size_t>(0, 4)));
+  EXPECT_EQ(ranges[1], (std::pair<size_t, size_t>(0, 4)));
+  EXPECT_EQ(ranges[2], (std::pair<size_t, size_t>(6, 10)));
+  EXPECT_EQ(ranges[3], (std::pair<size_t, size_t>(6, 10)));
+  EXPECT_EQ(ranges[4], (std::pair<size_t, size_t>(11, 11)));
+}
+
 TEST(TokenizerTest, BasicConservative) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative);
   test_tok(tokenizer,

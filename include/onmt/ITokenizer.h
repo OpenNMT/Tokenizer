@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -8,6 +9,9 @@
 
 namespace onmt
 {
+
+  using Range = std::pair<size_t, size_t>;
+  using Ranges = std::map<size_t, Range>;
 
   class OPENNMTTOKENIZER_EXPORT ITokenizer
   {
@@ -28,6 +32,11 @@ namespace onmt
     virtual std::string detokenize(const std::vector<std::string>& words,
                                    const std::vector<std::vector<std::string> >& features) const = 0;
     virtual std::string detokenize(const std::vector<std::string>& words) const;
+    virtual std::string detokenize(const std::vector<std::string>& words,
+                                   const std::vector<std::vector<std::string> >& features,
+                                   Ranges& ranges, bool merge_ranges = false) const;
+    virtual std::string detokenize(const std::vector<std::string>& words,
+                                   Ranges& ranges, bool merge_ranges = false) const;
 
     // Tokenize and use spaces as token separators.
     virtual std::string tokenize(const std::string& text) const;

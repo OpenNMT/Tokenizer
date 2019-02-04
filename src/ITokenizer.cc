@@ -47,4 +47,18 @@ namespace onmt
     return detokenize(words, features);
   }
 
+  std::string ITokenizer::detokenize(const std::vector<std::string>& words,
+                                     Ranges& ranges, bool merge_ranges) const
+  {
+    std::vector<std::vector<std::string>> features;
+    return detokenize(words, features, ranges, merge_ranges);
+  }
+
+  std::string ITokenizer::detokenize(const std::vector<std::string>& words,
+                                     const std::vector<std::vector<std::string> >& features,
+                                     Ranges&, bool) const
+  {
+    return detokenize(words, features);
+  }
+
 }
