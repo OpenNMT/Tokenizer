@@ -89,6 +89,17 @@ TEST(TokenizerTest, DetokenizeWithMergedRanges) {
   EXPECT_EQ(ranges[4], (std::pair<size_t, size_t>(11, 11)));
 }
 
+TEST(TokenizerTest, DetokenizeWithMergedRangesPlaceholders) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative);
+  Ranges ranges;
+  tokenizer.detokenize({"｟a｠￭", "b", "￭｟c｠"}, ranges, true);
+  // Result: ｟a｠b｟c｠
+  ASSERT_EQ(ranges.size(), 3);
+  EXPECT_EQ(ranges[0], (std::pair<size_t, size_t>(0, 6)));
+  EXPECT_EQ(ranges[1], (std::pair<size_t, size_t>(7, 7)));
+  EXPECT_EQ(ranges[2], (std::pair<size_t, size_t>(8, 14)));
+}
+
 TEST(TokenizerTest, BasicConservative) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative);
   test_tok(tokenizer,

@@ -164,11 +164,11 @@ namespace onmt
   static Ranges merge_consecutive_ranges(const std::string& text, const Ranges& ranges)
   {
     // We do not want to merge ranges that represent different tokens. To do so, we run a
-    // basic tokenization on consecutive characters. If there are tokenized, we do not
+    // basic tokenization on consecutive ranges. If they are tokenized, we do not
     // merge the ranges.
     Tokenizer tokenizer(Tokenizer::Mode::Conservative);
-    std::vector<std::string> chars;
-    std::vector<unicode::code_point_t> code_points;
+    std::vector<std::string> tokens;
+    std::string bridge;
 
     Ranges merged_ranges;
     std::vector<size_t> current_token;
@@ -182,19 +182,12 @@ namespace onmt
       if (!split && it != ranges.begin())
       {
         const auto& prev_range = std::prev(it)->second;
-        std::string prev(text, prev_range.first, prev_range.second - prev_range.first + 1);
-        std::string curr(text, range.first, range.second - range.first + 1);
-        std::string bridge;
-        bridge.reserve(8);
-        unicode::explode_utf8(prev, chars, code_points);
-        bridge += chars.back();
-        chars.clear();
-        code_points.clear();
-        unicode::explode_utf8(curr, chars, code_points);
-        bridge += chars.front();
-        chars.clear();
-        tokenizer.tokenize(bridge, chars);
-        split = chars.size() > 1;
+        auto prev_length = prev_range.second - prev_range.first + 1;
+        auto curr_length = range.second - range.first + 1;
+        bridge.assign(text, prev_range.first, prev_length + curr_length);
+        tokens.clear();
+        tokenizer.tokenize(bridge, tokens);
+        split = tokens.size() > 1;
       }
 
       if (split)
