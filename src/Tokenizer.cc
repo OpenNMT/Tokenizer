@@ -439,36 +439,36 @@ namespace onmt
         const bool placeholder = state & State::Placeholder;
 
         if (placeholder) {
-            if (c == Tokenizer::ph_marker_close) {
-              token.append(c);
-              if (_preserve_placeholders)
-                token.preserve();
-              prev_alphabet = placeholder_alphabet;
-              state = State::Letter;
+          if (c == Tokenizer::ph_marker_close) {
+            token.append(c);
+            if (_preserve_placeholders)
+              token.preserve();
+            prev_alphabet = placeholder_alphabet;
+            state = State::Letter;
+          } else {
+            if (isSeparator && !_no_substitution) {
+              char buffer[10];
+              sprintf(buffer, "%04x", v);
+              token.append(protected_character + buffer);
             } else {
-              if (isSeparator && !_no_substitution) {
-                char buffer[10];
-                sprintf(buffer, "%04x", v);
-                token.append(protected_character + buffer);
-              } else {
-                token.append(c);
-              }
+              token.append(c);
             }
           }
-          else if (c == Tokenizer::ph_marker_open) {
-            if (!space) {
-              AnnotatedToken next_token;
-              if ((letter && prev_alphabet != placeholder_alphabet) || number)
-                next_token.join_left();
-              else
-                token.join_right();
-              annotated_tokens.emplace_back(std::move(token));
-              std::swap(token, next_token);
-            } else if (other && token.str().empty()) {
-              annotated_tokens.back().join_right();
-            }
-            token.append(c);
-            state = State::Placeholder;
+        }
+        else if (c == Tokenizer::ph_marker_open) {
+          if (!space) {
+            AnnotatedToken next_token;
+            if ((letter && prev_alphabet != placeholder_alphabet) || number)
+              next_token.join_left();
+            else
+              token.join_right();
+            annotated_tokens.emplace_back(std::move(token));
+            std::swap(token, next_token);
+          } else if (other && token.str().empty()) {
+            annotated_tokens.back().join_right();
+          }
+          token.append(c);
+          state = State::Placeholder;
         }
         else if (isSeparator)
         {
