@@ -19,6 +19,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.11.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.11.0) (2019-02-05)
+
+### New features
+
 * Support copy operators on the Python client
 * Support returning token locations in detokenized text
 
