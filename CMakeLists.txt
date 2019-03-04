@@ -71,11 +71,14 @@ else()
 
   find_library(SP_TRAIN_LIBRARY NAMES sentencepiece_train)
   if(SP_TRAIN_LIBRARY)
+    find_package(Threads)
     add_definitions(-DWITH_SP_TRAIN)
     message(STATUS "Found sentencepiece_train: ${SP_TRAIN_LIBRARY}")
     list(APPEND PUBLIC_HEADERS include/onmt/SPMLearner.h)
     list(APPEND SOURCES src/SPMLearner.cc)
-    list(APPEND LINK_LIBRARIES ${SP_TRAIN_LIBRARY})
+    list(APPEND LINK_LIBRARIES
+      ${SP_TRAIN_LIBRARY}
+      ${CMAKE_THREAD_LIBS_INIT})
   else()
     message(WARNING "sentencepiece_train not found: training SentencePiece models will not be supported")
   endif()
