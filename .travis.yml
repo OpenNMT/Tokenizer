@@ -1,8 +1,7 @@
-sudo: false
+dist: xenial
 language: cpp
 compiler:
   - gcc
-  - clang
 env:
   global:
     - SENTENCEPIECE_VERSION="0.1.8"
@@ -15,22 +14,14 @@ cache:
     - $HOME/sentencepiece-$SENTENCEPIECE_VERSION/
 addons:
   apt:
-    sources:
-      - george-edison55-precise-backports
-      - ubuntu-toolchain-r-test
     packages:
+      - build-essential
       - cmake
-      - cmake-data
-      - g++-4.8
-      - gcc-4.8
-      - libboost-dev
       - libboost-program-options-dev
       - libboost-python-dev
       - libicu-dev
-      - libtool
       - python-pip
 before_install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - export ROOT_TRAVIS_DIR=$(pwd)
   - |
     if [ ! -d $HOME/googletest-1.8.0/lib ]; then
