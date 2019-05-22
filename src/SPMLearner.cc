@@ -66,6 +66,8 @@ namespace onmt
   void SPMLearner::learn(std::ostream& os, const char*)
   {
     std::string model_prefix = _input_filename + ".out";
+    std::string sp_model_path = model_prefix + ".model";
+    std::string sp_vocab_path = model_prefix + ".vocab";
     std::string final_args = _args;
 
     final_args += " --input=" + _input_filename;
@@ -73,19 +75,16 @@ namespace onmt
 
     _input_stream.reset();
 
-    sentencepiece::SentencePieceTrainer::Train(final_args);
-    std::cerr << "INFO: If the process ends immediately after \"Parsing xxx ...\", "
-              << "check input parameters for SentencePiece"
-              << std::endl
-              << final_args
-              << std::endl;
+    auto status = sentencepiece::SentencePieceTrainer::Train(final_args);
+    if (status.ok())
+      os << std::ifstream(sp_model_path).rdbuf();
 
-    std::string sp_model_path = model_prefix + ".model";
-    std::string sp_vocab_path = model_prefix + ".vocab";
-    os << std::ifstream(sp_model_path).rdbuf();
     remove(sp_model_path.c_str());
     remove(sp_vocab_path.c_str());
     remove(_input_filename.c_str());
+
+    if (!status.ok())
+      throw std::runtime_error("SentencePieceTrainer: " + status.ToString());
   }
 
 }
