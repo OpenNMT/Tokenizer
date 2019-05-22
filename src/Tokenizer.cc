@@ -62,6 +62,23 @@ namespace onmt
     return encoder;
   }
 
+  static void annotate_case(std::vector<AnnotatedToken>& annotated_tokens)
+  {
+    for (auto& token : annotated_tokens)
+    {
+      if (Tokenizer::is_placeholder(token.str()))
+        continue;
+      auto pair = CaseModifier::extract_case_type(token.str());
+      token.set(std::move(pair.first));
+      token.set_case(pair.second);
+      if (pair.second == CaseModifier::Type::Uppercase)
+      {
+        token.set_case_region_begin(pair.second);
+        token.set_case_region_end(pair.second);
+      }
+    }
+  }
+
   Tokenizer::Tokenizer(Mode mode,
                        int flags,
                        const std::string& model_path,
@@ -624,68 +641,47 @@ namespace onmt
     }
 
     if (_case_markup)
-    {
-      for (auto& token : annotated_tokens)
-      {
-        if (is_placeholder(token.str()))
-          continue;
-        auto pair = CaseModifier::extract_case_type(token.str());
-        if (pair.second == CaseModifier::Type::Uppercase
-            || pair.second == CaseModifier::Type::Capitalized
-            || pair.second == CaseModifier::Type::CapitalizedFirst)
-        {
-          token.set(std::move(pair.first));
-          token.set_case(pair.second);
-          if (pair.second == CaseModifier::Type::Uppercase)
-          {
-            token.set_case_region_begin(pair.second);
-            token.set_case_region_end(pair.second);
-          }
-        }
-      }
-    }
-
+      annotate_case(annotated_tokens);
     if (_subword_encoder)
       annotated_tokens = encode_subword(annotated_tokens);
-
     if (_case_feature)
-    {
-      std::vector<std::string> case_feat;
+      annotate_case(annotated_tokens);
 
-      for (size_t i = 0; i < annotated_tokens.size(); ++i)
-      {
-        if (!is_placeholder(annotated_tokens[i].str()))
-        {
-          auto data = CaseModifier::extract_case(annotated_tokens[i].str());
-          annotated_tokens[i].set(data.first);
-          case_feat.emplace_back(1, data.second);
-        }
-        else
-        {
-          case_feat.emplace_back(1, CaseModifier::type_to_char(CaseModifier::Type::None));
-        }
-      }
-
-      features.push_back(case_feat);
-    }
-
-    finalize_tokens(annotated_tokens, words);
+    finalize_tokens(annotated_tokens, words, features);
   }
 
   void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
-                                  std::vector<std::string>& tokens) const
+                                  std::vector<std::string>& tokens,
+                                  std::vector<std::vector<std::string>>& features) const
   {
     tokens.reserve(annotated_tokens.size());
+    if (_case_feature)
+    {
+      features.emplace_back(0);
+      features[0].reserve(annotated_tokens.size());
+    }
 
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
       const auto& token = annotated_tokens[i];
       const auto& str = token.str();
 
-      if (token.begin_case_region())
-        tokens.emplace_back(CaseModifier::generate_case_markup_begin(token.get_case_region_begin()));
-      else if (token.has_case())
-        tokens.emplace_back(CaseModifier::generate_case_markup(token.get_case()));
+      if (_case_markup)
+      {
+        if (token.begin_case_region())
+          tokens.emplace_back(CaseModifier::generate_case_markup_begin(token.get_case_region_begin()));
+        else if (token.has_case()
+                 && (token.get_case() == CaseModifier::Type::Capitalized
+                     || token.get_case() == CaseModifier::Type::CapitalizedFirst))
+          tokens.emplace_back(CaseModifier::generate_case_markup(token.get_case()));
+      }
+      else if (_case_feature)
+      {
+        auto case_type = CaseModifier::Type::None;
+        if (token.has_case())
+          case_type = token.get_case();
+        features[0].emplace_back(1, CaseModifier::type_to_char(case_type));
+      }
 
       if (_joiner_annotate)
       {
@@ -740,7 +736,7 @@ namespace onmt
         tokens.emplace_back(std::move(str));
       }
 
-      if (token.end_case_region())
+      if (_case_markup && token.end_case_region())
         tokens.emplace_back(CaseModifier::generate_case_markup_end(token.get_case_region_end()));
     }
   }

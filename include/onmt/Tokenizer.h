@@ -135,7 +135,8 @@ namespace onmt
     void read_flags(int flags);
     std::vector<AnnotatedToken> encode_subword(const std::vector<AnnotatedToken>& tokens) const;
     void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
-                         std::vector<std::string>& tokens) const;
+                         std::vector<std::string>& tokens,
+                         std::vector<std::vector<std::string>>& features) const;
 
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
