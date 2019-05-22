@@ -90,6 +90,12 @@ namespace onmt
         tokens.back().set_case_region_end(token.get_case());
       }
     }
+
+    if (token.has_features())
+    {
+      for (auto& sub_token : tokens)
+        sub_token.set_features(token.features());
+    }
   }
 
 }

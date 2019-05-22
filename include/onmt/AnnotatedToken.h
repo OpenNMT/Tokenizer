@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "onmt/opennmttokenizer_export.h"
 #include "onmt/CaseModifier.h"
@@ -43,6 +44,11 @@ namespace onmt
     CaseModifier::Type get_case_region_begin() const;
     CaseModifier::Type get_case_region_end() const;
 
+    void set_features(const std::vector<std::string>& features);
+    void insert_feature(const std::string& feature);
+    bool has_features() const;
+    const std::vector<std::string>& features() const;
+
   private:
     std::string _str;
     CaseModifier::Type _case = CaseModifier::Type::None;
@@ -52,6 +58,7 @@ namespace onmt
     bool _join_right = false;
     bool _spacer = false;
     bool _preserved = false;
+    std::vector<std::string> _features;
   };
 
 }

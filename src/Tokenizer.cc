@@ -356,6 +356,11 @@ namespace onmt
     return tokenize(text, words, features, &alphabets);
   }
 
+  void Tokenizer::tokenize(const std::string& text,
+                           std::vector<AnnotatedToken>& annotated_tokens) const {
+    return tokenize(text, annotated_tokens, nullptr);
+  }
+
   static bool _endsWithSpace(const std::string &s) {
     return s.length() && s[s.length()-1] == ' ';
   }
@@ -394,6 +399,14 @@ namespace onmt
                            std::unordered_map<std::string, size_t>* alphabets) const
   {
     std::vector<AnnotatedToken> annotated_tokens;
+    tokenize(text, annotated_tokens, alphabets);
+    finalize_tokens(annotated_tokens, words, features);
+  }
+
+  void Tokenizer::tokenize(const std::string& text,
+                           std::vector<AnnotatedToken>& annotated_tokens,
+                           std::unordered_map<std::string, size_t>* alphabets) const
+  {
     annotated_tokens.reserve(text.size());
 
     if (_mode == Mode::None) {
@@ -413,12 +426,7 @@ namespace onmt
         _tokenizeByPlaceholder(fields[0], annotated_tokens, _preserve_placeholders);
 
         for (size_t i = 1; i < fields.size(); ++i)
-        {
-          if (features.size() < i)
-            features.emplace_back(1, fields[i]);
-          else
-            features[i - 1].push_back(fields[i]);
-        }
+          annotated_tokens.back().insert_feature(fields[i]);
       }
     }
     else {
@@ -646,8 +654,6 @@ namespace onmt
       annotated_tokens = encode_subword(annotated_tokens);
     if (_case_feature)
       annotate_case(annotated_tokens);
-
-    finalize_tokens(annotated_tokens, words, features);
   }
 
   void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
@@ -655,16 +661,29 @@ namespace onmt
                                   std::vector<std::vector<std::string>>& features) const
   {
     tokens.reserve(annotated_tokens.size());
+    size_t num_features = 0;
+    if (annotated_tokens.size() > 0 && annotated_tokens[0].has_features())
+      num_features = annotated_tokens[0].features().size();
     if (_case_feature)
+      num_features += 1;
+
+    for (size_t i = 0; i < num_features; ++i)
     {
       features.emplace_back(0);
-      features[0].reserve(annotated_tokens.size());
+      features.back().reserve(annotated_tokens.size());
     }
 
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
       const auto& token = annotated_tokens[i];
       const auto& str = token.str();
+
+      if (token.has_features())
+      {
+        const auto& token_features = token.features();
+        for (size_t j = 0; j < token_features.size(); ++j)
+          features[j].push_back(token_features[j]);
+      }
 
       if (_case_markup)
       {
@@ -680,7 +699,7 @@ namespace onmt
         auto case_type = CaseModifier::Type::None;
         if (token.has_case())
           case_type = token.get_case();
-        features[0].emplace_back(1, CaseModifier::type_to_char(case_type));
+        features.back().emplace_back(1, CaseModifier::type_to_char(case_type));
       }
 
       if (_joiner_annotate)
