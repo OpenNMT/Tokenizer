@@ -16,6 +16,17 @@ def test_simple():
     detok = tokenizer.detokenize(tokens)
     assert detok == text
 
+def test_custom_joiner():
+    tokenizer = pyonmttok.Tokenizer(
+        "aggressive", joiner="•", joiner_annotate=True)
+    tokens, _ = tokenizer.tokenize("Hello World!")
+    assert tokens == ["Hello", "World", "•!"]
+
+def test_segment_alphabet():
+    tokenizer = pyonmttok.Tokenizer(mode="aggressive", segment_alphabet=["Han"])
+    tokens, _ = tokenizer.tokenize("測試 abc")
+    assert tokens == ["測", "試", "abc"]
+
 def test_named_arguments():
     tokenizer = pyonmttok.Tokenizer(mode="aggressive", joiner_annotate=True)
     text = "Hello World!"

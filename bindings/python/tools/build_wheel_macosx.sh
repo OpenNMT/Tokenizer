@@ -1,5 +1,6 @@
 #! /bin/bash
 
+# WARNING: This script is OBSOLETE! Please refer to build_wheel.sh
 # Assuming local installation of cmake 3.12+
 
 set -e
