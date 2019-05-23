@@ -20,7 +20,7 @@ namespace onmt
                const std::unordered_map<std::string, std::string>& opts,
                const std::string& input_filename);
 
-    void ingest(std::istream& is, Tokenizer* tokenizer = 0) override;
+    void ingest(std::istream& is, const Tokenizer* tokenizer = 0) override;
     void learn(std::ostream& os, const char* description = 0) override;
   private:
     std::string _args;
