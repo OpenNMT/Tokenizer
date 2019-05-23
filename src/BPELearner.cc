@@ -40,10 +40,9 @@ namespace onmt
               _dict_input(dict_input), _total_symbols(total_symbols) {
   }
 
-  void BPELearner::ingest(std::istream &is, Tokenizer *pTok) {
-    if (!pTok)
-      pTok = this->_pTokDefault;
-    pTok->unset_annotate();
+  void BPELearner::ingest(std::istream& is, const Tokenizer* tokenizer) {
+    if (!tokenizer)
+      tokenizer = _default_tokenizer.get();
     // get_vocabulary - builds vocabulary from file or dictionary
     while (!is.eof()) {
       std::string line;
@@ -57,12 +56,11 @@ namespace onmt
           }
           _vocab[line.substr(0, p)] += std::stoi(line.substr(p+1));
         } else {
-          sequence words;
-          std::vector<sequence> features;
-          pTok->tokenize(line, words, features);
-          for(const auto& w: words) {
-            if (!Tokenizer::is_placeholder(w))
-              _vocab[w]++;
+          std::vector<AnnotatedToken> tokens;
+          tokenizer->tokenize(line, tokens);
+          for(const auto& token : tokens) {
+            if (!Tokenizer::is_placeholder(token.str()))
+              _vocab[token.str()]++;
           }
         }
       }

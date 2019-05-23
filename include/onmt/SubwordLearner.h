@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -14,12 +15,12 @@ namespace onmt
   {
   public:
     SubwordLearner(bool verbose);
-    virtual ~SubwordLearner();
-    virtual void ingest(std::istream &, Tokenizer *) = 0;
-    virtual void learn(std::ostream &, const char *) = 0;
+    virtual ~SubwordLearner() = default;
+    virtual void ingest(std::istream& in, const Tokenizer* tokenizer) = 0;
+    virtual void learn(std::ostream& out, const char* description) = 0;
   protected:
     bool _verbose;
-    Tokenizer *_pTokDefault;
+    std::unique_ptr<const Tokenizer> _default_tokenizer;
   };
 
 }

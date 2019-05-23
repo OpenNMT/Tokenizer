@@ -62,6 +62,23 @@ namespace onmt
     return encoder;
   }
 
+  static void annotate_case(std::vector<AnnotatedToken>& annotated_tokens)
+  {
+    for (auto& token : annotated_tokens)
+    {
+      if (Tokenizer::is_placeholder(token.str()))
+        continue;
+      auto pair = CaseModifier::extract_case_type(token.str());
+      token.set(std::move(pair.first));
+      token.set_case(pair.second);
+      if (pair.second == CaseModifier::Type::Uppercase)
+      {
+        token.set_case_region_begin(pair.second);
+        token.set_case_region_end(pair.second);
+      }
+    }
+  }
+
   Tokenizer::Tokenizer(Mode mode,
                        int flags,
                        const std::string& model_path,
@@ -339,6 +356,11 @@ namespace onmt
     return tokenize(text, words, features, &alphabets);
   }
 
+  void Tokenizer::tokenize(const std::string& text,
+                           std::vector<AnnotatedToken>& annotated_tokens) const {
+    return tokenize(text, annotated_tokens, nullptr);
+  }
+
   static bool _endsWithSpace(const std::string &s) {
     return s.length() && s[s.length()-1] == ' ';
   }
@@ -377,6 +399,14 @@ namespace onmt
                            std::unordered_map<std::string, size_t>* alphabets) const
   {
     std::vector<AnnotatedToken> annotated_tokens;
+    tokenize(text, annotated_tokens, alphabets);
+    finalize_tokens(annotated_tokens, words, features);
+  }
+
+  void Tokenizer::tokenize(const std::string& text,
+                           std::vector<AnnotatedToken>& annotated_tokens,
+                           std::unordered_map<std::string, size_t>* alphabets) const
+  {
     annotated_tokens.reserve(text.size());
 
     if (_mode == Mode::None) {
@@ -396,12 +426,7 @@ namespace onmt
         _tokenizeByPlaceholder(fields[0], annotated_tokens, _preserve_placeholders);
 
         for (size_t i = 1; i < fields.size(); ++i)
-        {
-          if (features.size() < i)
-            features.emplace_back(1, fields[i]);
-          else
-            features[i - 1].push_back(fields[i]);
-        }
+          annotated_tokens.back().insert_feature(fields[i]);
       }
     }
     else {
@@ -624,68 +649,58 @@ namespace onmt
     }
 
     if (_case_markup)
-    {
-      for (auto& token : annotated_tokens)
-      {
-        if (is_placeholder(token.str()))
-          continue;
-        auto pair = CaseModifier::extract_case_type(token.str());
-        if (pair.second == CaseModifier::Type::Uppercase
-            || pair.second == CaseModifier::Type::Capitalized
-            || pair.second == CaseModifier::Type::CapitalizedFirst)
-        {
-          token.set(std::move(pair.first));
-          token.set_case(pair.second);
-          if (pair.second == CaseModifier::Type::Uppercase)
-          {
-            token.set_case_region_begin(pair.second);
-            token.set_case_region_end(pair.second);
-          }
-        }
-      }
-    }
-
+      annotate_case(annotated_tokens);
     if (_subword_encoder)
       annotated_tokens = encode_subword(annotated_tokens);
-
     if (_case_feature)
-    {
-      std::vector<std::string> case_feat;
-
-      for (size_t i = 0; i < annotated_tokens.size(); ++i)
-      {
-        if (!is_placeholder(annotated_tokens[i].str()))
-        {
-          auto data = CaseModifier::extract_case(annotated_tokens[i].str());
-          annotated_tokens[i].set(data.first);
-          case_feat.emplace_back(1, data.second);
-        }
-        else
-        {
-          case_feat.emplace_back(1, CaseModifier::type_to_char(CaseModifier::Type::None));
-        }
-      }
-
-      features.push_back(case_feat);
-    }
-
-    finalize_tokens(annotated_tokens, words);
+      annotate_case(annotated_tokens);
   }
 
   void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
-                                  std::vector<std::string>& tokens) const
+                                  std::vector<std::string>& tokens,
+                                  std::vector<std::vector<std::string>>& features) const
   {
     tokens.reserve(annotated_tokens.size());
+    size_t num_features = 0;
+    if (annotated_tokens.size() > 0 && annotated_tokens[0].has_features())
+      num_features = annotated_tokens[0].features().size();
+    if (_case_feature)
+      num_features += 1;
+
+    for (size_t i = 0; i < num_features; ++i)
+    {
+      features.emplace_back(0);
+      features.back().reserve(annotated_tokens.size());
+    }
 
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
       const auto& token = annotated_tokens[i];
       const auto& str = token.str();
 
-      if (token.begin_case_region())
-        tokens.emplace_back(CaseModifier::generate_case_markup_begin(token.get_case_region_begin()));
-      else if (token.has_case())
-        tokens.emplace_back(CaseModifier::generate_case_markup(token.get_case()));
+      if (token.has_features())
+      {
+        const auto& token_features = token.features();
+        for (size_t j = 0; j < token_features.size(); ++j)
+          features[j].push_back(token_features[j]);
+      }
+
+      if (_case_markup)
+      {
+        if (token.begin_case_region())
+          tokens.emplace_back(CaseModifier::generate_case_markup_begin(token.get_case_region_begin()));
+        else if (token.has_case()
+                 && (token.get_case() == CaseModifier::Type::Capitalized
+                     || token.get_case() == CaseModifier::Type::CapitalizedFirst))
+          tokens.emplace_back(CaseModifier::generate_case_markup(token.get_case()));
+      }
+      else if (_case_feature)
+      {
+        auto case_type = CaseModifier::Type::None;
+        if (token.has_case())
+          case_type = token.get_case();
+        features.back().emplace_back(1, CaseModifier::type_to_char(case_type));
+      }
 
       if (_joiner_annotate)
       {
@@ -740,7 +755,7 @@ namespace onmt
         tokens.emplace_back(std::move(str));
       }
 
-      if (token.end_case_region())
+      if (_case_markup && token.end_case_region())
         tokens.emplace_back(CaseModifier::generate_case_markup_end(token.get_case_region_end()));
     }
   }

@@ -74,13 +74,27 @@ namespace onmt
 
     if (token.has_case())
     {
-      if (tokens.size() == 1 || token.get_case() == CaseModifier::Type::Capitalized)
-        tokens.front().set_case(token.get_case());
-      else
+      for (size_t i = 0; i < tokens.size(); ++i)
+      {
+        auto case_type = token.get_case();
+        if (case_type == CaseModifier::Type::Capitalized && i > 0)
+          case_type = CaseModifier::Type::Lowercase;
+        else if (case_type == CaseModifier::Type::Mixed)
+          case_type = CaseModifier::extract_case_type(tokens[i].str()).second;
+        tokens[i].set_case(case_type);
+      }
+
+      if (token.begin_case_region())
       {
         tokens.front().set_case_region_begin(token.get_case());
         tokens.back().set_case_region_end(token.get_case());
       }
+    }
+
+    if (token.has_features())
+    {
+      for (auto& sub_token : tokens)
+        sub_token.set_features(token.features());
     }
   }
 

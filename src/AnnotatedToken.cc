@@ -131,4 +131,24 @@ namespace onmt
     return _end_case_region;
   }
 
+  void AnnotatedToken::set_features(const std::vector<std::string>& features)
+  {
+    _features = features;
+  }
+
+  void AnnotatedToken::insert_feature(const std::string& feature)
+  {
+    _features.push_back(feature);
+  }
+
+  bool AnnotatedToken::has_features() const
+  {
+    return !_features.empty();
+  }
+
+  const std::vector<std::string>& AnnotatedToken::features() const
+  {
+    return _features;
+  }
+
 }

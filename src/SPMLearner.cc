@@ -39,7 +39,7 @@ namespace onmt
       _args += " --" + pair.first + "=" + pair.second;
   }
 
-  void SPMLearner::ingest(std::istream& is, Tokenizer* tokenizer)
+  void SPMLearner::ingest(std::istream& is, const Tokenizer* tokenizer)
   {
     if (!_input_stream)
       _input_stream.reset(new std::ofstream(_input_filename));
@@ -51,13 +51,12 @@ namespace onmt
         *_input_stream << line << std::endl;
       else
       {
-        std::vector<std::string> tokens;
-        std::vector<std::vector<std::string>> features;
-        tokenizer->tokenize(line, tokens, features);
+        std::vector<AnnotatedToken> tokens;
+        tokenizer->tokenize(line, tokens);
         for (const auto& token : tokens)
         {
-          if (!Tokenizer::is_placeholder(token))
-            *_input_stream << token << std::endl;
+          if (!Tokenizer::is_placeholder(token.str()))
+            *_input_stream << token.str() << std::endl;
         }
       }
     }

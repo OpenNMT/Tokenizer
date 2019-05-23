@@ -86,6 +86,12 @@ namespace onmt
                   std::vector<std::vector<std::string> >& features,
                   std::unordered_map<std::string, size_t>& alphabets) const override;
 
+    void tokenize(const std::string& text,
+                  std::vector<AnnotatedToken>& annotated_tokens) const;
+    void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
+                         std::vector<std::string>& tokens,
+                         std::vector<std::vector<std::string>>& features) const;
+
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features) const override;
     std::string detokenize(const std::vector<std::string>& words,
@@ -134,9 +140,10 @@ namespace onmt
 
     void read_flags(int flags);
     std::vector<AnnotatedToken> encode_subword(const std::vector<AnnotatedToken>& tokens) const;
-    void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
-                         std::vector<std::string>& tokens) const;
 
+    void tokenize(const std::string& text,
+                  std::vector<AnnotatedToken>& annotated_tokens,
+                  std::unordered_map<std::string, size_t>* alphabets) const;
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
                   std::vector<std::vector<std::string> >& features,
