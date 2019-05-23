@@ -17,7 +17,7 @@ def _maybe_add_library_root(lib_name, header_only=False):
         lib_dir = "%s/lib" % root
       library_dirs.append(lib_dir)
 
-_maybe_add_library_root("BOOST")
+_maybe_add_library_root("PYBIND11", header_only=True)
 _maybe_add_library_root("TOKENIZER")
 
 cflags = ["-std=c++11"]
@@ -30,10 +30,7 @@ tokenizer_module = Extension(
     extra_compile_args=cflags,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
-    libraries=[
-        os.getenv("BOOST_PYTHON_LIBRARY",
-                  "boost_python%d%d" % (sys.version_info[0], sys.version_info[1])),
-        "OpenNMTTokenizer"])
+    libraries=["OpenNMTTokenizer"])
 
 setup(
     name="pyonmttok",

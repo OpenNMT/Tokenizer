@@ -5,6 +5,7 @@ compiler:
 env:
   global:
     - SENTENCEPIECE_VERSION="0.1.8"
+    - PYBIND11_VERSION="2.2.4"
   matrix:
     - WITH_ICU="ON"
     - WITH_ICU="OFF"
@@ -18,7 +19,6 @@ addons:
       - build-essential
       - cmake
       - libboost-program-options-dev
-      - libboost-python-dev
       - libicu-dev
       - python-pip
 before_install:
@@ -46,16 +46,20 @@ before_install:
       make install
       cd $ROOT_TRAVIS_DIR
     fi
+  - wget https://github.com/pybind/pybind11/archive/v${PYBIND11_VERSION}.tar.gz
+  - tar xf v${PYBIND11_VERSION}.tar.gz
+  - mv pybind11-${PYBIND11_VERSION} ${HOME}
   - pip install --user pytest setuptools
 install:
   - export TOKENIZER_ROOT=$HOME/Tokenizer
   - export SENTENCEPIECE_ROOT=$HOME/sentencepiece-$SENTENCEPIECE_VERSION
+  - export PYBIND11_ROOT=$HOME/pybind11-${PYBIND11_VERSION}
   - mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT -DCMAKE_PREFIX_PATH=$SENTENCEPIECE_ROOT -DGTEST_ROOT=$HOME/googletest-1.8.0 -DWITH_ICU=$WITH_ICU ..
   - make
   - make install
   - cd ../bindings/python
-  - BOOST_PYTHON_LIBRARY=boost_python python setup.py install --user
+  - python setup.py install --user
   - cd $ROOT_TRAVIS_DIR
   - export LD_LIBRARY_PATH=$SENTENCEPIECE_ROOT/lib:$TOKENIZER_ROOT/lib
 script:
