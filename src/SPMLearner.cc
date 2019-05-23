@@ -74,7 +74,12 @@ namespace onmt
 
     _input_stream.reset();
 
+    if (!_verbose)
+      std::cerr.setstate(std::ios_base::failbit);
     auto status = sentencepiece::SentencePieceTrainer::Train(final_args);
+    if (!_verbose)
+      std::cerr.clear();
+
     if (status.ok())
       os << std::ifstream(sp_model_path).rdbuf();
 
