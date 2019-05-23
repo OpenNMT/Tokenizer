@@ -224,7 +224,7 @@ private:
   const std::shared_ptr<onmt::Tokenizer> _tokenizer;
 };
 
-BOOST_PYTHON_MODULE(tokenizer)
+BOOST_PYTHON_MODULE(pyonmttok)
 {
   py::class_<TokenizerWrapper>(
       "Tokenizer",

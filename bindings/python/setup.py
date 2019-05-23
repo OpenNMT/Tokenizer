@@ -25,7 +25,7 @@ if sys.platform == 'darwin':
     cflags.append('-mmacosx-version-min=10.9')
 
 tokenizer_module = Extension(
-    "pyonmttok.tokenizer",
+    "pyonmttok",
     sources=["Python.cc"],
     extra_compile_args=cflags,
     include_dirs=include_dirs,
@@ -56,6 +56,5 @@ setup(
         "Forum": "http://forum.opennmt.net/",
         "Source": "https://github.com/OpenNMT/Tokenizer/"
     },
-    packages=["pyonmttok"],
     ext_modules=[tokenizer_module]
 )
