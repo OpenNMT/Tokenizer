@@ -19,6 +19,7 @@ namespace onmt
     SPMLearner(bool verbose,
                const std::unordered_map<std::string, std::string>& opts,
                const std::string& input_filename);
+    ~SPMLearner();
 
     void ingest(std::istream& is, const Tokenizer* tokenizer = 0) override;
     void learn(std::ostream& os, const char* description = 0) override;

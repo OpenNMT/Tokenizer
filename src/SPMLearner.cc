@@ -39,6 +39,11 @@ namespace onmt
       _args += " --" + pair.first + "=" + pair.second;
   }
 
+  SPMLearner::~SPMLearner()
+  {
+    remove(_input_filename.c_str());
+  }
+
   void SPMLearner::ingest(std::istream& is, const Tokenizer* tokenizer)
   {
     if (!_input_stream)
