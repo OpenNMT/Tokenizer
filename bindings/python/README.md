@@ -1,17 +1,15 @@
-## Python bindings
-
-### Installation
+# Python bindings
 
 ```bash
 pip install pyonmttok
 ```
 
-### API
+## Tokenization
 
 ```python
 import pyonmttok
 
-tokenizer = pyonmt.Tokenizer(
+tokenizer = pyonmttok.Tokenizer(
     mode: str,
     bpe_model_path="",
     bpe_vocab_path="",  # Deprecated, use "vocabulary_path" instead.
@@ -48,3 +46,60 @@ text, ranges = tokenizer.detokenize_with_ranges(tokens, merge_ranges=True)
 ```
 
 See the [documentation](../../docs/options.md) for a description of each option.
+
+## Subword learning
+
+The Python wrapper supports BPE and SentencePiece subword learning through a common interface:
+
+1\. (optional) Create the `pyonmttok.Tokenizer` that you want to apply, e.g.:
+
+```python
+tokenizer = pyonmttok.Tokenizer(
+    "aggressive", joiner_annotate=True, segment_numbers=True)
+```
+
+2\. Create the subword learner, e.g.:
+
+```
+learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=32000)
+# or:
+learner = pyonmttok.SentencePieceLearner(
+    tmp_file="input_file.txt", vocab_size=32000, character_coverage=0.98)
+```
+
+3\. Feed some raw data:
+
+```python
+learner.ingest("Hello world!")
+learner.ingest_file("/data/train.en")
+```
+
+4\. Start the learning process:
+
+```python
+tokenizer = learner.learn("/data/model-32k")
+```
+
+The returned `tokenizer` instance can be used to apply subword tokenization on new data.
+
+### Interface
+
+```python
+# See https://github.com/rsennrich/subword-nmt/blob/master/subword_nmt/learn_bpe.py
+# for argument documentation.
+learner = pyonmttok.BPELearner(
+    tokenizer=None,  # Defaults to tokenization mode "space".
+    symbols=10000,
+    min_frequency=2,
+    total_symbols=False,
+    dict_path="",
+    verbose=False)
+
+# See https://github.com/google/sentencepiece/blob/master/src/spm_train_main.cc
+# for available training options.
+learner = pyonmttok.SentencePieceLearner(
+    tmp_file: str,  # Input file written by "ingest" calls and passed to SP training.
+    tokenizer=None,  # Defaults to tokenization mode "none".
+    verbose=False,
+    **training_options)
+```

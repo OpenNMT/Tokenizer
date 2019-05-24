@@ -1,10 +1,15 @@
+#include <fstream>
 #include <memory>
+#include <sstream>
 
 #include <pybind11/pybind11.h>
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPE.h>
 #include <onmt/SentencePiece.h>
+
+#include <onmt/BPELearner.h>
+#include <onmt/SPMLearner.h>
 
 namespace py = pybind11;
 
@@ -59,6 +64,11 @@ class TokenizerWrapper
 public:
   TokenizerWrapper(const TokenizerWrapper& other)
     : _tokenizer(other._tokenizer)
+  {
+  }
+
+  TokenizerWrapper(onmt::Tokenizer* tokenizer)
+    : _tokenizer(tokenizer)
   {
   }
 
@@ -191,8 +201,127 @@ public:
     return _tokenizer->detokenize(words_vec, features_vec);
   }
 
+  const std::shared_ptr<const onmt::Tokenizer> get() const
+  {
+    return _tokenizer;
+  }
+
 private:
+  std::shared_ptr<onmt::Tokenizer> _tokenizer;
+};
+
+class SubwordLearnerWrapper
+{
+public:
+  SubwordLearnerWrapper(const TokenizerWrapper* tokenizer, onmt::SubwordLearner* learner)
+    : _learner(learner)
+  {
+    if (tokenizer)
+      _tokenizer = tokenizer->get();
+  }
+
+  virtual ~SubwordLearnerWrapper() = default;
+
+  void ingest_file(const std::string& path)
+  {
+    std::ifstream in(path);
+    _learner->ingest(in, _tokenizer.get());
+  }
+
+  void ingest(const std::string& text)
+  {
+    std::istringstream in(text);
+    _learner->ingest(in, _tokenizer.get());
+  }
+
+  TokenizerWrapper learn(const std::string& model_path)
+  {
+    {
+      std::ofstream out(model_path);
+      _learner->learn(out);
+    }
+
+    auto new_tokenizer = create_tokenizer(model_path, _tokenizer.get());
+    return TokenizerWrapper(new_tokenizer);
+  }
+
+protected:
   std::shared_ptr<const onmt::Tokenizer> _tokenizer;
+  std::unique_ptr<onmt::SubwordLearner> _learner;
+
+  // Create a new tokenizer with subword encoding configured.
+  virtual onmt::Tokenizer* create_tokenizer(const std::string& model_path,
+                                            const onmt::Tokenizer* tokenizer) const = 0;
+};
+
+class BPELearnerWrapper : public SubwordLearnerWrapper
+{
+public:
+  BPELearnerWrapper(const TokenizerWrapper* tokenizer,
+                    int symbols,
+                    int min_frequency,
+                    bool total_symbols,
+                    const std::string& dict_path,
+                    bool verbose)
+    : SubwordLearnerWrapper(tokenizer,
+                            new onmt::BPELearner(verbose,
+                                                 symbols,
+                                                 min_frequency,
+                                                 !dict_path.empty(),
+                                                 total_symbols))
+  {
+    if (!dict_path.empty())
+      ingest_file(dict_path);
+  }
+
+protected:
+  onmt::Tokenizer* create_tokenizer(const std::string& model_path,
+                                    const onmt::Tokenizer* tokenizer) const
+  {
+    onmt::Tokenizer* new_tokenizer = nullptr;
+    if (!tokenizer)
+      new_tokenizer = new onmt::Tokenizer(onmt::Tokenizer::Mode::Space);
+    else
+      new_tokenizer = new onmt::Tokenizer(*tokenizer);
+    new_tokenizer->set_bpe_model(model_path);
+    return new_tokenizer;
+  }
+};
+
+static std::unordered_map<std::string, std::string> parse_kwargs(py::kwargs kwargs)
+{
+  std::unordered_map<std::string, std::string> map;
+  map.reserve(kwargs.size());
+  for (auto& item : kwargs)
+    map.emplace(item.first.cast<std::string>(), py::str(item.second).cast<std::string>());
+  return map;
+}
+
+class SentencePieceLearnerWrapper : public SubwordLearnerWrapper
+{
+public:
+  SentencePieceLearnerWrapper(const std::string& tmp_file,
+                              const TokenizerWrapper* tokenizer,
+                              bool verbose,
+                              py::kwargs kwargs)
+    : SubwordLearnerWrapper(tokenizer,
+                            new onmt::SPMLearner(verbose,
+                                                 parse_kwargs(kwargs),
+                                                 tmp_file))
+  {
+  }
+
+protected:
+  onmt::Tokenizer* create_tokenizer(const std::string& model_path,
+                                    const onmt::Tokenizer* tokenizer) const
+  {
+    if (!tokenizer)
+      return new onmt::Tokenizer(model_path);
+
+    auto new_tokenizer = new onmt::Tokenizer(*tokenizer);
+    new_tokenizer->set_sp_model(model_path);
+    return new_tokenizer;
+  }
 };
 
 PYBIND11_MODULE(pyonmttok, m)
@@ -229,5 +358,28 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("tokens"), py::arg("merge_ranges")=false)
     .def("__copy__", copy<TokenizerWrapper>)
     .def("__deepcopy__", deepcopy<TokenizerWrapper>)
+    ;
+
+  py::class_<BPELearnerWrapper>(m, "BPELearner")
+         .def(py::init<const TokenizerWrapper*, int, int, bool, std::string, bool>(),
+         py::arg("tokenizer")=py::none(),
+         py::arg("symbols")=10000,
+         py::arg("min_frequency")=2,
+         py::arg("total_symbols")=false,
+         py::arg("dict_path")="",
+         py::arg("verbose")=false)
+    .def("ingest", &BPELearnerWrapper::ingest, py::arg("text"))
+    .def("ingest_file", &BPELearnerWrapper::ingest_file, py::arg("path"))
+    .def("learn", &BPELearnerWrapper::learn, py::arg("model_path"))
+    ;
+
+  py::class_<SentencePieceLearnerWrapper>(m, "SentencePieceLearner")
+    .def(py::init<std::string, const TokenizerWrapper*, bool, py::kwargs>(),
+         py::arg("tmp_file"),
+         py::arg("tokenizer")=py::none(),
+         py::arg("verbose")=false)
+    .def("ingest", &SentencePieceLearnerWrapper::ingest, py::arg("text"))
+    .def("ingest_file", &SentencePieceLearnerWrapper::ingest_file, py::arg("path"))
+    .def("learn", &SentencePieceLearnerWrapper::learn, py::arg("model_path"))
     ;
 }
