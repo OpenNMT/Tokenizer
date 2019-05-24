@@ -67,8 +67,9 @@ namespace onmt
     }
   }
 
-  void SPMLearner::learn(std::ostream& os, const char*)
+  void SPMLearner::learn(std::ostream& os, const char*, bool verbose)
   {
+    verbose = verbose || _verbose;
     std::string model_prefix = _input_filename + ".out";
     std::string sp_model_path = model_prefix + ".model";
     std::string sp_vocab_path = model_prefix + ".vocab";
@@ -79,10 +80,10 @@ namespace onmt
 
     _input_stream.reset();
 
-    if (!_verbose)
+    if (!verbose)
       std::cerr.setstate(std::ios_base::failbit);
     auto status = sentencepiece::SentencePieceTrainer::Train(final_args);
-    if (!_verbose)
+    if (!verbose)
       std::cerr.clear();
 
     if (status.ok())

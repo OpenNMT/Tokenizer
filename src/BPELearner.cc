@@ -234,7 +234,8 @@ namespace onmt
     }
   }
 
-  void BPELearner::learn(std::ostream &os, const char *description) {
+  void BPELearner::learn(std::ostream &os, const char *description, bool verbose) {
+    verbose = verbose || _verbose;
     os << "#version: 0.2\n";    
     if (description) {
       std::string desc = std::string("# ") + description;
@@ -322,7 +323,7 @@ namespace onmt
         std::cerr << "no pair has frequency >= " << _min_frequency << ". Stopping\n";
         break;
       }
-      if (_verbose)
+      if (verbose)
         std::cerr << "pair " << i << ": " << most_frequent.first << " " << most_frequent.second <<
                      " -> " << most_frequent.first << most_frequent.second <<
                      " (frequency " << stats[most_frequent] << ")\n";

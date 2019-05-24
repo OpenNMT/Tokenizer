@@ -92,14 +92,16 @@ learner = pyonmttok.BPELearner(
     symbols=10000,
     min_frequency=2,
     total_symbols=False,
-    dict_path="",
-    verbose=False)
+    dict_path="")
 
 # See https://github.com/google/sentencepiece/blob/master/src/spm_train_main.cc
 # for available training options.
 learner = pyonmttok.SentencePieceLearner(
     tmp_file: str,  # Input file written by "ingest" calls and passed to SP training.
     tokenizer=None,  # Defaults to tokenization mode "none".
-    verbose=False,
     **training_options)
+
+learner.ingest(text: str)
+learner.ingest_file(path: str)
+tokenizer = learner.learn(model_path: str, verbose=False)
 ```

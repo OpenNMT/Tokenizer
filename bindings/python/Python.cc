@@ -234,11 +234,11 @@ public:
     _learner->ingest(in, _tokenizer.get());
   }
 
-  TokenizerWrapper learn(const std::string& model_path)
+  TokenizerWrapper learn(const std::string& model_path, bool verbose)
   {
     {
       std::ofstream out(model_path);
-      _learner->learn(out);
+      _learner->learn(out, nullptr, verbose);
     }
 
     auto new_tokenizer = create_tokenizer(model_path, _tokenizer.get());
@@ -261,10 +261,9 @@ public:
                     int symbols,
                     int min_frequency,
                     bool total_symbols,
-                    const std::string& dict_path,
-                    bool verbose)
+                    const std::string& dict_path)
     : SubwordLearnerWrapper(tokenizer,
-                            new onmt::BPELearner(verbose,
+                            new onmt::BPELearner(false,
                                                  symbols,
                                                  min_frequency,
                                                  !dict_path.empty(),
@@ -302,10 +301,9 @@ class SentencePieceLearnerWrapper : public SubwordLearnerWrapper
 public:
   SentencePieceLearnerWrapper(const std::string& tmp_file,
                               const TokenizerWrapper* tokenizer,
-                              bool verbose,
                               py::kwargs kwargs)
     : SubwordLearnerWrapper(tokenizer,
-                            new onmt::SPMLearner(verbose,
+                            new onmt::SPMLearner(false,
                                                  parse_kwargs(kwargs),
                                                  tmp_file))
   {
@@ -361,25 +359,25 @@ PYBIND11_MODULE(pyonmttok, m)
     ;
 
   py::class_<BPELearnerWrapper>(m, "BPELearner")
-         .def(py::init<const TokenizerWrapper*, int, int, bool, std::string, bool>(),
+         .def(py::init<const TokenizerWrapper*, int, int, bool, std::string>(),
          py::arg("tokenizer")=py::none(),
          py::arg("symbols")=10000,
          py::arg("min_frequency")=2,
          py::arg("total_symbols")=false,
-         py::arg("dict_path")="",
-         py::arg("verbose")=false)
+         py::arg("dict_path")="")
     .def("ingest", &BPELearnerWrapper::ingest, py::arg("text"))
     .def("ingest_file", &BPELearnerWrapper::ingest_file, py::arg("path"))
-    .def("learn", &BPELearnerWrapper::learn, py::arg("model_path"))
+    .def("learn", &BPELearnerWrapper::learn,
+         py::arg("model_path"), py::arg("verbose")=false)
     ;
 
   py::class_<SentencePieceLearnerWrapper>(m, "SentencePieceLearner")
-    .def(py::init<std::string, const TokenizerWrapper*, bool, py::kwargs>(),
+    .def(py::init<std::string, const TokenizerWrapper*, py::kwargs>(),
          py::arg("tmp_file"),
-         py::arg("tokenizer")=py::none(),
-         py::arg("verbose")=false)
+         py::arg("tokenizer")=py::none())
     .def("ingest", &SentencePieceLearnerWrapper::ingest, py::arg("text"))
     .def("ingest_file", &SentencePieceLearnerWrapper::ingest_file, py::arg("path"))
-    .def("learn", &SentencePieceLearnerWrapper::learn, py::arg("model_path"))
+    .def("learn", &SentencePieceLearnerWrapper::learn,
+         py::arg("model_path"), py::arg("verbose")=false)
     ;
 }

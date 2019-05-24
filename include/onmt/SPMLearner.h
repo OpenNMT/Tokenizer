@@ -22,7 +22,7 @@ namespace onmt
     ~SPMLearner();
 
     void ingest(std::istream& is, const Tokenizer* tokenizer = 0) override;
-    void learn(std::ostream& os, const char* description = 0) override;
+    void learn(std::ostream& os, const char* description = 0, bool verbose = false) override;
   private:
     std::string _args;
     std::string _input_filename;
