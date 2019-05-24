@@ -38,7 +38,7 @@ setup(
     license="MIT",
     description="OpenNMT tokenization library",
     author="OpenNMT",
-    author_email="guillaume.klein@opennmt.net",
+    author_email="guillaume.klein@systrangroup.com",
     url="http://opennmt.net",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
