@@ -49,12 +49,12 @@ namespace onmt
     if (!_input_stream)
       _input_stream.reset(new std::ofstream(_input_filename));
 
-    std::string line;
-    while (std::getline(is, line))
+    if (!tokenizer)
+      *_input_stream << is.rdbuf();
+    else
     {
-      if (!tokenizer)
-        *_input_stream << line << std::endl;
-      else
+      std::string line;
+      while (std::getline(is, line))
       {
         std::vector<AnnotatedToken> tokens;
         tokenizer->tokenize(line, tokens);
