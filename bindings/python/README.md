@@ -60,7 +60,7 @@ tokenizer = pyonmttok.Tokenizer(
 
 2\. Create the subword learner, e.g.:
 
-```
+```python
 learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=32000)
 # or:
 learner = pyonmttok.SentencePieceLearner(
