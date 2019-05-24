@@ -207,7 +207,7 @@ public:
   }
 
 private:
-  std::shared_ptr<onmt::Tokenizer> _tokenizer;
+  std::shared_ptr<const onmt::Tokenizer> _tokenizer;
 };
 
 class SubwordLearnerWrapper
