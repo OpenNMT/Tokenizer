@@ -11,6 +11,8 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
   * `onmt::Tokenizer`
   * `onmt::unicode::*`
 * Python
+  * `pyonmttok.BPELearner`
+  * `pyonmttok.SentencePieceLearner`
   * `pyonmttok.Tokenizer`
 
 ---
@@ -19,7 +21,14 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### New features
 
+* Python API for subword learning (BPE and SentencePiece)
+* C++ tokenization method to get the intermediate token representation
+
 ### Fixes and improvements
+
+* Replace Boost.Python by pybind11 for the Python wrapper
+* Fix verbose flag for SentencePiece training
+* Check and raise possible errors during SentencePiece training
 
 ## [v1.11.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.11.0) (2019-02-05)
 
