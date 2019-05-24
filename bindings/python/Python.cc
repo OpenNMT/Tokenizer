@@ -359,7 +359,7 @@ PYBIND11_MODULE(pyonmttok, m)
     ;
 
   py::class_<BPELearnerWrapper>(m, "BPELearner")
-         .def(py::init<const TokenizerWrapper*, int, int, bool, std::string>(),
+    .def(py::init<const TokenizerWrapper*, int, int, bool, std::string>(),
          py::arg("tokenizer")=py::none(),
          py::arg("symbols")=10000,
          py::arg("min_frequency")=2,
