@@ -44,6 +44,13 @@ namespace onmt
     remove(_input_filename.c_str());
   }
 
+  void SPMLearner::set_input_filename(const std::string& filename)
+  {
+    if (_input_stream)
+      _input_stream.reset();
+    _input_filename = filename;
+  }
+
   void SPMLearner::ingest(std::istream& is, const Tokenizer* tokenizer)
   {
     if (!_input_stream)

@@ -65,9 +65,7 @@ def test_bpe_learner(tmpdir):
     assert tokens == ["h￭", "ell￭", "o"]
 
 def test_sp_learner(tmpdir):
-    tmp_file = str(tmpdir.join("input.txt"))
-    learner = pyonmttok.SentencePieceLearner(
-        tmp_file=tmp_file, vocab_size=17, character_coverage=0.98)
+    learner = pyonmttok.SentencePieceLearner(vocab_size=17, character_coverage=0.98)
     learner.ingest("hello word! how are you?")
     model_path = str(tmpdir.join("sp.model"))
     tokenizer = learner.learn(model_path)

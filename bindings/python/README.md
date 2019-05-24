@@ -63,8 +63,7 @@ tokenizer = pyonmttok.Tokenizer(
 ```python
 learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=32000)
 # or:
-learner = pyonmttok.SentencePieceLearner(
-    tmp_file="input_file.txt", vocab_size=32000, character_coverage=0.98)
+learner = pyonmttok.SentencePieceLearner(vocab_size=32000, character_coverage=0.98)
 ```
 
 3\. Feed some raw data:
@@ -97,11 +96,11 @@ learner = pyonmttok.BPELearner(
 # See https://github.com/google/sentencepiece/blob/master/src/spm_train_main.cc
 # for available training options.
 learner = pyonmttok.SentencePieceLearner(
-    tmp_file: str,  # Input file written by "ingest" calls and passed to SP training.
     tokenizer=None,  # Defaults to tokenization mode "none".
     **training_options)
 
 learner.ingest(text: str)
 learner.ingest_file(path: str)
+
 tokenizer = learner.learn(model_path: str, verbose=False)
 ```

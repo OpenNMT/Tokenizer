@@ -21,6 +21,8 @@ namespace onmt
                const std::string& input_filename);
     ~SPMLearner();
 
+    void set_input_filename(const std::string& filename);
+
     void ingest(std::istream& is, const Tokenizer* tokenizer = 0) override;
     void learn(std::ostream& os, const char* description = 0, bool verbose = false) override;
   private:

@@ -296,17 +296,29 @@ static std::unordered_map<std::string, std::string> parse_kwargs(py::kwargs kwar
   return map;
 }
 
+static std::string create_temp_dir()
+{
+  py::object tempfile = py::module::import("tempfile");
+  py::object mkdtemp = tempfile.attr("mkdtemp");
+  return mkdtemp().cast<std::string>();
+}
+
 class SentencePieceLearnerWrapper : public SubwordLearnerWrapper
 {
 public:
-  SentencePieceLearnerWrapper(const std::string& tmp_file,
-                              const TokenizerWrapper* tokenizer,
+  SentencePieceLearnerWrapper(const TokenizerWrapper* tokenizer,
                               py::kwargs kwargs)
-    : SubwordLearnerWrapper(tokenizer,
-                            new onmt::SPMLearner(false,
-                                                 parse_kwargs(kwargs),
-                                                 tmp_file))
+    : SubwordLearnerWrapper(tokenizer, new onmt::SPMLearner(false, parse_kwargs(kwargs), ""))
+    , _tmp_dir(create_temp_dir())
   {
+    dynamic_cast<onmt::SPMLearner*>(_learner.get())->set_input_filename(_tmp_dir + "/input.txt");
+  }
+
+  ~SentencePieceLearnerWrapper()
+  {
+    py::object os = py::module::import("os");
+    py::object rmdir = os.attr("rmdir");
+    rmdir(_tmp_dir);
   }
 
 protected:
@@ -320,6 +332,9 @@ protected:
     new_tokenizer->set_sp_model(model_path);
     return new_tokenizer;
   }
+
+private:
+  std::string _tmp_dir;
 };
 
 PYBIND11_MODULE(pyonmttok, m)
@@ -372,8 +387,7 @@ PYBIND11_MODULE(pyonmttok, m)
     ;
 
   py::class_<SentencePieceLearnerWrapper>(m, "SentencePieceLearner")
-    .def(py::init<std::string, const TokenizerWrapper*, py::kwargs>(),
-         py::arg("tmp_file"),
+    .def(py::init<const TokenizerWrapper*, py::kwargs>(),
          py::arg("tokenizer")=py::none())
     .def("ingest", &SentencePieceLearnerWrapper::ingest, py::arg("text"))
     .def("ingest_file", &SentencePieceLearnerWrapper::ingest_file, py::arg("path"))
