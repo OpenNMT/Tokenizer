@@ -53,5 +53,7 @@ setup(
         "Forum": "http://forum.opennmt.net/",
         "Source": "https://github.com/OpenNMT/Tokenizer/"
     },
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
     ext_modules=[tokenizer_module]
 )

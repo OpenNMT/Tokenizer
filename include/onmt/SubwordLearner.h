@@ -17,7 +17,7 @@ namespace onmt
     SubwordLearner(bool verbose);
     virtual ~SubwordLearner() = default;
     virtual void ingest(std::istream& in, const Tokenizer* tokenizer = nullptr) = 0;
-    virtual void learn(std::ostream& out, const char* description = nullptr) = 0;
+    virtual void learn(std::ostream& out, const char* description = nullptr, bool verbose = false) = 0;
   protected:
     bool _verbose;
     std::unique_ptr<const Tokenizer> _default_tokenizer;

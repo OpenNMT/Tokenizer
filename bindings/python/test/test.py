@@ -52,3 +52,22 @@ def test_detok_with_ranges():
     assert len(ranges) == 2
     assert ranges[0] == (0, 0)
     assert ranges[1] == (2, 2)
+
+def test_bpe_learner(tmpdir):
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+    learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=2, min_frequency=1)
+    learner.ingest("hello world")
+    model_path = str(tmpdir.join("bpe.model"))
+    tokenizer = learner.learn(model_path)
+    with open(model_path) as model:
+        assert model.read() == "#version: 0.2\ne l\nel l\n"
+    tokens, _ = tokenizer.tokenize("hello")
+    assert tokens == ["h￭", "ell￭", "o"]
+
+def test_sp_learner(tmpdir):
+    learner = pyonmttok.SentencePieceLearner(vocab_size=17, character_coverage=0.98)
+    learner.ingest("hello word! how are you?")
+    model_path = str(tmpdir.join("sp.model"))
+    tokenizer = learner.learn(model_path)
+    tokens, _ = tokenizer.tokenize("hello")
+    assert tokens == ["▁h", "e", "l", "l", "o"]
