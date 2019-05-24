@@ -51,14 +51,14 @@ See the [documentation](../../docs/options.md) for a description of each option.
 
 The Python wrapper supports BPE and SentencePiece subword learning through a common interface:
 
-1\. (optional) Create the `pyonmttok.Tokenizer` that you want to apply, e.g.:
+**1\. (optional) Create the `Tokenizer` that you ultimately want to apply, e.g.:**
 
 ```python
 tokenizer = pyonmttok.Tokenizer(
     "aggressive", joiner_annotate=True, segment_numbers=True)
 ```
 
-2\. Create the subword learner, e.g.:
+**2\. Create the subword learner, e.g.:**
 
 ```python
 learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=32000)
@@ -66,14 +66,14 @@ learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=32000)
 learner = pyonmttok.SentencePieceLearner(vocab_size=32000, character_coverage=0.98)
 ```
 
-3\. Feed some raw data:
+**3\. Feed some raw data:**
 
 ```python
 learner.ingest("Hello world!")
 learner.ingest_file("/data/train.en")
 ```
 
-4\. Start the learning process:
+**4\. Start the learning process:**
 
 ```python
 tokenizer = learner.learn("/data/model-32k")
