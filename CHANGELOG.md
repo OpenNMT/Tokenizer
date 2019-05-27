@@ -21,6 +21,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.12.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.12.0) (2019-05-27)
+
+### New features
+
 * Python API for subword learning (BPE and SentencePiece)
 * C++ tokenization method to get the intermediate token representation
 
