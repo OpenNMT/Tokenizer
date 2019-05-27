@@ -90,8 +90,7 @@ learner = pyonmttok.BPELearner(
     tokenizer=None,  # Defaults to tokenization mode "space".
     symbols=10000,
     min_frequency=2,
-    total_symbols=False,
-    dict_path="")
+    total_symbols=False)
 
 # See https://github.com/google/sentencepiece/blob/master/src/spm_train_main.cc
 # for available training options.

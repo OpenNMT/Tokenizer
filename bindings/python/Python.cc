@@ -260,17 +260,14 @@ public:
   BPELearnerWrapper(const TokenizerWrapper* tokenizer,
                     int symbols,
                     int min_frequency,
-                    bool total_symbols,
-                    const std::string& dict_path)
+                    bool total_symbols)
     : SubwordLearnerWrapper(tokenizer,
                             new onmt::BPELearner(false,
                                                  symbols,
                                                  min_frequency,
-                                                 !dict_path.empty(),
+                                                 false,
                                                  total_symbols))
   {
-    if (!dict_path.empty())
-      ingest_file(dict_path);
   }
 
 protected:
@@ -374,12 +371,11 @@ PYBIND11_MODULE(pyonmttok, m)
     ;
 
   py::class_<BPELearnerWrapper>(m, "BPELearner")
-    .def(py::init<const TokenizerWrapper*, int, int, bool, std::string>(),
+    .def(py::init<const TokenizerWrapper*, int, int, bool>(),
          py::arg("tokenizer")=py::none(),
          py::arg("symbols")=10000,
          py::arg("min_frequency")=2,
-         py::arg("total_symbols")=false,
-         py::arg("dict_path")="")
+         py::arg("total_symbols")=false)
     .def("ingest", &BPELearnerWrapper::ingest, py::arg("text"))
     .def("ingest_file", &BPELearnerWrapper::ingest_file, py::arg("path"))
     .def("learn", &BPELearnerWrapper::learn,
