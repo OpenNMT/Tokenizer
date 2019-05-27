@@ -20,7 +20,7 @@ def _maybe_add_library_root(lib_name, header_only=False):
 _maybe_add_library_root("PYBIND11", header_only=True)
 _maybe_add_library_root("TOKENIZER")
 
-cflags = ["-std=c++11"]
+cflags = ["-std=c++11", "-fvisibility=hidden"]
 if sys.platform == 'darwin':
     cflags.append('-mmacosx-version-min=10.9')
 
