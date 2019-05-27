@@ -60,6 +60,7 @@ cd bindings/python
 for PYTHON_ROOT in /opt/python/*
 do
     $PYTHON_ROOT/bin/python setup.py bdist_wheel
+    rm -r build
 done
 
 for wheel in dist/*
