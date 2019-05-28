@@ -21,10 +21,10 @@ This file documents the options of the Tokenizer interface which can be used in:
 Defines the tokenization mode:
 
 * `conservative`: standard OpenNMT tokenization
-* `aggressive`: standard OpenNMT tokenization but only keep sequences of letters/numbers (e.g. splits "2,000" to "2 , 0000", "soft-landing" to "soft - landing")
+* `aggressive`: standard OpenNMT tokenization but only keep sequences of the same character type (e.g. "2,000" is tokenized to "2 , 0000", "soft-landing" to "soft - landing", etc.)
 * `char`: character tokenization
 * `space`: space tokenization
-* `none`: no tokenization is applied and the input is passed directly to the BPE or SP model if set.
+* `none`: no tokenization is applied and the input is passed directly to the BPE or SentencePiece model if set.
 
 ```bash
 $ echo "It costs £2,000" | cli/tokenize --mode conservative
@@ -53,7 +53,7 @@ a ｟b｠ c
 
 ### `case_feature` (boolean, default: `false`)
 
-Lowercase text input and attach case information with the special separator ￨.
+Lowercase text input and attach case information with the special separator ￨. In the Python and C++ APIs, the case feature is returned in a separate data structure.
 
 ```bash
 $ echo "Hello world!" | cli/tokenize --case_feature
@@ -89,11 +89,11 @@ Disable substitution of special characters defined by the Tokenizer and found in
 
 ## Subword
 
-### `bpe_model` (string, default: `""`)
+### `bpe_model_path` (string, default: `""`)
 
-Path to the BPE model trained with OpenNMT's `learn_bpe.lua` or the standard `learn_bpe.py`.
+Path to the BPE model.
 
-### `sp_model` (string, default: `""`)
+### `sp_model_path` (string, default: `""`)
 
 Path to the SentencePiece model. To replicate `spm_encode`, the tokenization mode should be `none`.
 
@@ -105,7 +105,7 @@ Number of candidates for the SentencePiece sampling API. When the value is 0, th
 
 Smoothing parameter for the SentencePiece sampling API.
 
-### `vocabulary` (string, default: `""`)
+### `vocabulary_path` (string, default: `""`)
 
 Path to the vocabulary file. If set, subword encoders will only generate tokens that exist in the vocabulary. Format is: `<token> <space> <frequency>`. A missing frequency is equivalent to 1.
 
