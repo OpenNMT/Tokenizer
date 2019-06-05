@@ -3,8 +3,10 @@ import sys
 
 from setuptools import setup, Extension
 
+import pybind11
 
-include_dirs = []
+
+include_dirs = [pybind11.get_include()]
 library_dirs = []
 
 def _maybe_add_library_root(lib_name, header_only=False):
@@ -17,7 +19,6 @@ def _maybe_add_library_root(lib_name, header_only=False):
         lib_dir = "%s/lib" % root
       library_dirs.append(lib_dir)
 
-_maybe_add_library_root("PYBIND11", header_only=True)
 _maybe_add_library_root("TOKENIZER")
 
 cflags = ["-std=c++11", "-fvisibility=hidden"]
