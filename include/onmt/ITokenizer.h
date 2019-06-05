@@ -51,7 +51,6 @@ namespace onmt
                                  size_t buffer_size = 1000) const;
 
     virtual void detokenize_stream(std::istream& is, std::ostream& os) const;
-
   };
 
 }
