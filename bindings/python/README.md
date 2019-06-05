@@ -43,6 +43,10 @@ text = tokenizer.detokenize(tokens)  # will fail if case_feature is set.
 # the detokenized text. Set merge_ranges=True to merge consecutive ranges, e.g.
 # subwords of the same token in case of subword tokenization.
 text, ranges = tokenizer.detokenize_with_ranges(tokens, merge_ranges=True)
+
+# File-based APIs
+tokenizer.tokenize_file(input_path: str, output_path: str, num_threads=1)
+tokenizer.detokenize_file(input_path: str, output_path: str)
 ```
 
 See the [documentation](../../docs/options.md) for a description of each option.

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import copy
 import pytest
 import pyonmttok
@@ -15,6 +16,22 @@ def test_simple():
     assert features is None
     detok = tokenizer.detokenize(tokens)
     assert detok == text
+
+def test_file(tmpdir):
+    input_path = str(tmpdir.join("input.txt"))
+    output_path = str(tmpdir.join("output.txt"))
+    with open(input_path, "w") as input_file:
+        input_file.write("Hello world!")
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, joiner_new=True)
+    tokenizer.tokenize_file(input_path, output_path)
+    assert os.path.exists(output_path)
+    with open(output_path) as output_file:
+        assert output_file.readline().strip() == "Hello world ￭ !"
+    os.remove(input_path)
+    tokenizer.detokenize_file(output_path, input_path)
+    assert os.path.exists(input_path)
+    with open(input_path) as input_file:
+        assert input_file.readline().strip() == "Hello world!"
 
 def test_custom_joiner():
     tokenizer = pyonmttok.Tokenizer(

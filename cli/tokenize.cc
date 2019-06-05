@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
     ("bpe_vocab_threshold", po::value<int>()->default_value(50), "Depracted, see --vocabulary_threshold.")
     ("vocabulary", po::value<std::string>()->default_value(""), "Vocabulary file. If provided, sentences are encoded to subword present in this vocabulary.")
     ("vocabulary_threshold", po::value<int>()->default_value(0), "Vocabulary threshold. If vocabulary is provided, any word with frequency < threshold will be treated as OOV.")
+    ("num_threads", po::value<int>()->default_value(1), "Number of threads to use.")
 #ifdef WITH_SP
     ("sp_model,sp", po::value<std::string>()->default_value(""), "path to the SentencePiece model")
     ("sp_nbest_size", po::value<int>()->default_value(0), "number of candidates for the SentencePiece sampling API")
@@ -119,15 +120,6 @@ int main(int argc, char* argv[])
       std::cerr << "WARNING: " << alphabet << " alphabet is not supported" << std::endl;
   }
 
-  std::string line;
-
-  while (std::getline(std::cin, line))
-  {
-    if (!line.empty())
-      std::cout << tokenizer.tokenize(line);
-
-    std::cout << std::endl;
-  }
-
+  tokenizer.tokenize_stream(std::cin, std::cout, vm["num_threads"].as<int>());
   return 0;
 }
