@@ -201,6 +201,23 @@ public:
     return _tokenizer->detokenize(words_vec, features_vec);
   }
 
+  void tokenize_file(const std::string& input_path,
+                     const std::string& output_path,
+                     int num_threads)
+  {
+    std::ifstream in(input_path);
+    std::ofstream out(output_path);
+    _tokenizer->tokenize_stream(in, out, num_threads);
+  }
+
+  void detokenize_file(const std::string& input_path,
+                       const std::string& output_path)
+  {
+    std::ifstream in(input_path);
+    std::ofstream out(output_path);
+    _tokenizer->detokenize_stream(in, out);
+  }
+
   const std::shared_ptr<const onmt::Tokenizer> get() const
   {
     return _tokenizer;
@@ -362,10 +379,17 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("segment_alphabet_change")=false,
          py::arg("segment_alphabet")=py::list())
     .def("tokenize", &TokenizerWrapper::tokenize, py::arg("text"))
+    .def("tokenize_file", &TokenizerWrapper::tokenize_file,
+         py::arg("input_path"),
+         py::arg("output_path"),
+         py::arg("num_threads")=1)
     .def("detokenize", &TokenizerWrapper::detokenize,
          py::arg("tokens"), py::arg("features")=py::none())
     .def("detokenize_with_ranges", &TokenizerWrapper::detokenize_with_ranges,
          py::arg("tokens"), py::arg("merge_ranges")=false)
+    .def("detokenize_file", &TokenizerWrapper::detokenize_file,
+         py::arg("input_path"),
+         py::arg("output_path"))
     .def("__copy__", copy<TokenizerWrapper>)
     .def("__deepcopy__", deepcopy<TokenizerWrapper>)
     ;

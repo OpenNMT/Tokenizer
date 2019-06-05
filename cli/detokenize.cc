@@ -33,20 +33,11 @@ int main(int argc, char* argv[])
   if (vm["spacer_annotate"].as<bool>())
     flags |= onmt::Tokenizer::Flags::SpacerAnnotate;
 
-  onmt::ITokenizer* tokenizer = new onmt::Tokenizer(onmt::Tokenizer::Mode::Conservative,
-                                                    flags,
-                                                    "",
-                                                    vm["joiner"].as<std::string>());
+  onmt::Tokenizer tokenizer(onmt::Tokenizer::Mode::Conservative,
+                            flags,
+                            "",
+                            vm["joiner"].as<std::string>());
 
-  std::string line;
-
-  while (std::getline(std::cin, line))
-  {
-    if (!line.empty())
-      std::cout << tokenizer->detokenize(line);
-
-    std::cout << std::endl;
-  }
-
+  tokenizer.detokenize_stream(std::cin, std::cout);
   return 0;
 }

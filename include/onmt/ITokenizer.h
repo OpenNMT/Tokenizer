@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <iostream>
 
 #include "onmt/opennmttokenizer_export.h"
 
@@ -43,6 +44,14 @@ namespace onmt
 
     // Split the text on spaces and detokenize.
     virtual std::string detokenize(const std::string& text) const;
+
+    virtual void tokenize_stream(std::istream& is,
+                                 std::ostream& os,
+                                 size_t num_threads = 1,
+                                 size_t buffer_size = 1000) const;
+
+    virtual void detokenize_stream(std::istream& is, std::ostream& os) const;
+
   };
 
 }
