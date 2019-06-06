@@ -5,7 +5,6 @@ compiler:
 env:
   global:
     - SENTENCEPIECE_VERSION="0.1.8"
-    - PYBIND11_VERSION="2.2.4"
   matrix:
     - WITH_ICU="ON"
     - WITH_ICU="OFF"
@@ -20,7 +19,6 @@ addons:
       - cmake
       - libboost-program-options-dev
       - libicu-dev
-      - python-pip
 before_install:
   - export ROOT_TRAVIS_DIR=$(pwd)
   - |
@@ -46,22 +44,32 @@ before_install:
       make install
       cd $ROOT_TRAVIS_DIR
     fi
-  - wget https://github.com/pybind/pybind11/archive/v${PYBIND11_VERSION}.tar.gz
-  - tar xf v${PYBIND11_VERSION}.tar.gz
-  - mv pybind11-${PYBIND11_VERSION} ${HOME}
-  - pip install --user pytest setuptools
 install:
   - export TOKENIZER_ROOT=$HOME/Tokenizer
   - export SENTENCEPIECE_ROOT=$HOME/sentencepiece-$SENTENCEPIECE_VERSION
-  - export PYBIND11_ROOT=$HOME/pybind11-${PYBIND11_VERSION}
   - mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT -DCMAKE_PREFIX_PATH=$SENTENCEPIECE_ROOT -DGTEST_ROOT=$HOME/googletest-1.8.0 -DWITH_ICU=$WITH_ICU ..
-  - make
   - make install
-  - cd ../bindings/python
-  - python setup.py install --user
   - cd $ROOT_TRAVIS_DIR
-  - export LD_LIBRARY_PATH=$SENTENCEPIECE_ROOT/lib:$TOKENIZER_ROOT/lib
 script:
   - build/test/onmt_tokenizer_test test/data
-  - pytest bindings/python/test/test.py
+
+matrix:
+  include:
+    - env:
+        - TWINE_REPOSITORY_URL="https://upload.pypi.org/legacy/"
+      services:
+        - docker
+      before_install:
+        - docker pull quay.io/pypa/manylinux1_x86_64
+        - docker run -v $PWD:/root -w /root quay.io/pypa/manylinux1_x86_64 bash /root/bindings/python/tools/build_wheel.sh
+        - pip install --user pytest twine
+      install:
+        - pip install --user wheelhouse/*27mu*.whl
+      script:
+        - pytest bindings/python/test/test.py
+      after_success:
+        - |
+              if [[ -n $TRAVIS_TAG ]]; then
+                  twine upload wheelhouse/*.whl
+              fi
