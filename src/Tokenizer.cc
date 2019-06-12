@@ -629,7 +629,7 @@ namespace onmt
                 token.join_left();
               }
 
-              if (sub_c[0] == ' ')
+              if (sub_c[0] == ' ' && !_no_substitution)
                 token.append(protected_character + "0020" + sub_c.substr(1));
               else
                 token.append(sub_c);

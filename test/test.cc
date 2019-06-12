@@ -24,6 +24,22 @@ static void test_tok(ITokenizer& tokenizer,
   }
 }
 
+static void test_tok(ITokenizer& tokenizer,
+                     const std::string& in,
+                     const std::vector<std::string>& expected,
+                     bool detokenize = false) {
+  std::vector<std::string> tokens;
+  tokenizer.tokenize(in, tokens);
+  ASSERT_EQ(tokens.size(), expected.size());
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    EXPECT_EQ(tokens[i], expected[i])  << "Unexpected token mismatch at index " << i;
+  }
+  if (detokenize) {
+    auto text = tokenizer.detokenize(tokens);
+    EXPECT_EQ(text, in);
+  }
+}
+
 static void test_detok(ITokenizer& tokenizer, const std::string& in, const std::string& expected) {
   std::vector<std::string> tokens;
   onmt::SpaceTokenizer::get_instance().tokenize(in, tokens);
@@ -260,6 +276,12 @@ TEST(TokenizerTest, MarkOnSpace) {
   test_tok_and_detok(tokenizer_spacer,
                      "b ̇c",
                      "b ％0020̇ c");
+}
+
+TEST(TokenizerTest, MarkOnSpaceNoSubstitution) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::NoSubstitution);
+  test_tok(tokenizer, "angles ၧ1 and ၧ2", {"angles", "￭ ၧ￭", "1", "and", "￭ ၧ￭", "2"}, true);
 }
 
 TEST(TokenizerTest, CaseFeature) {
