@@ -23,6 +23,17 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.13.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.13.0) (2019-06-12)
+
+### New features
+
+* [Python] File-based tokenization and detokenization APIs
+* Support tokenizing files with multiple threads
+
+### Fixes and improvements
+
+* Respect "NoSubstitution" flag for combining marks applied on spaces
+
 ## [v1.12.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.12.1) (2019-05-27)
 
 ### Fixes and improvements
