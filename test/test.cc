@@ -282,7 +282,6 @@ TEST(TokenizerTest, MarkOnSpaceNoSubstitution) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::NoSubstitution);
   test_tok(tokenizer, "angles ၧ1 and ၧ2", {"angles", "￭ ၧ￭", "1", "and", "￭ ၧ￭", "2"}, true);
-
 }
 
 TEST(TokenizerTest, CaseFeature) {
