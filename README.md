@@ -10,7 +10,7 @@ By default, the Tokenizer applies a simple tokenization based on unicode types. 
 
 * **Customizable reversible tokenization**<br/>Marking joints or spaces by annotating tokens or injecting modifier characters.
 * **Subword tokenization**<br/>Support for BPE and SentencePiece models.
-* **Advanced text segmentation**<br/>Split digits, segment on case or alphabet change, segment on characters selected alphabets, etc.
+* **Advanced text segmentation**<br/>Split digits, segment on case or alphabet change, segment each character of selected alphabets, etc.
 * **Case management**<br/>Lowercase text and return case information as a separate feature or inject case modifier tokens.
 * **Protected sequences**<br/>Sequences can be protected against tokenization with the special characters "｟" and "｠".
 
