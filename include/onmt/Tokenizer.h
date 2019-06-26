@@ -91,6 +91,9 @@ namespace onmt
     void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
                          std::vector<std::string>& tokens,
                          std::vector<std::vector<std::string>>& features) const;
+    std::string detokenize(const std::vector<AnnotatedToken>& tokens) const;
+    std::string detokenize(const std::vector<AnnotatedToken>& tokens,
+                           Ranges& ranges, bool merge_ranges = false) const;
 
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features) const override;
@@ -148,6 +151,8 @@ namespace onmt
                   std::vector<std::string>& words,
                   std::vector<std::vector<std::string> >& features,
                   std::unordered_map<std::string, size_t>* alphabets) const;
+    std::string detokenize(const std::vector<AnnotatedToken>& tokens,
+                           Ranges* ranges, bool merge_ranges = false) const;
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features,
                            Ranges* ranges, bool merge_ranges = false) const;

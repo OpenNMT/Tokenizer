@@ -151,4 +151,14 @@ namespace onmt
     return _features;
   }
 
+  void AnnotatedToken::set_index(size_t index)
+  {
+    _index = index;
+  }
+
+  size_t AnnotatedToken::get_index() const
+  {
+    return _index;
+  }
+
 }

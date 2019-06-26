@@ -178,6 +178,17 @@ namespace onmt
     return detokenize(words, features, &ranges, merge_ranges);
   }
 
+  std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens) const
+  {
+    return detokenize(tokens, nullptr);
+  }
+
+  std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens,
+                                    Ranges& ranges, bool merge_ranges) const
+  {
+    return detokenize(tokens, &ranges, merge_ranges);
+  }
+
   static Ranges merge_consecutive_ranges(const std::string& text, const Ranges& ranges)
   {
     // We do not want to merge ranges that represent different tokens. To do so, we run a
@@ -232,16 +243,61 @@ namespace onmt
     return merged_ranges;
   }
 
+  std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens,
+                                    Ranges* ranges, bool merge_ranges) const
+  {
+    std::string line;
+    line.reserve(tokens.size() * 10);
+
+    for (size_t i = 0; i < tokens.size(); ++i)
+    {
+      const auto& token = tokens[i];
+      if (i > 0 && !tokens[i - 1].is_joined_right() && !token.is_joined_left())
+        line += ' ';
+
+      std::string prep_word = token.str();
+
+      auto case_modifier = token.get_case();
+      if (case_modifier != CaseModifier::Type::None)
+        prep_word = CaseModifier::apply_case(prep_word, case_modifier);
+
+      if (!is_placeholder(prep_word)) {
+        size_t p = prep_word.find(protected_character, 0);
+        while (p != std::string::npos && p+protected_character.size()+4 < prep_word.size()) {
+          std::string code = prep_word.substr(p+protected_character.size(), 4);
+          int v;
+          if (sscanf(code.c_str(), "%x", &v) == 1)
+            prep_word.replace(p, protected_character.size()+4, unicode::cp_to_utf8(v));
+          p = prep_word.find(protected_character, p+protected_character.size());
+        }
+      }
+
+      if (!prep_word.empty())
+      {
+        if (ranges)
+          ranges->emplace(std::piecewise_construct,
+                          std::forward_as_tuple(token.get_index()),
+                          std::forward_as_tuple(line.size(), line.size() + prep_word.size() - 1));
+
+        line.append(prep_word);
+      }
+
+    }
+
+    if (ranges && merge_ranges)
+      *ranges = merge_consecutive_ranges(line, *ranges);
+
+    return line;
+  }
+
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,
                                     const std::vector<std::vector<std::string> >& features,
                                     Ranges* ranges, bool merge_ranges) const
   {
-    std::string line;
-    line.reserve(words.size() * 10);
-
+    std::vector<AnnotatedToken> tokens;
+    tokens.reserve(words.size());
     CaseModifier::Type case_region = CaseModifier::Type::None;
     CaseModifier::Type case_modifier = CaseModifier::Type::None;
-    int previous_token = -1;
 
     for (size_t i = 0; i < words.size(); ++i)
     {
@@ -273,74 +329,44 @@ namespace onmt
         }
       }
 
-      if (previous_token >= 0
-          && !has_right_join(words[previous_token]) && !has_left_join(words[i])
-          && !_spacer_annotate)
-        line += ' ';
-
       const std::string& word = words[i];
       size_t subpos = 0;
       size_t sublen = word.size();
+      AnnotatedToken token;
 
-      if (has_right_join(word))
-        sublen -= _joiner.length();
-      if (has_left_join(word))
+      if (_spacer_annotate)
       {
-        subpos += _joiner.length();
-        sublen -= _joiner.length();
-      }
-
-      if (sublen == word.size())
-      {
-        if (has_right_marker(word, spacer_marker))
-        {
-          sublen -= spacer_marker.length();
-          if (previous_token >= 0)
-            line += ' ';
-        }
-        else if (has_left_marker(word, spacer_marker))
+        if (has_left_marker(word, spacer_marker))
         {
           subpos += spacer_marker.length();
           sublen -= spacer_marker.length();
-          if (previous_token >= 0)
-            line += ' ';
         }
+        else
+          token.join_left();
       }
-
-      std::string prep_word = word.substr(subpos, sublen);
-
-      if (case_modifier != CaseModifier::Type::None)
-        prep_word = CaseModifier::apply_case(prep_word, case_modifier);
-
-      if (!is_placeholder(prep_word)) {
-        size_t p = prep_word.find(protected_character, 0);
-        while (p != std::string::npos && p+protected_character.size()+4 < prep_word.size()) {
-          std::string code = prep_word.substr(p+protected_character.size(), 4);
-          int v;
-          if (sscanf(code.c_str(), "%x", &v) == 1)
-            prep_word.replace(p, protected_character.size()+4, unicode::cp_to_utf8(v));
-          p = prep_word.find(protected_character, p+protected_character.size());
-        }
-      }
-
-      if (!prep_word.empty())
+      else
       {
-        if (ranges)
-          ranges->emplace(std::piecewise_construct,
-                          std::forward_as_tuple(i),
-                          std::forward_as_tuple(line.size(), line.size() + prep_word.size() - 1));
-
-        line.append(prep_word);
+        if (has_right_join(word))
+        {
+          token.join_right();
+          sublen -= _joiner.length();
+        }
+        if (has_left_join(word))
+        {
+          token.join_left();
+          subpos += _joiner.length();
+          sublen -= _joiner.length();
+        }
       }
 
-      previous_token = i;
+      token.set(word.substr(subpos, sublen));
+      token.set_case(case_modifier);
+      token.set_index(i);
+      tokens.emplace_back(std::move(token));
       case_modifier = CaseModifier::Type::None;
     }
 
-    if (ranges && merge_ranges)
-      *ranges = merge_consecutive_ranges(line, *ranges);
-
-    return line;
+    return detokenize(tokens, ranges, merge_ranges);
   }
 
   void Tokenizer::tokenize(const std::string& text,

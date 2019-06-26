@@ -49,6 +49,9 @@ namespace onmt
     bool has_features() const;
     const std::vector<std::string>& features() const;
 
+    void set_index(size_t index);
+    size_t get_index() const;
+
   private:
     std::string _str;
     CaseModifier::Type _case = CaseModifier::Type::None;
@@ -59,6 +62,7 @@ namespace onmt
     bool _spacer = false;
     bool _preserved = false;
     std::vector<std::string> _features;
+    size_t _index;
   };
 
 }
