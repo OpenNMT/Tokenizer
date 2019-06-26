@@ -281,7 +281,6 @@ namespace onmt
 
         line.append(prep_word);
       }
-
     }
 
     if (ranges && merge_ranges)
