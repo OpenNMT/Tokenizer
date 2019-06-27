@@ -138,7 +138,7 @@ Mark joints with joiner characters (mutually exclusive with `spacer_annotate`). 
 ```bash
 $ echo "Hello World!" | cli/tokenize --joiner_annotate
 Hello World ￭!
-$ echo "It costs £2,000" | cli/tokenize --mode aggressive --joiner_annotate
+$ echo "It costs £2,000." | cli/tokenize --mode aggressive --joiner_annotate
 It costs £￭ 2 ￭,￭ 000 ￭.
 ```
 ### `joiner` (string, default: `￭`)
