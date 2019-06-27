@@ -27,15 +27,15 @@ Defines the tokenization mode:
 * `none`: no tokenization is applied and the input is passed directly to the BPE or SentencePiece model if set.
 
 ```bash
-$ echo "It costs £2,000" | cli/tokenize --mode conservative
+$ echo "It costs £2,000." | cli/tokenize --mode conservative
 It costs £ 2,000 .
-$ echo "It costs £2,000" | cli/tokenize --mode aggressive
+$ echo "It costs £2,000." | cli/tokenize --mode aggressive
 It costs £ 2 , 000 .
-$ echo "It costs £2,000" | cli/tokenize --mode char
+$ echo "It costs £2,000." | cli/tokenize --mode char
 I t c o s t s £ 2 , 0 0 0 .
-$ echo "It costs £2,000" | cli/tokenize --mode space
+$ echo "It costs £2,000." | cli/tokenize --mode space
 It costs £2,000.
-$ echo "It costs £2,000" | cli/tokenize --mode none
+$ echo "It costs £2,000." | cli/tokenize --mode none
 It costs £2,000.
 ```
 
