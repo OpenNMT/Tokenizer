@@ -8,10 +8,10 @@ set -x
 ROOT_DIR=$PWD
 SENTENCEPIECE_VERSION=${SENTENCEPIECE_VERSION:-0.1.8}
 PYBIND11_VERSION=${PYBIND11_VERSION:-2.2.4}
+PATH=/opt/python/cp37-cp37m/bin:$PATH
 
 # Install cmake.
-/opt/python/cp37-cp37m/bin/pip install cmake
-CMAKE=/opt/python/cp37-cp37m/bin/cmake
+pip install cmake
 
 # Build SentencePiece.
 curl -L -o sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz -O https://github.com/google/sentencepiece/archive/v${SENTENCEPIECE_VERSION}.tar.gz
@@ -19,17 +19,15 @@ tar zxf sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz
 cd sentencepiece-${SENTENCEPIECE_VERSION}
 mkdir build
 cd build
-$CMAKE ..
-make
-make install
-cd ../..
+cmake ..
+make -j2 install
+cd $ROOT_DIR
 
 # Build Tokenizer.
 mkdir build
 cd build
-$CMAKE -DCMAKE_BUILD_TYPE=Release -DLIB_ONLY=ON ..
-make
-make install
+cmake -DCMAKE_BUILD_TYPE=Release -DLIB_ONLY=ON ..
+make -j2 install
 cd $ROOT_DIR
 
 cd bindings/python
@@ -42,6 +40,7 @@ done
 
 for wheel in dist/*
 do
+    auditwheel show $wheel
     auditwheel repair $wheel
 done
 
