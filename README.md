@@ -41,7 +41,7 @@ using namespace onmt;
 int main() {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate);
   std::vector<std::string> tokens;
-  tokenizer.tokenize("Hello world!", tokens);
+  tokenizer.tokenize("Hello World!", tokens);
 }
 ```
 
@@ -50,9 +50,9 @@ See the [Tokenizer class](include/onmt/Tokenizer.h) for more details.
 ### Command line clients
 
 ```bash
-$ echo "Hello World!" | cli/tokenize --joiner_annotate
+$ echo "Hello World!" | cli/tokenize --mode conservative --joiner_annotate
 Hello World ￭!
-$ echo "Hello World!" | cli/tokenize --joiner_annotate | cli/detokenize
+$ echo "Hello World!" | cli/tokenize --mode conservative --joiner_annotate | cli/detokenize
 Hello World!
 ```
 
