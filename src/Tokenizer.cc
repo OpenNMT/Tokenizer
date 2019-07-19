@@ -557,7 +557,7 @@ namespace onmt
             bool cur_letter = unicode::is_letter(v);
             bool cur_number = !cur_letter && unicode::is_number(v);
 
-            int alphabet = get_alphabet_id(v);
+            int alphabet = is_alphabet(v, prev_alphabet) ? prev_alphabet : get_alphabet_id(v);
             if (alphabets != nullptr)
             {
               if (alphabet >= 0 && cur_letter)

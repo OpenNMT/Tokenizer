@@ -152,10 +152,13 @@ namespace onmt
   const std::string& get_alphabet(unicode::code_point_t c);
   int get_alphabet_id(unicode::code_point_t c);
 
+  bool is_alphabet(unicode::code_point_t c, int alphabet);
+  bool is_alphabet(unicode::code_point_t c, Alphabet alphabet);
+
+  using UnicodeRange = std::pair<unicode::code_point_t, unicode::code_point_t>;
+
   // WARNING: keep this vector sorted in increasing order!
-  const std::vector<std::pair<
-                      std::pair<unicode::code_point_t, unicode::code_point_t>,
-                      Alphabet > > alphabet_ranges = {
+  const std::vector<std::pair<UnicodeRange, Alphabet>> alphabet_ranges = {
     {{0x0020, 0x007F}, Alphabet::Latin},
     {{0x00A0, 0x00FF}, Alphabet::Latin},
     {{0x0100, 0x017F}, Alphabet::Latin},
