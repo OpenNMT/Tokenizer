@@ -1,8 +1,10 @@
 #include "onmt/Tokenizer.h"
 
 #include <algorithm>
+#include <iomanip>
 #include <map>
 #include <mutex>
+#include <sstream>
 
 #include "onmt/Alphabet.h"
 #include "onmt/CaseModifier.h"
@@ -80,6 +82,14 @@ namespace onmt
         token.set_case_region_end(pair.second);
       }
     }
+  }
+
+  template <typename T>
+  std::string int_to_hex(T i, int width = 4)
+  {
+    std::stringstream stream;
+    stream << std::setfill('0') << std::setw(width) << std::hex << i;
+    return stream.str();
   }
 
   Tokenizer::Tokenizer(Mode mode,
@@ -493,9 +503,7 @@ namespace onmt
             state = State::Letter;
           } else {
             if (isSeparator && !_no_substitution) {
-              char buffer[10];
-              sprintf(buffer, "%04x", v);
-              token.append(protected_character + buffer);
+              token.append(protected_character + int_to_hex(v));
             } else {
               token.append(c);
             }
