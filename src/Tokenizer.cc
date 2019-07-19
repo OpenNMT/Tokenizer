@@ -550,14 +550,12 @@ namespace onmt
         }
         else
         {
-          bool cur_letter = false;
-          bool cur_number = false;
           // skip special characters and BOM
           if (v >= 32 && v != 0xFEFF)
           {
             const std::string& sub_c(_no_substitution ? c : normalize_character(c));
-            cur_letter = unicode::is_letter(v);
-            cur_number = unicode::is_number(v);
+            bool cur_letter = unicode::is_letter(v);
+            bool cur_number = !cur_letter && unicode::is_number(v);
 
             int alphabet = get_alphabet_id(v);
             if (alphabets != nullptr)
