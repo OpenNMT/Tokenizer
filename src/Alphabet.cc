@@ -3,6 +3,21 @@
 namespace onmt
 {
 
+  static std::vector<std::vector<UnicodeRange>> reverse_alphabet_ranges() {
+    std::vector<std::vector<UnicodeRange>> v;
+    v.resize(alphabet_map.size());
+    for (const auto& alphabet : alphabet_ranges)
+    {
+      const auto& range = alphabet.first;
+      const auto& id = alphabet.second;
+      v[static_cast<size_t>(id)].push_back(range);
+    }
+    return v;
+  }
+
+  static const auto alphabet_to_ranges = reverse_alphabet_ranges();
+
+
   bool alphabet_is_supported(const std::string& alphabet)
   {
     return alphabet_map.count(alphabet) > 0;
@@ -16,6 +31,25 @@ namespace onmt
   const std::string& id_to_alphabet(Alphabet alphabet)
   {
     return supported_alphabets[static_cast<size_t>(alphabet)];
+  }
+
+  bool is_alphabet(unicode::code_point_t c, int alphabet)
+  {
+    if (alphabet >= 0)
+    {
+      for (const auto& range : alphabet_to_ranges[alphabet])
+      {
+        if (c >= range.first && c <= range.second)
+          return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool is_alphabet(unicode::code_point_t c, Alphabet alphabet)
+  {
+    return is_alphabet(c, static_cast<int>(alphabet));
   }
 
   int get_alphabet_id(unicode::code_point_t c)

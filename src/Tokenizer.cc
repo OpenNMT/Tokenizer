@@ -1,8 +1,10 @@
 #include "onmt/Tokenizer.h"
 
 #include <algorithm>
+#include <iomanip>
 #include <map>
 #include <mutex>
+#include <sstream>
 
 #include "onmt/Alphabet.h"
 #include "onmt/CaseModifier.h"
@@ -17,16 +19,8 @@ namespace onmt
 
   const std::string Tokenizer::joiner_marker("￭");
   const std::string Tokenizer::spacer_marker("▁");
-  const std::map<std::string, std::string> substitutes = {
-                                                      { "▁", "_" },
-                                                      { "￭", "■" },
-                                                      { "￨", "│" },
-                                                      { "％", "%" },
-                                                      { "＃", "#" },
-                                                      { "：", ":" }};
   const std::string Tokenizer::ph_marker_open = "｟";
   const std::string Tokenizer::ph_marker_close = "｠";
-  const std::string protected_character = "％";
 
   const std::unordered_map<std::string, onmt::Tokenizer::Mode> Tokenizer::mapMode = {
     { "aggressive", onmt::Tokenizer::Mode::Aggressive },
@@ -45,6 +39,10 @@ namespace onmt
     Placeholder = 1 << 4
   };
 
+  static const std::string protected_character = "％";
+  static const std::vector<std::string> special_chars = {"▁", "￭", "￨", "％", "＃", "："};
+  static const std::vector<std::string> substitutes = {"_", "■", "│", "%", "#", ":"};
+
   static std::unordered_map<std::string, const SubwordEncoder*> cache;
   static std::mutex cache_mutex;
 
@@ -62,6 +60,13 @@ namespace onmt
     return encoder;
   }
 
+  static const std::string& normalize_character(const std::string& c) {
+    auto it = std::find(special_chars.begin(), special_chars.end(), c);
+    if (it != special_chars.end())
+      return substitutes[std::distance(special_chars.begin(), it)];
+    return c;
+  }
+
   static void annotate_case(std::vector<AnnotatedToken>& annotated_tokens)
   {
     for (auto& token : annotated_tokens)
@@ -77,6 +82,14 @@ namespace onmt
         token.set_case_region_end(pair.second);
       }
     }
+  }
+
+  template <typename T>
+  std::string int_to_hex(T i, int width = 4)
+  {
+    std::stringstream stream;
+    stream << std::setfill('0') << std::setw(width) << std::hex << i;
+    return stream.str();
   }
 
   Tokenizer::Tokenizer(Mode mode,
@@ -490,9 +503,7 @@ namespace onmt
             state = State::Letter;
           } else {
             if (isSeparator && !_no_substitution) {
-              char buffer[10];
-              sprintf(buffer, "%04x", v);
-              token.append(protected_character + buffer);
+              token.append(protected_character + int_to_hex(v));
             } else {
               token.append(c);
             }
@@ -547,17 +558,14 @@ namespace onmt
         }
         else
         {
-          bool cur_letter = false;
-          bool cur_number = false;
           // skip special characters and BOM
           if (v >= 32 && v != 0xFEFF)
           {
-            const std::string& sub_c(!_no_substitution && substitutes.find(c) != substitutes.end() ?
-                                     substitutes.at(c) : c);
-            cur_letter = unicode::is_letter(v);
-            cur_number = unicode::is_number(v);
+            const std::string& sub_c(_no_substitution ? c : normalize_character(c));
+            bool cur_letter = unicode::is_letter(v);
+            bool cur_number = !cur_letter && unicode::is_number(v);
 
-            int alphabet = get_alphabet_id(v);
+            int alphabet = is_alphabet(v, prev_alphabet) ? prev_alphabet : get_alphabet_id(v);
             if (alphabets != nullptr)
             {
               if (alphabet >= 0 && cur_letter)
