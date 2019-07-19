@@ -23,6 +23,17 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.14.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.14.0) (2019-07-19)
+
+### New features
+
+* [C++] Method to detokenize from `AnnotatedToken`s
+
+### Fixes and improvements
+
+* [Python] Release the GIL in time consuming functions (e.g. file tokenization, subword learning, etc.)
+* Performance improvements
+
 ## [v1.13.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.13.0) (2019-06-12)
 
 ### New features
