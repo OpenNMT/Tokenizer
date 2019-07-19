@@ -8,7 +8,16 @@ set -x
 ROOT_DIR=$PWD
 SENTENCEPIECE_VERSION=${SENTENCEPIECE_VERSION:-0.1.8}
 PYBIND11_VERSION=${PYBIND11_VERSION:-2.2.4}
+ICU_VERSION=${ICU_VERSION:-64.2}
 PATH=/opt/python/cp37-cp37m/bin:$PATH
+
+# Install ICU.
+curl -L -O https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/icu4c-${ICU_VERSION/./_}-src.tgz
+tar xf icu4c-*-src.tgz
+cd icu/source
+CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./configure --disable-shared --enable-static
+make -j2 install
+cd $ROOT_DIR
 
 # Install cmake.
 pip install cmake
@@ -26,7 +35,7 @@ cd $ROOT_DIR
 # Build Tokenizer.
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DLIB_ONLY=ON ..
+cmake -DCMAKE_BUILD_TYPE=Release -DLIB_ONLY=ON -DWITH_ICU=ON ..
 make -j2 install
 cd $ROOT_DIR
 
