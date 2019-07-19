@@ -17,16 +17,8 @@ namespace onmt
 
   const std::string Tokenizer::joiner_marker("￭");
   const std::string Tokenizer::spacer_marker("▁");
-  const std::map<std::string, std::string> substitutes = {
-                                                      { "▁", "_" },
-                                                      { "￭", "■" },
-                                                      { "￨", "│" },
-                                                      { "％", "%" },
-                                                      { "＃", "#" },
-                                                      { "：", ":" }};
   const std::string Tokenizer::ph_marker_open = "｟";
   const std::string Tokenizer::ph_marker_close = "｠";
-  const std::string protected_character = "％";
 
   const std::unordered_map<std::string, onmt::Tokenizer::Mode> Tokenizer::mapMode = {
     { "aggressive", onmt::Tokenizer::Mode::Aggressive },
@@ -45,6 +37,10 @@ namespace onmt
     Placeholder = 1 << 4
   };
 
+  static const std::string protected_character = "％";
+  static const std::vector<std::string> special_chars = {"▁", "￭", "￨", "％", "＃", "："};
+  static const std::vector<std::string> substitutes = {"_", "■", "│", "%", "#", ":"};
+
   static std::unordered_map<std::string, const SubwordEncoder*> cache;
   static std::mutex cache_mutex;
 
@@ -60,6 +56,13 @@ namespace onmt
     T* encoder = new T(model_path);
     cache[model_path] = encoder;
     return encoder;
+  }
+
+  static const std::string& normalize_character(const std::string& c) {
+    auto it = std::find(special_chars.begin(), special_chars.end(), c);
+    if (it != special_chars.end())
+      return substitutes[std::distance(special_chars.begin(), it)];
+    return c;
   }
 
   static void annotate_case(std::vector<AnnotatedToken>& annotated_tokens)
@@ -552,8 +555,7 @@ namespace onmt
           // skip special characters and BOM
           if (v >= 32 && v != 0xFEFF)
           {
-            const std::string& sub_c(!_no_substitution && substitutes.find(c) != substitutes.end() ?
-                                     substitutes.at(c) : c);
+            const std::string& sub_c(_no_substitution ? c : normalize_character(c));
             cur_letter = unicode::is_letter(v);
             cur_number = unicode::is_number(v);
 
