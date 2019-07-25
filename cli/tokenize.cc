@@ -30,14 +30,16 @@ int main(int argc, char* argv[])
     ("segment_numbers", po::bool_switch()->default_value(false), "Segment numbers into single digits")
     ("segment_alphabet", po::value<std::string>()->default_value(""), "comma-separated list of alphabets on which to segment all letters.")
     ("segment_alphabet_change", po::bool_switch()->default_value(false), "Segment if the alphabet changes between 2 letters.")
-    ("bpe_model,bpe", po::value<std::string>()->default_value(""), "path to the BPE model")
+    ("bpe_model_path", po::value<std::string>(), "Path to the BPE model")
+    ("bpe_model,b", po::value<std::string>()->default_value(""), "Aliases for --bpe_model_path")
     ("bpe_vocab", po::value<std::string>()->default_value(""), "Deprecated, see --vocabulary.")
     ("bpe_vocab_threshold", po::value<int>()->default_value(50), "Depracted, see --vocabulary_threshold.")
     ("vocabulary", po::value<std::string>()->default_value(""), "Vocabulary file. If provided, sentences are encoded to subword present in this vocabulary.")
     ("vocabulary_threshold", po::value<int>()->default_value(0), "Vocabulary threshold. If vocabulary is provided, any word with frequency < threshold will be treated as OOV.")
     ("num_threads", po::value<int>()->default_value(1), "Number of threads to use.")
 #ifdef WITH_SP
-    ("sp_model,sp", po::value<std::string>()->default_value(""), "path to the SentencePiece model")
+    ("sp_model_path", po::value<std::string>(), "Path to the SentencePiece model")
+    ("sp_model,s", po::value<std::string>()->default_value(""), "Aliases for --sp_model_path")
     ("sp_nbest_size", po::value<int>()->default_value(0), "number of candidates for the SentencePiece sampling API")
     ("sp_alpha", po::value<float>()->default_value(0.1), "smoothing parameter for the SentencePiece sampling API")
 #endif
@@ -92,17 +94,21 @@ int main(int argc, char* argv[])
   }
 
   std::unique_ptr<onmt::SubwordEncoder> subword_encoder;
-  if (!vm["bpe_model"].as<std::string>().empty())
-  {
-    subword_encoder.reset(new onmt::BPE(vm["bpe_model"].as<std::string>(),
-                                        vm["joiner"].as<std::string>()));
-  }
+  std::string bpe_model = (vm.count("bpe_model_path")
+                           ? vm["bpe_model_path"].as<std::string>()
+                           : vm["bpe_model"].as<std::string>());
+  if (!bpe_model.empty())
+    subword_encoder.reset(new onmt::BPE(bpe_model, vm["joiner"].as<std::string>()));
 #ifdef WITH_SP
-  else if (!vm["sp_model"].as<std::string>().empty())
+  else
   {
-    subword_encoder.reset(new onmt::SentencePiece(vm["sp_model"].as<std::string>(),
-                                                  vm["sp_nbest_size"].as<int>(),
-                                                  vm["sp_alpha"].as<float>()));
+    std::string sp_model = (vm.count("sp_model_path")
+                            ? vm["sp_model_path"].as<std::string>()
+                            : vm["sp_model"].as<std::string>());
+    if (!sp_model.empty())
+      subword_encoder.reset(new onmt::SentencePiece(sp_model,
+                                                    vm["sp_nbest_size"].as<int>(),
+                                                    vm["sp_alpha"].as<float>()));
   }
 #endif
 
