@@ -69,8 +69,13 @@ learner = pyonmttok.SentencePieceLearner(vocab_size=32000, character_coverage=0.
 **2\. Feed some raw data:**
 
 ```python
-learner.ingest("Hello world!")  # Feed a single sentence.
-learner.ingest_file("/data/train.en")
+# Feed sentence by sentence:
+learner.ingest("Hello world!")
+learner.ingest("How are you?")
+
+# or feed text files:
+learner.ingest_file("/data/train1.en")
+learner.ingest_file("/data/train2.en")
 ```
 
 **3\. Start the learning process:**
