@@ -139,7 +139,7 @@ public:
     if (segment_alphabet_change)
       flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
 
-    auto tokenizer = new onmt::Tokenizer(onmt::Tokenizer::mapMode.at(mode),
+    auto tokenizer = new onmt::Tokenizer(onmt::Tokenizer::str_to_mode(mode),
                                          subword_encoder,
                                          flags,
                                          joiner);
