@@ -22,15 +22,15 @@ namespace onmt
   const std::string Tokenizer::ph_marker_open = "｟";
   const std::string Tokenizer::ph_marker_close = "｠";
 
-  const std::unordered_map<std::string, onmt::Tokenizer::Mode> Tokenizer::mapMode = {
-    { "aggressive", onmt::Tokenizer::Mode::Aggressive },
-    { "conservative", onmt::Tokenizer::Mode::Conservative },
-    { "space", onmt::Tokenizer::Mode::Space },
-    { "char", onmt::Tokenizer::Mode::Char },
-    { "none", onmt::Tokenizer::Mode::None }
+  const std::unordered_map<std::string, Tokenizer::Mode> Tokenizer::mapMode = {
+    { "aggressive", Tokenizer::Mode::Aggressive },
+    { "conservative", Tokenizer::Mode::Conservative },
+    { "space", Tokenizer::Mode::Space },
+    { "char", Tokenizer::Mode::Char },
+    { "none", Tokenizer::Mode::None }
   };
 
-  onmt::Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
+  Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
     auto it = mapMode.find(mode);
     if (it == mapMode.end())
       throw std::invalid_argument("invalid tokenization mode: " + mode);
