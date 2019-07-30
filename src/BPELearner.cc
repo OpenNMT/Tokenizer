@@ -26,18 +26,18 @@ namespace onmt
   typedef std::pair<std::string, std::string> bigram;
   typedef std::vector<std::string> sequence;
 
-  std::string _s(const sequence &s) {
-    std::string t;
-    for(const auto& w: s)
-      t += ", u'" + w + "'";
-    return "(" + t.substr(2) + ")";
-  }
-
   BPELearner::BPELearner(bool verbose,
-                         int symbols, int min_frequency, bool dict_input, bool total_symbols):
-              SubwordLearner(verbose),
-              _symbols(symbols), _min_frequency(min_frequency),
-              _dict_input(dict_input), _total_symbols(total_symbols) {
+                         int symbols,
+                         int min_frequency,
+                         bool dict_input,
+                         bool total_symbols)
+    : SubwordLearner(verbose)
+    , _symbols(symbols)
+    , _min_frequency(min_frequency)
+    , _dict_input(dict_input)
+    , _total_symbols(total_symbols)
+    , _default_tokenizer(new Tokenizer(onmt::Tokenizer::Mode::Space))
+  {
   }
 
   void BPELearner::ingest(std::istream& is, const Tokenizer* tokenizer) {

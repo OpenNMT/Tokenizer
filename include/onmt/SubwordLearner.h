@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -20,7 +19,6 @@ namespace onmt
     virtual void learn(std::ostream& out, const char* description = nullptr, bool verbose = false) = 0;
   protected:
     bool _verbose;
-    std::unique_ptr<const Tokenizer> _default_tokenizer;
   };
 
 }

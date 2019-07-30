@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -21,6 +22,7 @@ namespace onmt
     bool _dict_input;
     bool _total_symbols;
     std::unordered_map<std::string, int> _vocab;
+    std::unique_ptr<const Tokenizer> _default_tokenizer;
   };
 
 }
