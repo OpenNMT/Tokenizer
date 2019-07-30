@@ -17,6 +17,10 @@ def test_simple():
     detok = tokenizer.detokenize(tokens)
     assert detok == text
 
+def test_invalid_mode():
+    with pytest.raises(ValueError):
+        pyonmttok.Tokenizer("xxx")
+
 def test_file(tmpdir):
     input_path = str(tmpdir.join("input.txt"))
     output_path = str(tmpdir.join("output.txt"))

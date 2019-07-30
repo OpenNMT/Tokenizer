@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
   if (subword_encoder && !vocabulary.empty())
     subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);
 
-  onmt::Tokenizer tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()),
+  onmt::Tokenizer tokenizer(onmt::Tokenizer::str_to_mode(vm["mode"].as<std::string>()),
                             subword_encoder.get(),
                             flags,
                             vm["joiner"].as<std::string>());

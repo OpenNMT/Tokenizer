@@ -50,6 +50,7 @@ namespace onmt
     static const std::string ph_marker_close;
 
     static const std::unordered_map<std::string, onmt::Tokenizer::Mode> mapMode;
+    static onmt::Tokenizer::Mode str_to_mode(const std::string& mode);
 
     Tokenizer(Mode mode,
               int flags = Flags::None,

@@ -30,6 +30,13 @@ namespace onmt
     { "none", onmt::Tokenizer::Mode::None }
   };
 
+  onmt::Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
+    auto it = mapMode.find(mode);
+    if (it == mapMode.end())
+      throw std::invalid_argument("invalid tokenization mode: " + mode);
+    return it->second;
+  }
+
   enum State
   {
     Letter = 1 << 0,

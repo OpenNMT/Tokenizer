@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
                vm["segment_alphabet"].as<std::string>(),
                boost::is_any_of(","));
 
-  onmt::Tokenizer tokenizer(onmt::Tokenizer::mapMode.at(vm["mode"].as<std::string>()), flags);
+  onmt::Tokenizer tokenizer(onmt::Tokenizer::str_to_mode(vm["mode"].as<std::string>()), flags);
 
   std::unordered_map<std::string, std::string> subword_options;
   onmt::SubwordLearner *learner;
