@@ -2,14 +2,14 @@
 
 # Tokenizer
 
-Tokenizer is a generic and customizable text tokenization library for C++ and Python with minimal dependencies.
+Tokenizer is a fast, generic, and customizable text tokenization library for C++ and Python with minimal dependencies.
 
 ## Overview
 
-By default, the Tokenizer applies a simple tokenization based on unicode types. It can be customized in several ways:
+By default, the Tokenizer applies a simple tokenization based on Unicode types. It can be customized in several ways:
 
-* **Customizable reversible tokenization**<br/>Marking joints or spaces by annotating tokens or injecting modifier characters.
-* **Subword tokenization**<br/>Support for BPE and SentencePiece models.
+* **Reversible tokenization**<br/>Marking joints or spaces by annotating tokens or injecting modifier characters.
+* **Subword tokenization**<br/>Support for training and using BPE and SentencePiece models.
 * **Advanced text segmentation**<br/>Split digits, segment on case or alphabet change, segment each character of selected alphabets, etc.
 * **Case management**<br/>Lowercase text and return case information as a separate feature or inject case modifier tokens.
 * **Protected sequences**<br/>Sequences can be protected against tokenization with the special characters "｟" and "｠".
