@@ -69,6 +69,19 @@ namespace onmt
 
     code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l)
     {
+#ifdef WITH_ICU
+      UChar32 c;
+      int32_t offset = 0;
+      U8_NEXT(s, offset, -1, c);
+      if (c < 0)
+      {
+        l = 0;
+        c = 0;
+      }
+      else
+        l = offset;
+      return c;
+#else
       if (*s == 0 || *s >= 0xfe)
         return 0;
       if (*s <= 0x7f)
@@ -100,6 +113,7 @@ namespace onmt
       }
 
       return 0; // Incorrect unicode
+#endif
     }
 
     std::vector<std::string> split_utf8(const std::string& str, const std::string& sep)
