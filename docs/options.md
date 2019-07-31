@@ -109,7 +109,9 @@ Path to the BPE model.
 
 ### `sp_model_path` (string, default: `""`)
 
-Path to the SentencePiece model. To replicate `spm_encode`, the tokenization mode should be `none`.
+Path to the SentencePiece model.
+
+To replicate `spm_encode`, the tokenization mode should be `none`. If another mode is selected, SentencePiece will be used as a subtokenizer and receive tokens as inputs.
 
 ### `sp_nbest_size` (int, default: `0`)
 
