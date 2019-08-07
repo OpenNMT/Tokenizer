@@ -21,6 +21,14 @@ def test_invalid_mode():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("xxx")
 
+def test_invalid_sentencepiece_model():
+    with pytest.raises(ValueError):
+        pyonmttok.Tokenizer("none", sp_model_path="xxx")
+
+def test_invalid_bpe_model():
+    with pytest.raises(ValueError):
+        pyonmttok.Tokenizer("conservative", bpe_model_path="xxx")
+
 def test_file(tmpdir):
     input_path = str(tmpdir.join("input.txt"))
     output_path = str(tmpdir.join("output.txt"))
