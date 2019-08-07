@@ -35,6 +35,10 @@ def test_invalid_annotation():
             "conservative",
             joiner_annotate=True,
             spacer_annotate=True)
+    with pytest.raises(ValueError):
+        pyonmttok.Tokenizer("conservative", joiner_new=True)
+    with pytest.raises(ValueError):
+        pyonmttok.Tokenizer("conservative", spacer_new=True)
 
 def test_file(tmpdir):
     input_path = str(tmpdir.join("input.txt"))
