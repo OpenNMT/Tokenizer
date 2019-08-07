@@ -11,12 +11,19 @@ namespace onmt
   {
   };
 
+  static void load_model(SentencePieceProcessor& processor, const std::string& model_path)
+  {
+    auto status = processor.Load(model_path);
+    if (!status.ok())
+      throw std::invalid_argument("Unable to open SentencePiece model " + model_path);
+  }
+
   SentencePiece::SentencePiece(const std::string& model_path)
     : _processor(new SentencePieceProcessor())
     , _nbest_size(0)
     , _alpha(0.0)
   {
-    _processor->Load(model_path);
+    load_model(*_processor, model_path);
   }
 
   SentencePiece::SentencePiece(const std::string& model_path, int nbest_size, float alpha)
@@ -24,7 +31,7 @@ namespace onmt
     , _nbest_size(nbest_size)
     , _alpha(alpha)
   {
-    _processor->Load(model_path);
+    load_model(*_processor, model_path);
   }
 
   SentencePiece::~SentencePiece()
