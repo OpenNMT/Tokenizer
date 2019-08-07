@@ -29,6 +29,17 @@ def test_invalid_bpe_model():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("conservative", bpe_model_path="xxx")
 
+def test_invalid_annotation():
+    with pytest.raises(ValueError):
+        pyonmttok.Tokenizer(
+            "conservative",
+            joiner_annotate=True,
+            spacer_annotate=True)
+    with pytest.raises(ValueError):
+        pyonmttok.Tokenizer("conservative", joiner_new=True)
+    with pytest.raises(ValueError):
+        pyonmttok.Tokenizer("conservative", spacer_new=True)
+
 def test_file(tmpdir):
     input_path = str(tmpdir.join("input.txt"))
     output_path = str(tmpdir.join("output.txt"))

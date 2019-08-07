@@ -42,7 +42,9 @@ namespace onmt
   void SentencePiece::set_vocabulary(const std::vector<std::string>& vocabulary)
   {
 #ifdef SP_HAS_VOCAB_RESTRICTION
-    _processor->SetVocabulary(vocabulary);
+    auto status = _processor->SetVocabulary(vocabulary);
+    if (!status.ok())
+      throw std::invalid_argument(status.ToString());
 #else
     throw std::runtime_error("The project was built against a SentencePiece version "
                              "that does not support vocabulary restriction");

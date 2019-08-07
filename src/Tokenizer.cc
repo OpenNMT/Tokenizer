@@ -176,6 +176,13 @@ namespace onmt
     _spacer_new = flags & Flags::SpacerNew;
     _preserve_placeholders = flags & Flags::PreservePlaceholders;
     _preserve_segmented_tokens = flags & Flags::PreserveSegmentedTokens;
+
+    if (_joiner_annotate && _spacer_annotate)
+      throw std::invalid_argument("joiner_annotate and spacer_annotate can't be set at the same time");
+    if (_spacer_new && !_spacer_annotate)
+      throw std::invalid_argument("spacer_new requires spacer_annotate");
+    if (_joiner_new && !_joiner_annotate)
+      throw std::invalid_argument("joiner_new requires joiner_annotate");
   }
 
   Tokenizer::~Tokenizer()
