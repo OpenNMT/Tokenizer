@@ -286,20 +286,20 @@ namespace onmt
           || _find_codepoint(u, unidata_LetterOther))
       {
         tl = _letter_other;
-        return 1;
+        return true;
       }
       if (_find_codepoint(u, unidata_LetterLower))
       {
         tl = _letter_lower;
-        return 1;
+        return true;
       }
       if (_find_codepoint(u, unidata_LetterUpper))
       {
         tl = _letter_upper;
-        return 1;
+        return true;
       }
 
-      return 0;
+      return false;
 #endif
     }
 
@@ -354,7 +354,7 @@ namespace onmt
         return _letter_upper;
       return _letter_other;
 #else
-      _type_letter type;
+      _type_letter type = _letter_other;
       is_letter(u, type);
       return type;
 #endif
