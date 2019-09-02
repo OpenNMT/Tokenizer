@@ -176,6 +176,7 @@ namespace onmt
     _spacer_new = flags & Flags::SpacerNew;
     _preserve_placeholders = flags & Flags::PreservePlaceholders;
     _preserve_segmented_tokens = flags & Flags::PreserveSegmentedTokens;
+    _support_prior_joiners = flags & Flags::SupportPriorJoiners;
 
     if (_joiner_annotate && _spacer_annotate)
       throw std::invalid_argument("joiner_annotate and spacer_annotate can't be set at the same time");
@@ -468,14 +469,46 @@ namespace onmt
         return;
 
       std::vector<std::string> chunks = unicode::split_utf8(text, " ");
-      for (const auto& chunk: chunks)
+      for (auto& chunk: chunks)
       {
         if (chunk.empty())
           continue;
 
+        bool left_joiner = false;
+        bool right_joiner = false;
+        if (_support_prior_joiners) {
+          /* check if prior joiner */
+          if (chunk.length() >= Tokenizer::joiner_marker.length() &&
+              chunk.substr(0, Tokenizer::joiner_marker.length()) == Tokenizer::joiner_marker) {
+            left_joiner = true;
+            chunk = chunk.substr(Tokenizer::joiner_marker.length());
+          }
+
+          if (chunk.length() >= Tokenizer::joiner_marker.length() &&
+              chunk.substr(chunk.length()-Tokenizer::joiner_marker.length()) == Tokenizer::joiner_marker) {
+            right_joiner = true;
+            chunk.erase(chunk.length()-Tokenizer::joiner_marker.length());
+          }
+        }
+
+        if (!_no_substitution)
+          for(size_t i=0; i<special_chars.size(); i++) {
+            const std::string &special_char = special_chars[i];
+            size_t p = 0;
+            while ((p=chunk.find(special_char, p)) != std::string::npos)
+              chunk.replace(p, special_char.length(), substitutes[i]);
+          }
+
         std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
 
+        size_t p = annotated_tokens.size();
+
         _tokenizeByPlaceholder(fields[0], annotated_tokens, _preserve_placeholders);
+
+        if (left_joiner)
+          annotated_tokens[p].join_left();
+        if (right_joiner)
+          annotated_tokens[p].join_right();
 
         for (size_t i = 1; i < fields.size(); ++i)
           annotated_tokens.back().insert_feature(fields[i]);

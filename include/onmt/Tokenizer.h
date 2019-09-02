@@ -42,6 +42,7 @@ namespace onmt
       SpacerNew = 1 << 13,
       PreserveSegmentedTokens = 1 << 14,
       CaseMarkup = 1 << 15,
+      SupportPriorJoiners = 1 << 16
     };
 
     static const std::string joiner_marker;
@@ -136,6 +137,7 @@ namespace onmt
     bool _spacer_new;
     bool _preserve_placeholders;
     bool _preserve_segmented_tokens;
+    bool _support_prior_joiners;
 
     const SubwordEncoder* _subword_encoder;
     std::string _joiner;

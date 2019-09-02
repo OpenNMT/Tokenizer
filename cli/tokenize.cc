@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
     ("sp_nbest_size", po::value<int>()->default_value(0), "number of candidates for the SentencePiece sampling API")
     ("sp_alpha", po::value<float>()->default_value(0.1), "smoothing parameter for the SentencePiece sampling API")
 #endif
+    ("support_prior_joiners", po::bool_switch()->default_value(false), "if text has existing joiner marks, keep them")
     ;
 
   po::variables_map vm;
@@ -111,6 +112,9 @@ int main(int argc, char* argv[])
                                                     vm["sp_alpha"].as<float>()));
   }
 #endif
+
+  if (vm["support_prior_joiners"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::SupportPriorJoiners;
 
   if (subword_encoder && !vocabulary.empty())
     subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);
