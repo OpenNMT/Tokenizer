@@ -530,16 +530,35 @@ namespace onmt
 
       for (size_t i = 0; i < chars.size(); ++i)
       {
-        const std::string& c = chars[i];
-        unicode::code_point_t v = code_points_main[i];
-        unicode::code_point_t next_v = i + 1 < code_points_main.size() ? code_points_main[i + 1] : 0;
-        bool isSeparator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
-
         const bool letter = state & State::Letter;
         const bool space = state & State::Space;
         const bool number = state & State::Number;
         const bool other = state & State::Other;
         const bool placeholder = state & State::Placeholder;
+
+        const std::string& c = chars[i];
+        if (_support_prior_joiners && c == Tokenizer::joiner_marker) {
+          /* it is either after a space, in that case it annotates the following word,
+             or a closed token (other & space), or a unclosed token - in that case it is a right joiner.
+            */
+          if (other) {
+            annotated_tokens.back().join_right();
+            continue;
+          }
+          else if (space) {
+            token.join_left();
+            continue;
+          } else {
+            token.join_right();
+            annotated_tokens.emplace_back(std::move(token));
+            token.clear();
+            state = State::Space;
+            continue;
+          }
+        }
+        unicode::code_point_t v = code_points_main[i];
+        unicode::code_point_t next_v = i + 1 < code_points_main.size() ? code_points_main[i + 1] : 0;
+        bool isSeparator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
 
         if (placeholder) {
           if (c == Tokenizer::ph_marker_close) {
