@@ -241,3 +241,13 @@ $ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_chan
     --joiner_annotate --preserve_segmented_tokens
 測 ￭ 試 ￭ abc
 ```
+
+### `support_prior_joiners`(boolean, default: `false`)
+
+If the input already has joiners, support these joiners as pre-tokenization marks.
+
+```bash
+$ echo "pre￭ tokenization." | cli/tokenize --joiner_annotate --support_prior_joiners \
+   --mode aggressive
+pre￭ tokenization ￭.
+```
