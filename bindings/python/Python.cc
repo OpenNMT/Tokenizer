@@ -94,6 +94,7 @@ public:
                    bool segment_case,
                    bool segment_numbers,
                    bool segment_alphabet_change,
+                   bool support_prior_joiners,
                    py::list segment_alphabet)
   {
     onmt::SubwordEncoder* subword_encoder = nullptr;
@@ -138,6 +139,8 @@ public:
       flags |= onmt::Tokenizer::Flags::SegmentNumbers;
     if (segment_alphabet_change)
       flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
+    if (support_prior_joiners)
+      flags |= onmt::Tokenizer::Flags::SupportPriorJoiners;
 
     auto tokenizer = new onmt::Tokenizer(onmt::Tokenizer::str_to_mode(mode),
                                          subword_encoder,
