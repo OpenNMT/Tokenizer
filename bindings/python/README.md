@@ -32,6 +32,7 @@ tokenizer = pyonmttok.Tokenizer(
     segment_case=False,
     segment_numbers=False,
     segment_alphabet_change=False,
+    support_prior_joiners=False,
     segment_alphabet=[])
 
 tokens, features = tokenizer.tokenize(text: str)
