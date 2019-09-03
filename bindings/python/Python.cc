@@ -361,7 +361,7 @@ private:
 PYBIND11_MODULE(pyonmttok, m)
 {
   py::class_<TokenizerWrapper>(m, "Tokenizer")
-    .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
+    .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
          py::arg("mode"),
          py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
