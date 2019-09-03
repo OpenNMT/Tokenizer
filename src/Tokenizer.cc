@@ -478,16 +478,14 @@ namespace onmt
         bool right_joiner = false;
         if (_support_prior_joiners) {
           /* check if prior joiner */
-          if (chunk.length() >= Tokenizer::joiner_marker.length() &&
-              chunk.substr(0, Tokenizer::joiner_marker.length()) == Tokenizer::joiner_marker) {
+          if (has_left_join(chunk)) {
             left_joiner = true;
-            chunk = chunk.substr(Tokenizer::joiner_marker.length());
+            chunk = chunk.substr(_joiner.length());
           }
 
-          if (chunk.length() >= Tokenizer::joiner_marker.length() &&
-              chunk.substr(chunk.length()-Tokenizer::joiner_marker.length()) == Tokenizer::joiner_marker) {
+          if (has_right_join(chunk)) {
             right_joiner = true;
-            chunk.erase(chunk.length()-Tokenizer::joiner_marker.length());
+            chunk.erase(chunk.length()-_joiner.length());
           }
         }
 
@@ -505,14 +503,17 @@ namespace onmt
 
         _tokenizeByPlaceholder(fields[0], annotated_tokens, _preserve_placeholders);
 
+        /* first token token added `p` is taking the left joiner mark */ 
         if (left_joiner)
           annotated_tokens[p].join_left();
+        /* last token token added is taking the right joiner mark */ 
         if (right_joiner)
-          annotated_tokens[p].join_right();
+          annotated_tokens.back().join_right();
 
         for (size_t i = 1; i < fields.size(); ++i)
           annotated_tokens.back().insert_feature(fields[i]);
       }
+
     }
     else {
       std::vector<std::string> chars;
@@ -537,7 +538,7 @@ namespace onmt
         const bool placeholder = state & State::Placeholder;
 
         const std::string& c = chars[i];
-        if (_support_prior_joiners && c == Tokenizer::joiner_marker) {
+        if (_support_prior_joiners && c == _joiner) {
           /* it is either after a space, in that case it annotates the following word,
              or a closed token (other & space), or a unclosed token - in that case it is a right joiner.
             */

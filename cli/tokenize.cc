@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
     ("segment_numbers", po::bool_switch()->default_value(false), "Segment numbers into single digits")
     ("segment_alphabet", po::value<std::string>()->default_value(""), "comma-separated list of alphabets on which to segment all letters.")
     ("segment_alphabet_change", po::bool_switch()->default_value(false), "Segment if the alphabet changes between 2 letters.")
+    ("support_prior_joiners", po::bool_switch()->default_value(false), "if text has existing joiner marks, keep them")
     ("bpe_model_path", po::value<std::string>(), "Path to the BPE model")
     ("bpe_model,b", po::value<std::string>()->default_value(""), "Aliases for --bpe_model_path")
     ("bpe_vocab", po::value<std::string>()->default_value(""), "Deprecated, see --vocabulary.")
@@ -43,7 +44,6 @@ int main(int argc, char* argv[])
     ("sp_nbest_size", po::value<int>()->default_value(0), "number of candidates for the SentencePiece sampling API")
     ("sp_alpha", po::value<float>()->default_value(0.1), "smoothing parameter for the SentencePiece sampling API")
 #endif
-    ("support_prior_joiners", po::bool_switch()->default_value(false), "if text has existing joiner marks, keep them")
     ;
 
   po::variables_map vm;
@@ -79,6 +79,8 @@ int main(int argc, char* argv[])
     flags |= onmt::Tokenizer::Flags::SegmentNumbers;
   if (vm["segment_alphabet_change"].as<bool>())
     flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
+  if (vm["support_prior_joiners"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::SupportPriorJoiners;
 
   std::vector<std::string> alphabets_to_segment;
   boost::split(alphabets_to_segment,
@@ -112,9 +114,6 @@ int main(int argc, char* argv[])
                                                     vm["sp_alpha"].as<float>()));
   }
 #endif
-
-  if (vm["support_prior_joiners"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SupportPriorJoiners;
 
   if (subword_encoder && !vocabulary.empty())
     subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);

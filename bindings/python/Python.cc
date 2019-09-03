@@ -384,6 +384,7 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("segment_case")=false,
          py::arg("segment_numbers")=false,
          py::arg("segment_alphabet_change")=false,
+         py::arg("support_prior_joiners")=false,
          py::arg("segment_alphabet")=py::list())
     .def("tokenize", &TokenizerWrapper::tokenize, py::arg("text"))
     .def("tokenize_file", &TokenizerWrapper::tokenize_file,
