@@ -94,6 +94,7 @@ public:
                    bool segment_case,
                    bool segment_numbers,
                    bool segment_alphabet_change,
+                   bool support_prior_joiners,
                    py::list segment_alphabet)
   {
     onmt::SubwordEncoder* subword_encoder = nullptr;
@@ -138,6 +139,8 @@ public:
       flags |= onmt::Tokenizer::Flags::SegmentNumbers;
     if (segment_alphabet_change)
       flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
+    if (support_prior_joiners)
+      flags |= onmt::Tokenizer::Flags::SupportPriorJoiners;
 
     auto tokenizer = new onmt::Tokenizer(onmt::Tokenizer::str_to_mode(mode),
                                          subword_encoder,
@@ -358,7 +361,7 @@ private:
 PYBIND11_MODULE(pyonmttok, m)
 {
   py::class_<TokenizerWrapper>(m, "Tokenizer")
-    .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
+    .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
          py::arg("mode"),
          py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
@@ -381,6 +384,7 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("segment_case")=false,
          py::arg("segment_numbers")=false,
          py::arg("segment_alphabet_change")=false,
+         py::arg("support_prior_joiners")=false,
          py::arg("segment_alphabet")=py::list())
     .def("tokenize", &TokenizerWrapper::tokenize, py::arg("text"))
     .def("tokenize_file", &TokenizerWrapper::tokenize_file,

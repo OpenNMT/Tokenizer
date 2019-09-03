@@ -176,6 +176,7 @@ namespace onmt
     _spacer_new = flags & Flags::SpacerNew;
     _preserve_placeholders = flags & Flags::PreservePlaceholders;
     _preserve_segmented_tokens = flags & Flags::PreserveSegmentedTokens;
+    _support_prior_joiners = flags & Flags::SupportPriorJoiners;
 
     if (_joiner_annotate && _spacer_annotate)
       throw std::invalid_argument("joiner_annotate and spacer_annotate can't be set at the same time");
@@ -420,18 +421,23 @@ namespace onmt
   static void _tokenizeByPlaceholder(const std::string &text,
                                      std::vector<AnnotatedToken> &annotated_tokens,
                                      bool preserve_placeholders) {
+    size_t initial_tokens_count = annotated_tokens.size();
     size_t q = 0;
     while (1) {
       if (q != 0 && text[q] != ' ')
         annotated_tokens.back().join_right();
       size_t p = text.find(Tokenizer::ph_marker_open, q);
       if (p == std::string::npos) {
-        annotated_tokens.emplace_back(text.substr(q));
+        /* do not add empty token at the end */
+        if (q != text.size())
+          annotated_tokens.emplace_back(text.substr(q));
         break;
       }
       if (p != q)
         annotated_tokens.emplace_back(text.substr(q, p-q));
-      if (annotated_tokens.size() && !_endsWithSpace(annotated_tokens.back().str()))
+      /* do not add joiner on tokens analyzed before this call */
+      if (annotated_tokens.size() > initial_tokens_count
+          && !_endsWithSpace(annotated_tokens.back().str()))
         annotated_tokens.back().join_right();
       q = text.find(Tokenizer::ph_marker_close, p);
       if (q == std::string::npos) {
@@ -468,14 +474,46 @@ namespace onmt
         return;
 
       std::vector<std::string> chunks = unicode::split_utf8(text, " ");
-      for (const auto& chunk: chunks)
+      for (auto& chunk: chunks)
       {
         if (chunk.empty())
           continue;
 
+        bool left_joiner = false;
+        bool right_joiner = false;
+        if (_support_prior_joiners) {
+          /* check if prior joiner */
+          if (has_left_join(chunk)) {
+            left_joiner = true;
+            chunk = chunk.substr(_joiner.length());
+          }
+
+          if (has_right_join(chunk)) {
+            right_joiner = true;
+            chunk.erase(chunk.length()-_joiner.length());
+          }
+        }
+
+        if (!_no_substitution)
+          for(size_t i=0; i<special_chars.size(); i++) {
+            const std::string &special_char = special_chars[i];
+            size_t p = 0;
+            while ((p=chunk.find(special_char, p)) != std::string::npos)
+              chunk.replace(p, special_char.length(), substitutes[i]);
+          }
+
         std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
 
+        size_t p = annotated_tokens.size();
+
         _tokenizeByPlaceholder(fields[0], annotated_tokens, _preserve_placeholders);
+
+        /* first token token added `p` is taking the left joiner mark */ 
+        if (left_joiner)
+          annotated_tokens[p].join_left();
+        /* last token token added is taking the right joiner mark */ 
+        if (right_joiner)
+          annotated_tokens.back().join_right();
 
         for (size_t i = 1; i < fields.size(); ++i)
           annotated_tokens.back().insert_feature(fields[i]);
@@ -497,16 +535,35 @@ namespace onmt
 
       for (size_t i = 0; i < chars.size(); ++i)
       {
-        const std::string& c = chars[i];
-        unicode::code_point_t v = code_points_main[i];
-        unicode::code_point_t next_v = i + 1 < code_points_main.size() ? code_points_main[i + 1] : 0;
-        bool isSeparator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
-
         const bool letter = state & State::Letter;
         const bool space = state & State::Space;
         const bool number = state & State::Number;
         const bool other = state & State::Other;
         const bool placeholder = state & State::Placeholder;
+
+        const std::string& c = chars[i];
+        if (_support_prior_joiners && c == _joiner) {
+          /* it is either after a space, in that case it annotates the following word,
+             or a closed token (other & space), or a unclosed token - in that case it is a right joiner.
+            */
+          if (other) {
+            annotated_tokens.back().join_right();
+            continue;
+          }
+          else if (space) {
+            token.join_left();
+            continue;
+          } else {
+            token.join_right();
+            annotated_tokens.emplace_back(std::move(token));
+            token.clear();
+            state = State::Space;
+            continue;
+          }
+        }
+        unicode::code_point_t v = code_points_main[i];
+        unicode::code_point_t next_v = i + 1 < code_points_main.size() ? code_points_main[i + 1] : 0;
+        bool isSeparator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
 
         if (placeholder) {
           if (c == Tokenizer::ph_marker_close) {
