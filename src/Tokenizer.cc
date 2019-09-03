@@ -421,18 +421,23 @@ namespace onmt
   static void _tokenizeByPlaceholder(const std::string &text,
                                      std::vector<AnnotatedToken> &annotated_tokens,
                                      bool preserve_placeholders) {
+    size_t initial_tokens_count = annotated_tokens.size();
     size_t q = 0;
     while (1) {
       if (q != 0 && text[q] != ' ')
         annotated_tokens.back().join_right();
       size_t p = text.find(Tokenizer::ph_marker_open, q);
       if (p == std::string::npos) {
-        annotated_tokens.emplace_back(text.substr(q));
+        /* do not add empty token at the end */
+        if (q != text.size())
+          annotated_tokens.emplace_back(text.substr(q));
         break;
       }
       if (p != q)
         annotated_tokens.emplace_back(text.substr(q, p-q));
-      if (annotated_tokens.size() && !_endsWithSpace(annotated_tokens.back().str()))
+      /* do not add joiner on tokens analyzed before this call */
+      if (annotated_tokens.size() > initial_tokens_count
+          && !_endsWithSpace(annotated_tokens.back().str()))
         annotated_tokens.back().join_right();
       q = text.find(Tokenizer::ph_marker_close, p);
       if (q == std::string::npos) {

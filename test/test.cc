@@ -524,10 +524,10 @@ TEST(TokenizerTest, CharMode) {
 }
 
 TEST(TokenizerTest, PriorJoinerSupportSpace) {
-  Tokenizer tokenizer(Tokenizer::Mode::Space, Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SupportPriorJoiners);
+  Tokenizer tokenizer(Tokenizer::Mode::Space, Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SupportPriorJoiners | Tokenizer::Flags::PreservePlaceholders);
   test_tok(tokenizer,
-           "It is a test-aggressive ￭'￭ with pre￭ tokenizat ￭ions World￭ 123.",
-           "It is a test-aggressive ￭'￭ with pre￭ tokenizat ￭ions World￭ 123.");
+           "It is a test-aggressive ￭'￭ with pre￭ tokenizat ￭ions World￭ 123 and double ￭｟mrk_place｠｟mrk_holder｠￭ .",
+           "It is a test-aggressive ￭'￭ with pre￭ tokenizat ￭ions World￭ 123 and double ￭ ｟mrk_place｠ ￭ ｟mrk_holder｠ ￭ .");
 }
 
 TEST(TokenizerTest, NormalizeJoinerSpace) {
