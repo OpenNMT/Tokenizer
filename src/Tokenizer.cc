@@ -518,7 +518,6 @@ namespace onmt
         for (size_t i = 1; i < fields.size(); ++i)
           annotated_tokens.back().insert_feature(fields[i]);
       }
-
     }
     else {
       std::vector<std::string> chars;
