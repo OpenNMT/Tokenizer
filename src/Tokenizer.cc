@@ -389,8 +389,11 @@ namespace onmt
       token.set(word.substr(subpos, sublen));
       token.set_case(case_modifier);
       token.set_index(i);
+      // Forward the case modifier if the current token is a joiner or spacer.
+      if (!token.str().empty())
+        case_modifier = CaseModifier::Type::None;
+
       tokens.emplace_back(std::move(token));
-      case_modifier = CaseModifier::Type::None;
     }
 
     return detokenize(tokens, ranges, merge_ranges);
