@@ -521,10 +521,10 @@ namespace onmt
         std::vector<AnnotatedToken> sub_tokens;
         tokenize_on_placeholders(token, sub_tokens);
 
-        // Replicate the features to each sub token.
-        for (auto& sub_token : sub_tokens)
+        for (size_t i = 1; i < fields.size(); ++i)
         {
-          for (size_t i = 1; i < fields.size(); ++i)
+          // Replicate the features to each sub token.
+          for (auto& sub_token : sub_tokens)
             sub_token.insert_feature(fields[i]);
         }
 
