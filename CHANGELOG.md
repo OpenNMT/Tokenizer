@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.15.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.1) (2019-09-05)
+
+### Fixes and improvements
+
+* Fix regression in space tokenization: characters inside placeholders were incorrectly normalized
+
 ## [v1.15.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.0) (2019-09-05)
 
 ### New features
