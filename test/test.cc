@@ -308,6 +308,15 @@ TEST(TokenizerTest, CaseMarkupWithJoiners) {
                      "hello woRlD!", "hello wo￭ ｟mrk_case_modifier_C｠ rl￭ ｟mrk_case_modifier_C｠ d ￭!");
 }
 
+TEST(TokenizerTest, CaseMarkupWithJoinerNew) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::CaseMarkup
+                      | Tokenizer::Flags::JoinerAnnotate
+                      | Tokenizer::Flags::JoinerNew);
+  test_detok(tokenizer, "hello ｟mrk_case_modifier_C｠ ￭ world !", "helloWorld !");
+  test_detok(tokenizer, "hello ｟mrk_case_modifier_C｠ ￭", "hello");
+}
+
 TEST(TokenizerTest, CaseMarkupWithSpacers) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       Tokenizer::Flags::CaseMarkup | Tokenizer::Flags::SpacerAnnotate);
@@ -319,6 +328,15 @@ TEST(TokenizerTest, CaseMarkupWithSpacers) {
                      "Hello WOrld!", "｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ ▁wo ｟mrk_end_case_region_U｠ rld !");
   test_tok_and_detok(tokenizer,
                      "hello woRld!", "hello ▁wo ｟mrk_case_modifier_C｠ rld !");
+}
+
+TEST(TokenizerTest, CaseMarkupWithSpacerNew) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::CaseMarkup
+                      | Tokenizer::Flags::SpacerAnnotate
+                      | Tokenizer::Flags::SpacerNew);
+  test_detok(tokenizer, "hello ｟mrk_case_modifier_C｠ ▁ world !", "hello World!");
+  test_detok(tokenizer, "hello ｟mrk_case_modifier_C｠ ▁", "hello ");
 }
 
 TEST(TokenizerTest, CaseMarkupWithBPE) {
