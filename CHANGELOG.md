@@ -23,6 +23,16 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.15.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.0) (2019-09-05)
+
+### New features
+
+* `support_prior_joiners` flag to support tokenizing a pre-tokenized input
+
+### Fixes and improvements
+
+* Fix case markup when joiners or spacers are individual tokens
+
 ## [v1.14.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.14.1) (2019-08-07)
 
 ### Fixes and improvements
