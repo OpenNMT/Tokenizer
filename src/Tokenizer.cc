@@ -417,41 +417,74 @@ namespace onmt
     return tokenize(text, annotated_tokens, nullptr);
   }
 
-  static bool _endsWithSpace(const std::string &s) {
-    return s.length() && s[s.length()-1] == ' ';
-  }
+  void Tokenizer::tokenize_on_placeholders(const std::string& text,
+                                           std::vector<AnnotatedToken>& tokens) const
+  {
+    // Split on characters.
+    std::vector<std::string> chars;
+    std::vector<unicode::code_point_t> code_points_main;
+    std::vector<std::vector<unicode::code_point_t>> code_points_combining;
+    unicode::explode_utf8_with_marks(text, chars, code_points_main, code_points_combining);
 
-  static void _tokenizeByPlaceholder(const std::string &text,
-                                     std::vector<AnnotatedToken> &annotated_tokens,
-                                     bool preserve_placeholders) {
-    size_t initial_tokens_count = annotated_tokens.size();
-    size_t q = 0;
-    while (1) {
-      if (q != 0 && text[q] != ' ')
-        annotated_tokens.back().join_right();
-      size_t p = text.find(Tokenizer::ph_marker_open, q);
-      if (p == std::string::npos) {
-        /* do not add empty token at the end */
-        if (q != text.size())
-          annotated_tokens.emplace_back(text.substr(q));
-        break;
+    AnnotatedToken token;  // Accumulate characters in this.
+    bool in_placeholder = false;
+
+    for (size_t i = 0; i < chars.size(); ++i)
+    {
+      const auto& c = chars[i];
+
+      if (!in_placeholder)
+      {
+        if (_support_prior_joiners && c == _joiner)
+        {
+          // Mark joint but discard character.
+          if (token.str().empty())
+            token.join_left();
+          else
+            token.join_right();
+        }
+        else if (c == ph_marker_open)
+        {
+          if (!token.str().empty())
+          {
+            // Flush accumulated token and mark joint if it did not finish by a separator.
+            if (i > 0 && !unicode::is_separator(code_points_main[i - 1]))
+              token.join_right();
+            tokens.emplace_back(std::move(token));
+            token.clear();
+          }
+
+          token.append(c);
+          in_placeholder = true;
+        }
+        else
+        {
+          // Normalize character for consistency with other tokenization modes.
+          token.append(_no_substitution ? c : normalize_character(c));
+        }
       }
-      if (p != q)
-        annotated_tokens.emplace_back(text.substr(q, p-q));
-      /* do not add joiner on tokens analyzed before this call */
-      if (annotated_tokens.size() > initial_tokens_count
-          && !_endsWithSpace(annotated_tokens.back().str()))
-        annotated_tokens.back().join_right();
-      q = text.find(Tokenizer::ph_marker_close, p);
-      if (q == std::string::npos) {
-        annotated_tokens.emplace_back(text.substr(p));
-        break;
+      else  // In a placeholder.
+      {
+        token.append(c);  // Do not normalize character inside placeholders.
+        if (c == ph_marker_close)
+        {
+          // Flush accumulated placeholder and mark joint if the next character is not a separator.
+          // No need to check for emptiness as in_placeholder == true means at least the opening
+          // character was accumulated.
+          if (i + 1 < chars.size() && !unicode::is_separator(code_points_main[i + 1]))
+            token.join_right();
+          if (_preserve_placeholders)
+            token.preserve();
+          tokens.emplace_back(std::move(token));
+          token.clear();
+          in_placeholder = false;
+        }
       }
-      q += Tokenizer::ph_marker_close.length();
-      annotated_tokens.emplace_back(text.substr(p, q-p));
-      if (preserve_placeholders)
-        annotated_tokens.back().preserve();
     }
+
+    // Flush remaining token.
+    if (!token.str().empty())
+      tokens.emplace_back(std::move(token));
   }
 
   void Tokenizer::tokenize(const std::string& text,
@@ -471,7 +504,7 @@ namespace onmt
     annotated_tokens.reserve(text.size());
 
     if (_mode == Mode::None) {
-      _tokenizeByPlaceholder(text, annotated_tokens, _preserve_placeholders);
+      tokenize_on_placeholders(text, annotated_tokens);
     } else if (_mode == Mode::Space) {
       if (text.empty())
         return;
@@ -482,44 +515,20 @@ namespace onmt
         if (chunk.empty())
           continue;
 
-        bool left_joiner = false;
-        bool right_joiner = false;
-        if (_support_prior_joiners) {
-          /* check if prior joiner */
-          if (has_left_join(chunk)) {
-            left_joiner = true;
-            chunk = chunk.substr(_joiner.length());
-          }
+        std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
+        auto& token = fields[0];
 
-          if (has_right_join(chunk)) {
-            right_joiner = true;
-            chunk.erase(chunk.length()-_joiner.length());
-          }
+        std::vector<AnnotatedToken> sub_tokens;
+        tokenize_on_placeholders(token, sub_tokens);
+
+        // Replicate the features to each sub token.
+        for (auto& sub_token : sub_tokens)
+        {
+          for (size_t i = 1; i < fields.size(); ++i)
+            sub_token.insert_feature(fields[i]);
         }
 
-        if (!_no_substitution)
-          for(size_t i=0; i<special_chars.size(); i++) {
-            const std::string &special_char = special_chars[i];
-            size_t p = 0;
-            while ((p=chunk.find(special_char, p)) != std::string::npos)
-              chunk.replace(p, special_char.length(), substitutes[i]);
-          }
-
-        std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
-
-        size_t p = annotated_tokens.size();
-
-        _tokenizeByPlaceholder(fields[0], annotated_tokens, _preserve_placeholders);
-
-        /* first token token added `p` is taking the left joiner mark */ 
-        if (left_joiner)
-          annotated_tokens[p].join_left();
-        /* last token token added is taking the right joiner mark */ 
-        if (right_joiner)
-          annotated_tokens.back().join_right();
-
-        for (size_t i = 1; i < fields.size(); ++i)
-          annotated_tokens.back().insert_feature(fields[i]);
+        annotated_tokens.insert(annotated_tokens.end(), sub_tokens.begin(), sub_tokens.end());
       }
     }
     else {
