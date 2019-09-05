@@ -551,8 +551,8 @@ TEST(TokenizerTest, PriorJoinerSupportSpace) {
 TEST(TokenizerTest, NormalizeJoinerSpace) {
   Tokenizer tokenizer(Tokenizer::Mode::Space, Tokenizer::Flags::JoinerAnnotate);
   test_tok(tokenizer,
-           "It is a test-aggressive ■'■ with pre￭ tokenizat ■ions World■ 123.",
-           "It is a test-aggressive ■'■ with pre■ tokenizat ■ions World■ 123.");
+           "It is a test-aggressive ■'■ with pre￭ tokenizat ■ions ｟entity＃1：World￭｠ 123.",
+           "It is a test-aggressive ■'■ with pre■ tokenizat ■ions ｟entity＃1：World￭｠ 123.");
 }
 
 TEST(TokenizerTest, PriorJoinerSupport) {
