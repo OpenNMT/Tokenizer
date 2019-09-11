@@ -210,7 +210,11 @@ public:
   {
     py::gil_scoped_release release;
     std::ifstream in(input_path);
+    if (!in.good())
+      throw std::invalid_argument("Failed to open input file " + input_path);
     std::ofstream out(output_path);
+    if (!out.good())
+      throw std::invalid_argument("Failed to open output file " + output_path);
     _tokenizer->tokenize_stream(in, out, num_threads);
   }
 
@@ -219,7 +223,11 @@ public:
   {
     py::gil_scoped_release release;
     std::ifstream in(input_path);
+    if (!in.good())
+      throw std::invalid_argument("Failed to open input file " + input_path);
     std::ofstream out(output_path);
+    if (!out.good())
+      throw std::invalid_argument("Failed to open output file " + output_path);
     _tokenizer->detokenize_stream(in, out);
   }
 
@@ -248,6 +256,8 @@ public:
   {
     py::gil_scoped_release release;
     std::ifstream in(path);
+    if (!in.good())
+      throw std::invalid_argument("Failed to open input file " + path);
     _learner->ingest(in, _tokenizer.get());
   }
 
@@ -262,6 +272,8 @@ public:
     {
       py::gil_scoped_release release;
       std::ofstream out(model_path);
+      if (!out.good())
+        throw std::invalid_argument("Failed to open model path " + model_path);
       _learner->learn(out, nullptr, verbose);
     }
 
@@ -337,6 +349,8 @@ public:
 
   ~SentencePieceLearnerWrapper()
   {
+    _learner.reset();
+    // SPMLearner removed the temporary file in its destructor so it is safe to directly call rmdir.
     py::object os = py::module::import("os");
     py::object rmdir = os.attr("rmdir");
     rmdir(_tmp_dir);
