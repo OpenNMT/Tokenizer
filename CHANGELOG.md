@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.15.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.2) (2019-09-11)
+
+### Fixes and improvements
+
+* [Python] Improve error checking in file based functions
+
 ## [v1.15.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.1) (2019-09-05)
 
 ### Fixes and improvements
