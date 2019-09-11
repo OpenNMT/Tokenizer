@@ -56,6 +56,24 @@ def test_file(tmpdir):
     with open(input_path) as input_file:
         assert input_file.readline().strip() == "Hello world!"
 
+def test_invalid_files(tmpdir):
+    tokenizer = pyonmttok.Tokenizer("conservative")
+    output_file = str(tmpdir.join("output.txt"))
+    with pytest.raises(ValueError):
+        tokenizer.tokenize_file("notfound.txt", output_file)
+    with pytest.raises(ValueError):
+        tokenizer.detokenize_file("notfound.txt", output_file)
+    directory = tmpdir.join("directory")
+    directory.ensure(dir=True)
+    directory = str(directory)
+    input_file = str(tmpdir.join("input.txt"))
+    with open(input_file, "w") as f:
+        f.write("Hello world!")
+    with pytest.raises(ValueError):
+        tokenizer.tokenize_file(input_file, directory)
+    with pytest.raises(ValueError):
+        tokenizer.detokenize_file(input_file, directory)
+
 def test_custom_joiner():
     tokenizer = pyonmttok.Tokenizer(
         "aggressive", joiner="•", joiner_annotate=True)
@@ -111,3 +129,21 @@ def test_sp_learner(tmpdir):
     tokenizer = learner.learn(model_path)
     tokens, _ = tokenizer.tokenize("hello")
     assert tokens == ["▁h", "e", "l", "l", "o"]
+
+def _test_learner_with_invalid_files(tmpdir, learner):
+    learner = pyonmttok.BPELearner(symbols=2, min_frequency=1)
+    with pytest.raises(ValueError):
+        learner.ingest_file("notfound.txt")
+    learner.ingest("hello word ! how are you ?")
+    directory = tmpdir.join("directory")
+    directory.ensure(dir=True)
+    with pytest.raises(ValueError):
+        learner.learn(str(directory))
+
+def test_sp_learner_with_invalid_files(tmpdir):
+    learner = pyonmttok.SentencePieceLearner(vocab_size=17, character_coverage=0.98)
+    _test_learner_with_invalid_files(tmpdir, learner)
+
+def test_bpe_learner_with_invalid_files(tmpdir):
+    learner = pyonmttok.BPELearner(symbols=2, min_frequency=1)
+    _test_learner_with_invalid_files(tmpdir, learner)
