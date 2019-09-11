@@ -349,6 +349,8 @@ public:
 
   ~SentencePieceLearnerWrapper()
   {
+    _learner.reset();
+    // SPMLearner removed the temporary file in its destructor so it is safe to directly call rmdir.
     py::object os = py::module::import("os");
     py::object rmdir = os.attr("rmdir");
     rmdir(_tmp_dir);

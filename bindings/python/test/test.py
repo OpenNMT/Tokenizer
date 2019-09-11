@@ -131,7 +131,6 @@ def test_sp_learner(tmpdir):
     assert tokens == ["▁h", "e", "l", "l", "o"]
 
 def _test_learner_with_invalid_files(tmpdir, learner):
-    learner = pyonmttok.BPELearner(symbols=2, min_frequency=1)
     with pytest.raises(ValueError):
         learner.ingest_file("notfound.txt")
     learner.ingest("hello word ! how are you ?")
