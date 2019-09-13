@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.15.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.3) (2019-09-13)
+
+### Fixes and improvements
+
+* Fix possible memory issues when run in multiple threads with ICU
+
 ## [v1.15.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.2) (2019-09-11)
 
 ### Fixes and improvements
