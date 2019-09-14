@@ -329,11 +329,15 @@ static std::unordered_map<std::string, std::string> parse_kwargs(py::kwargs kwar
   return map;
 }
 
-static std::string create_temp_dir()
+static std::string create_temp_file()
 {
   py::object tempfile = py::module::import("tempfile");
-  py::object mkdtemp = tempfile.attr("mkdtemp");
-  return mkdtemp().cast<std::string>();
+  py::object mkstemp = tempfile.attr("mkstemp");
+  py::tuple output = mkstemp();
+  auto fd = output[0].cast<int>();
+  auto filename = output[1].cast<std::string>();
+  close(fd);
+  return filename;
 }
 
 class SentencePieceLearnerWrapper : public SubwordLearnerWrapper
@@ -341,19 +345,9 @@ class SentencePieceLearnerWrapper : public SubwordLearnerWrapper
 public:
   SentencePieceLearnerWrapper(const TokenizerWrapper* tokenizer,
                               py::kwargs kwargs)
-    : SubwordLearnerWrapper(tokenizer, new onmt::SPMLearner(false, parse_kwargs(kwargs), ""))
-    , _tmp_dir(create_temp_dir())
+    : SubwordLearnerWrapper(tokenizer,
+                            new onmt::SPMLearner(false, parse_kwargs(kwargs), create_temp_file()))
   {
-    dynamic_cast<onmt::SPMLearner*>(_learner.get())->set_input_filename(_tmp_dir + "/input.txt");
-  }
-
-  ~SentencePieceLearnerWrapper()
-  {
-    _learner.reset();
-    // SPMLearner removed the temporary file in its destructor so it is safe to directly call rmdir.
-    py::object os = py::module::import("os");
-    py::object rmdir = os.attr("rmdir");
-    rmdir(_tmp_dir);
   }
 
 protected:
@@ -367,9 +361,6 @@ protected:
     new_tokenizer->set_sp_model(model_path);
     return new_tokenizer;
   }
-
-private:
-  std::string _tmp_dir;
 };
 
 PYBIND11_MODULE(pyonmttok, m)
