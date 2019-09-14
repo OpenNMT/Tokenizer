@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.15.4](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.4) (2019-09-14)
+
+### Fixes and improvements
+
+* [Python] Fix possible runtime error on program exit when using `SentencePieceLearner`
+
 ## [v1.15.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.3) (2019-09-13)
 
 ### Fixes and improvements
