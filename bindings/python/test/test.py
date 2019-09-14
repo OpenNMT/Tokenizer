@@ -130,7 +130,11 @@ def test_sp_learner(tmpdir):
     tokens, _ = tokenizer.tokenize("hello")
     assert tokens == ["▁h", "e", "l", "l", "o"]
 
-def _test_learner_with_invalid_files(tmpdir, learner):
+@pytest.mark.parametrize(
+    "learner",
+    [pyonmttok.BPELearner(symbols=2, min_frequency=1),
+     pyonmttok.SentencePieceLearner(vocab_size=17, character_coverage=0.98)])
+def test_learner_with_invalid_files(tmpdir, learner):
     with pytest.raises(ValueError):
         learner.ingest_file("notfound.txt")
     learner.ingest("hello word ! how are you ?")
@@ -138,11 +142,3 @@ def _test_learner_with_invalid_files(tmpdir, learner):
     directory.ensure(dir=True)
     with pytest.raises(ValueError):
         learner.learn(str(directory))
-
-def test_sp_learner_with_invalid_files(tmpdir):
-    learner = pyonmttok.SentencePieceLearner(vocab_size=17, character_coverage=0.98)
-    _test_learner_with_invalid_files(tmpdir, learner)
-
-def test_bpe_learner_with_invalid_files(tmpdir):
-    learner = pyonmttok.BPELearner(symbols=2, min_frequency=1)
-    _test_learner_with_invalid_files(tmpdir, learner)
