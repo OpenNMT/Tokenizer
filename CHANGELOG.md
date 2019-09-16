@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.15.5](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.5) (2019-09-16)
+
+### Fixes and improvements
+
+* [Python] Downgrade `pybind11` to fix segmentation fault when importing after non-compliant Python wheels
+
 ## [v1.15.4](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.4) (2019-09-14)
 
 ### Fixes and improvements
