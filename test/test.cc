@@ -284,6 +284,12 @@ TEST(TokenizerTest, MarkOnSpaceNoSubstitution) {
   test_tok(tokenizer, "angles ၧ1 and ၧ2", {"angles", "￭ ၧ￭", "1", "and", "￭ ၧ￭", "2"}, true);
 }
 
+TEST(TokenizerTest, CombiningMarkAfterPlaceholder) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::PreservePlaceholders);
+  test_tok_and_detok(tokenizer, "｟a｠ׂb", "｟a｠ ￭ׂ￭ b");
+}
+
 TEST(TokenizerTest, CaseFeature) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       Tokenizer::Flags::CaseFeature | Tokenizer::Flags::JoinerAnnotate);

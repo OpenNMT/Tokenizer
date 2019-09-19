@@ -21,6 +21,7 @@ namespace onmt
   const std::string Tokenizer::spacer_marker("▁");
   const std::string Tokenizer::ph_marker_open = "｟";
   const std::string Tokenizer::ph_marker_close = "｠";
+  static const std::vector<std::string> exclude_combining{Tokenizer::ph_marker_close};
 
   const std::unordered_map<std::string, Tokenizer::Mode> Tokenizer::mapMode = {
     { "aggressive", Tokenizer::Mode::Aggressive },
@@ -536,7 +537,11 @@ namespace onmt
       std::vector<unicode::code_point_t> code_points_main;
       std::vector<std::vector<unicode::code_point_t>> code_points_combining;
 
-      unicode::explode_utf8_with_marks(text, chars, code_points_main, code_points_combining);
+      unicode::explode_utf8_with_marks(text,
+                                       chars,
+                                       &code_points_main,
+                                       &code_points_combining,
+                                       &exclude_combining);
 
       AnnotatedToken token;
 

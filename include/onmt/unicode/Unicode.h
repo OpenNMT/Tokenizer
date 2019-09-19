@@ -28,7 +28,10 @@ namespace onmt
                             bool keep_code_points=true);
     OPENNMTTOKENIZER_EXPORT void
     explode_utf8_with_marks(const std::string& str,
-                            std::vector<std::string>& chars);
+                            std::vector<std::string>& chars,
+                            std::vector<code_point_t>* code_points_main = nullptr,
+                            std::vector<std::vector<code_point_t>>* code_points_combining = nullptr,
+                            const std::vector<std::string>* protected_chars = nullptr);
 
     OPENNMTTOKENIZER_EXPORT size_t utf8len(const std::string& str);
 
