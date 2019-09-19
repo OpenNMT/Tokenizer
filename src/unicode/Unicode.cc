@@ -1,5 +1,7 @@
 #include "onmt/unicode/Unicode.h"
 
+#include <algorithm>
+
 #ifdef WITH_ICU
 #  include <unicode/uchar.h>
 #  include <unicode/unistr.h>
@@ -157,43 +159,50 @@ namespace onmt
                                  std::vector<std::vector<code_point_t>>& code_points_combining,
                                  bool keep_code_points)
     {
+      if (!keep_code_points)
+        explode_utf8_with_marks(str, chars);
+      else
+        explode_utf8_with_marks(str, chars, &code_points_main, &code_points_combining);
+    }
+
+    void explode_utf8_with_marks(const std::string& str,
+                                 std::vector<std::string>& chars,
+                                 std::vector<code_point_t>* code_points_main,
+                                 std::vector<std::vector<code_point_t>>* code_points_combining,
+                                 const std::vector<std::string>* protected_chars)
+    {
       const char* c_str = str.c_str();
 
       chars.reserve(str.length());
-      if (keep_code_points) {
-        code_points_main.reserve(str.length());
-        code_points_combining.reserve(str.length());
-      }
+      if (code_points_main)
+        code_points_main->reserve(str.length());
+      if (code_points_combining)
+        code_points_combining->reserve(str.length());
 
       while (*c_str)
       {
         unsigned int char_size = 0;
         code_point_t code_point = utf8_to_cp(
           reinterpret_cast<const unsigned char*>(c_str), char_size);
-        if (!chars.empty() && is_mark(code_point))
+        if (!chars.empty()
+            && is_mark(code_point)
+            && (!protected_chars
+                || std::find(protected_chars->begin(), protected_chars->end(), chars.back()) == protected_chars->end()))
         {
-          if (keep_code_points)
-            code_points_combining.back().push_back(code_point);
+          if (code_points_combining)
+            code_points_combining->back().push_back(code_point);
           chars.back().append(c_str, char_size);
         }
         else
         {
-          if (keep_code_points) {
-            code_points_main.emplace_back(code_point);
-            code_points_combining.emplace_back();
-          }
+          if (code_points_main)
+            code_points_main->emplace_back(code_point);
+          if (code_points_combining)
+            code_points_combining->emplace_back();
           chars.emplace_back(c_str, char_size);
         }
         c_str += char_size;
       }
-    }
-
-    void explode_utf8_with_marks(const std::string& str,
-                                 std::vector<std::string>& chars) {
-      std::vector<code_point_t> code_points_main;
-      std::vector<std::vector<code_point_t>> code_points_combining;
-      explode_utf8_with_marks(str, chars,
-                              code_points_main, code_points_combining, false);
     }
 
 
