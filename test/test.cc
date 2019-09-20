@@ -357,6 +357,12 @@ TEST(TokenizerTest, CaseMarkupWithBPE) {
                      "BONJOUR monde", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ mon￭ de");
 }
 
+TEST(TokenizerTest, CaseMarkupDetokWithPlaceholders) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::CaseMarkup);
+  test_detok(tokenizer, "｟mrk_case_modifier_C｠ ｟abc｠", "｟abc｠");
+  test_detok(tokenizer, "｟mrk_begin_case_region_U｠ ｟abc｠ ｟mrk_end_case_region_U｠", "｟abc｠");
+}
+
 TEST(TokenizerTest, CaseMarkupDetokMissingModifiedToken) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::CaseMarkup);
   test_detok(tokenizer, "hello ｟mrk_case_modifier_C｠", "hello");
