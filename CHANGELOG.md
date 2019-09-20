@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.15.7](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.7) (2019-09-20)
+
+### Fixes and improvements
+
+* Do not apply case modifiers on placeholder tokens
+
 ## [v1.15.6](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.15.6) (2019-09-16)
 
 ### Fixes and improvements
