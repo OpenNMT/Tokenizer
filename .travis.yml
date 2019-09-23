@@ -64,6 +64,7 @@ matrix:
         - docker pull quay.io/pypa/manylinux1_x86_64
         - docker run -v $PWD:/root -w /root quay.io/pypa/manylinux1_x86_64 bash /root/bindings/python/tools/build_wheel.sh
         - pip install --user pytest twine
+        - pip install --user torch==1.2.0+cpu torchvision==0.4.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
       install:
         - pip install --user wheelhouse/*27mu*.whl
       script:
