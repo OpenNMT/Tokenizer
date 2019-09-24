@@ -209,10 +209,10 @@ public:
                      int num_threads)
   {
     std::ifstream in(input_path);
-    if (!in.good())
+    if (!in)
       throw std::invalid_argument("Failed to open input file " + input_path);
     std::ofstream out(output_path);
-    if (!out.good())
+    if (!out)
       throw std::invalid_argument("Failed to open output file " + output_path);
     py::gil_scoped_release release;
     _tokenizer->tokenize_stream(in, out, num_threads);
@@ -222,10 +222,10 @@ public:
                        const std::string& output_path)
   {
     std::ifstream in(input_path);
-    if (!in.good())
+    if (!in)
       throw std::invalid_argument("Failed to open input file " + input_path);
     std::ofstream out(output_path);
-    if (!out.good())
+    if (!out)
       throw std::invalid_argument("Failed to open output file " + output_path);
     py::gil_scoped_release release;
     _tokenizer->detokenize_stream(in, out);
@@ -255,7 +255,7 @@ public:
   void ingest_file(const std::string& path)
   {
     std::ifstream in(path);
-    if (!in.good())
+    if (!in)
       throw std::invalid_argument("Failed to open input file " + path);
     py::gil_scoped_release release;
     _learner->ingest(in, _tokenizer.get());
@@ -271,7 +271,7 @@ public:
   {
     {
       std::ofstream out(model_path);
-      if (!out.good())
+      if (!out)
         throw std::invalid_argument("Failed to open model path " + model_path);
       py::gil_scoped_release release;
       _learner->learn(out, nullptr, verbose);

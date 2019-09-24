@@ -9,7 +9,7 @@ namespace onmt
   void SubwordEncoder::load_vocabulary(const std::string& path, int frequency_threshold)
   {
     std::ifstream in(path);
-    if (!in.is_open())
+    if (!in)
       throw std::invalid_argument("Unable to open vocabulary file `" + path + "'");
 
     std::vector<std::string> vocab;
