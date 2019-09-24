@@ -20,7 +20,7 @@ make -j2 install
 cd $ROOT_DIR
 
 # Install cmake.
-pip install cmake
+pip install "cmake==3.13.*"
 
 # Build SentencePiece.
 curl -L -o sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz -O https://github.com/google/sentencepiece/archive/v${SENTENCEPIECE_VERSION}.tar.gz
