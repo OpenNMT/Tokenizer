@@ -319,22 +319,23 @@ namespace onmt
     return line;
   }
 
-  std::string Tokenizer::detokenize(const std::vector<std::string>& words,
-                                    const std::vector<std::vector<std::string> >& features,
-                                    Ranges* ranges, bool merge_ranges) const
+  void Tokenizer::annotate_tokens(const std::vector<std::string>& words,
+                                  const std::vector<std::vector<std::string>>& features,
+                                  std::vector<AnnotatedToken>& tokens) const
   {
-    std::vector<AnnotatedToken> tokens;
     tokens.reserve(words.size());
     CaseModifier::Type case_region = CaseModifier::Type::None;
     CaseModifier::Type case_modifier = CaseModifier::Type::None;
 
     for (size_t i = 0; i < words.size(); ++i)
     {
+      size_t features_offset = 0;
       if (_case_feature)
       {
         if (features.empty())
           throw std::runtime_error("Missing case feature");
         case_modifier = CaseModifier::char_to_type(features[0][i][0]);
+        features_offset = 1;
       }
       else
       {
@@ -391,13 +392,25 @@ namespace onmt
       token.set(word.substr(subpos, sublen));
       token.set_case(case_modifier);
       token.set_index(i);
+      if (!features.empty())
+      {
+        for (size_t j = features_offset; j < features.size(); ++j)
+          token.insert_feature(features[j][i]);
+      }
       // Forward the case modifier if the current token is a joiner or spacer.
       if (!token.str().empty())
         case_modifier = CaseModifier::Type::None;
 
       tokens.emplace_back(std::move(token));
     }
+  }
 
+  std::string Tokenizer::detokenize(const std::vector<std::string>& words,
+                                    const std::vector<std::vector<std::string> >& features,
+                                    Ranges* ranges, bool merge_ranges) const
+  {
+    std::vector<AnnotatedToken> tokens;
+    annotate_tokens(words, features, tokens);
     return detokenize(tokens, ranges, merge_ranges);
   }
 

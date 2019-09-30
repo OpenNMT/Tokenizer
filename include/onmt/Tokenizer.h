@@ -90,6 +90,9 @@ namespace onmt
 
     void tokenize(const std::string& text,
                   std::vector<AnnotatedToken>& annotated_tokens) const;
+    void annotate_tokens(const std::vector<std::string>& words,
+                         const std::vector<std::vector<std::string>>& features,
+                         std::vector<AnnotatedToken>& tokens) const;
     void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
                          std::vector<std::string>& tokens,
                          std::vector<std::vector<std::string>>& features) const;
