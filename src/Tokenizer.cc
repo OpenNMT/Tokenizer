@@ -286,11 +286,12 @@ namespace onmt
 
       std::string prep_word = token.str();
 
-      auto case_modifier = token.get_case();
-      if (case_modifier != CaseModifier::Type::None)
-        prep_word = CaseModifier::apply_case(prep_word, case_modifier);
+      if (!is_placeholder(prep_word))
+      {
+        auto case_modifier = token.get_case();
+        if (case_modifier != CaseModifier::Type::None)
+          prep_word = CaseModifier::apply_case(prep_word, case_modifier);
 
-      if (!is_placeholder(prep_word)) {
         size_t p = prep_word.find(protected_character, 0);
         while (p != std::string::npos && p+protected_character.size()+4 < prep_word.size()) {
           std::string code = prep_word.substr(p+protected_character.size(), 4);
@@ -388,8 +389,7 @@ namespace onmt
       }
 
       token.set(word.substr(subpos, sublen));
-      if (!is_placeholder(token.str()))
-        token.set_case(case_modifier);
+      token.set_case(case_modifier);
       token.set_index(i);
       // Forward the case modifier if the current token is a joiner or spacer.
       if (!token.str().empty())
