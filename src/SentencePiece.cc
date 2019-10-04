@@ -1,6 +1,7 @@
 #include "onmt/SentencePiece.h"
 
 #include <sentencepiece_processor.h>
+#include <stdexcept>
 
 namespace onmt
 {
