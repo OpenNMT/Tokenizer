@@ -14,8 +14,9 @@ namespace onmt
   public:
     BPELearner(bool verbose,
                int symbols, int min_frequency, bool dict_input, bool total_symbols);
-    void ingest(std::istream& is, const Tokenizer* tokenizer = 0);
-    void learn(std::ostream& os, const char* description = 0, bool verbose = false);
+    void ingest(const std::string& text, const Tokenizer* tokenizer = nullptr) override;
+    void ingest(std::istream& is, const Tokenizer* tokenizer = nullptr) override;
+    void learn(std::ostream& os, const char* description = 0, bool verbose = false) override;
   private:
     int _symbols;
     int _min_frequency;

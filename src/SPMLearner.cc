@@ -51,10 +51,33 @@ namespace onmt
     _input_filename = filename;
   }
 
-  void SPMLearner::ingest(std::istream& is, const Tokenizer* tokenizer)
+  void SPMLearner::init_input_stream()
   {
     if (!_input_stream)
       _input_stream.reset(new std::ofstream(_input_filename));
+  }
+
+  void SPMLearner::ingest(const std::string& text, const Tokenizer* tokenizer)
+  {
+    init_input_stream();
+
+    if (!tokenizer)
+      *_input_stream << text;
+    else
+    {
+      std::vector<AnnotatedToken> tokens;
+      tokenizer->tokenize(text, tokens);
+      for (const auto& token : tokens)
+      {
+        if (!Tokenizer::is_placeholder(token.str()))
+          *_input_stream << token.str() << std::endl;
+      }
+    }
+  }
+
+  void SPMLearner::ingest(std::istream& is, const Tokenizer* tokenizer)
+  {
+    init_input_stream();
 
     if (!tokenizer)
       *_input_stream << is.rdbuf();
@@ -62,15 +85,7 @@ namespace onmt
     {
       std::string line;
       while (std::getline(is, line))
-      {
-        std::vector<AnnotatedToken> tokens;
-        tokenizer->tokenize(line, tokens);
-        for (const auto& token : tokens)
-        {
-          if (!Tokenizer::is_placeholder(token.str()))
-            *_input_stream << token.str() << std::endl;
-        }
-      }
+        ingest(line, tokenizer);
     }
   }
 

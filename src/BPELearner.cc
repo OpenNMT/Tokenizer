@@ -40,30 +40,40 @@ namespace onmt
   {
   }
 
-  void BPELearner::ingest(std::istream& is, const Tokenizer* tokenizer) {
+  void BPELearner::ingest(const std::string& text, const Tokenizer* tokenizer)
+  {
     if (!tokenizer)
       tokenizer = _default_tokenizer.get();
+
+    std::vector<AnnotatedToken> tokens;
+    tokenizer->tokenize(text, tokens);
+    for (const auto& token : tokens)
+    {
+      if (!Tokenizer::is_placeholder(token.str()))
+        _vocab[token.str()]++;
+    }
+  }
+
+  void BPELearner::ingest(std::istream& is, const Tokenizer* tokenizer)
+  {
+    if (!tokenizer)
+      tokenizer = _default_tokenizer.get();
+
     // get_vocabulary - builds vocabulary from file or dictionary
-    while (!is.eof()) {
-      std::string line;
-      std::getline(is, line);
-      if (line.length()) {
-        if (_dict_input) {
-          size_t p = line.find(" ");
-          if (p == std::string::npos || 
-              line.find(" ", p+1) != std::string::npos) {
-            throw std::runtime_error("Failed reading vocabulary file");
-          }
-          _vocab[line.substr(0, p)] += std::stoi(line.substr(p+1));
-        } else {
-          std::vector<AnnotatedToken> tokens;
-          tokenizer->tokenize(line, tokens);
-          for(const auto& token : tokens) {
-            if (!Tokenizer::is_placeholder(token.str()))
-              _vocab[token.str()]++;
-          }
-        }
+    std::string line;
+    while (std::getline(is, line))
+    {
+      if (line.empty())
+        continue;
+      if (_dict_input)
+      {
+        size_t p = line.find(" ");
+        if (p == std::string::npos || line.find(" ", p + 1) != std::string::npos)
+          throw std::runtime_error("Failed reading vocabulary file");
+        _vocab[line.substr(0, p)] += std::stoi(line.substr(p + 1));
       }
+      else
+        ingest(line, tokenizer);
     }
   }
 
