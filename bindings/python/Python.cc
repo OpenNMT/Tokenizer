@@ -268,11 +268,8 @@ public:
   TokenizerWrapper learn(const std::string& model_path, bool verbose)
   {
     {
-      std::ofstream out(model_path);
-      if (!out)
-        throw std::invalid_argument("Failed to open model path " + model_path);
       py::gil_scoped_release release;
-      _learner->learn(out, nullptr, verbose);
+      _learner->learn(model_path, nullptr, verbose);
     }
 
     auto new_tokenizer = create_tokenizer(model_path, _tokenizer.get());
@@ -342,9 +339,14 @@ class SentencePieceLearnerWrapper : public SubwordLearnerWrapper
 {
 public:
   SentencePieceLearnerWrapper(const TokenizerWrapper* tokenizer,
+                              bool keep_vocab,
                               py::kwargs kwargs)
     : SubwordLearnerWrapper(tokenizer,
-                            new onmt::SPMLearner(false, parse_kwargs(kwargs), create_temp_file()))
+                            new onmt::SPMLearner(false,
+                                                 parse_kwargs(kwargs),
+                                                 create_temp_file(),
+                                                 keep_vocab))
+    , _keep_vocab(keep_vocab)
   {
   }
 
@@ -352,13 +354,17 @@ protected:
   onmt::Tokenizer* create_tokenizer(const std::string& model_path,
                                     const onmt::Tokenizer* tokenizer) const
   {
+    std::string sp_model = _keep_vocab ? model_path + ".model" : model_path;
     if (!tokenizer)
-      return new onmt::Tokenizer(model_path);
+      return new onmt::Tokenizer(sp_model);
 
     auto new_tokenizer = new onmt::Tokenizer(*tokenizer);
-    new_tokenizer->set_sp_model(model_path);
+    new_tokenizer->set_sp_model(sp_model);
     return new_tokenizer;
   }
+
+private:
+  bool _keep_vocab;
 };
 
 PYBIND11_MODULE(pyonmttok, m)
@@ -418,8 +424,9 @@ PYBIND11_MODULE(pyonmttok, m)
     ;
 
   py::class_<SentencePieceLearnerWrapper>(m, "SentencePieceLearner")
-    .def(py::init<const TokenizerWrapper*, py::kwargs>(),
-         py::arg("tokenizer")=py::none())
+    .def(py::init<const TokenizerWrapper*, bool, py::kwargs>(),
+         py::arg("tokenizer")=py::none(),
+         py::arg("keep_vocab")=false)
     .def("ingest", &SentencePieceLearnerWrapper::ingest, py::arg("text"))
     .def("ingest_file", &SentencePieceLearnerWrapper::ingest_file, py::arg("path"))
     .def("learn", &SentencePieceLearnerWrapper::learn,
