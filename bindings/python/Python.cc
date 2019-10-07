@@ -1,6 +1,5 @@
 #include <fstream>
 #include <memory>
-#include <sstream>
 
 #include <pybind11/pybind11.h>
 
@@ -263,8 +262,7 @@ public:
 
   void ingest(const std::string& text)
   {
-    std::istringstream in(text);
-    _learner->ingest(in, _tokenizer.get());
+    _learner->ingest(text, _tokenizer.get());
   }
 
   TokenizerWrapper learn(const std::string& model_path, bool verbose)
