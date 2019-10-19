@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <fstream>
 #include <memory>
 #include <unordered_map>
@@ -30,12 +29,12 @@ namespace onmt
 
     void set_input_filename(const std::string& filename);
 
-    void ingest(const std::string& text, const Tokenizer* tokenizer = nullptr) override;
-    void ingest(std::istream& is, const Tokenizer* tokenizer = 0) override;
     void learn(std::ostream& os, const char* description = 0, bool verbose = false) override;
     void learn(const std::string& model_path,
                const char* description = 0,
                bool verbose = false) override;
+  protected:
+    void ingest_token(const std::string& token) override;
   private:
     std::string _args;
     std::string _input_filename;

@@ -1,11 +1,6 @@
 #include "onmt/SPMLearner.h"
 
-#include <cstdio>
-#include <iostream>
-
 #include <sentencepiece_trainer.h>
-
-#include "onmt/Tokenizer.h"
 
 namespace onmt
 {
@@ -63,36 +58,10 @@ namespace onmt
       _input_stream.reset(new std::ofstream(_input_filename));
   }
 
-  void SPMLearner::ingest(const std::string& text, const Tokenizer* tokenizer)
+  void SPMLearner::ingest_token(const std::string& token)
   {
     init_input_stream();
-
-    if (!tokenizer)
-      *_input_stream << text;
-    else
-    {
-      std::vector<AnnotatedToken> tokens;
-      tokenizer->tokenize(text, tokens);
-      for (const auto& token : tokens)
-      {
-        if (!Tokenizer::is_placeholder(token.str()))
-          *_input_stream << token.str() << std::endl;
-      }
-    }
-  }
-
-  void SPMLearner::ingest(std::istream& is, const Tokenizer* tokenizer)
-  {
-    init_input_stream();
-
-    if (!tokenizer)
-      *_input_stream << is.rdbuf();
-    else
-    {
-      std::string line;
-      while (std::getline(is, line))
-        ingest(line, tokenizer);
-    }
+    *_input_stream << token << std::endl;
   }
 
   void SPMLearner::learn(std::ostream& os, const char* description, bool verbose)
