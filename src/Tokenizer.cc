@@ -137,7 +137,10 @@ namespace onmt
 #ifdef WITH_SP
     if (dynamic_cast<const SentencePiece*>(subword_encoder) != nullptr
         && _mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
+    {
       _spacer_annotate = true;
+      _no_substitution = true;
+    }
 #endif
   }
 
@@ -954,7 +957,10 @@ namespace onmt
   {
 #ifdef WITH_SP
     if (_mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
+    {
       _spacer_annotate = true;
+      _no_substitution = true;
+    }
     return this->set_subword_encoder_model<SentencePiece>(model_path, cache_model);
 #else
     throw std::runtime_error("The Tokenizer was not built with SentencePiece support");
