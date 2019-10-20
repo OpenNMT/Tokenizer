@@ -22,11 +22,18 @@ The Tokenizer can be used in Python, C++, or command line. Each mode exposes the
 
 ### Python API
 
-```python
-import pyonmttok
+```bash
+pip install pyonmttok
+```
 
-tokenizer = pyonmttok.Tokenizer("conservative", joiner_annotate=True)
-tokens, _ = tokenizer.tokenize("Hello World!")
+```python
+>>> import pyonmttok
+>>> tokenizer = pyonmttok.Tokenizer("conservative", joiner_annotate=True)
+>>> tokens, _ = tokenizer.tokenize("Hello World!")
+>>> tokens
+['Hello', 'World', '￭!']
+>>> tokenizer.detokenize(tokens)
+'Hello World!'
 ```
 
 See the [Python API description](bindings/python) for more details.
