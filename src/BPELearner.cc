@@ -13,13 +13,11 @@ The code is converted from bpe_learn.py (https://github.com/rsennrich/subword-nm
 #include "onmt/BPELearner.h"
 
 #include <algorithm>
-#include <fstream>
 #include <limits>
 #include <list>
 #include <map>
 
 #include "onmt/unicode/Unicode.h"
-#include "onmt/Tokenizer.h"
 
 namespace onmt
 {
@@ -31,50 +29,39 @@ namespace onmt
                          int min_frequency,
                          bool dict_input,
                          bool total_symbols)
-    : SubwordLearner(verbose)
+    : SubwordLearner(verbose, new Tokenizer(Tokenizer::Mode::Space))
     , _symbols(symbols)
     , _min_frequency(min_frequency)
     , _dict_input(dict_input)
     , _total_symbols(total_symbols)
-    , _default_tokenizer(new Tokenizer(onmt::Tokenizer::Mode::Space))
   {
   }
 
-  void BPELearner::ingest(const std::string& text, const Tokenizer* tokenizer)
+  void BPELearner::load_from_dictionary(std::istream& is)
   {
-    if (!tokenizer)
-      tokenizer = _default_tokenizer.get();
-
-    std::vector<AnnotatedToken> tokens;
-    tokenizer->tokenize(text, tokens);
-    for (const auto& token : tokens)
-    {
-      if (!Tokenizer::is_placeholder(token.str()))
-        _vocab[token.str()]++;
-    }
-  }
-
-  void BPELearner::ingest(std::istream& is, const Tokenizer* tokenizer)
-  {
-    if (!tokenizer)
-      tokenizer = _default_tokenizer.get();
-
-    // get_vocabulary - builds vocabulary from file or dictionary
     std::string line;
     while (std::getline(is, line))
     {
       if (line.empty())
         continue;
-      if (_dict_input)
-      {
-        size_t p = line.find(" ");
-        if (p == std::string::npos || line.find(" ", p + 1) != std::string::npos)
-          throw std::runtime_error("Failed reading vocabulary file");
-        _vocab[line.substr(0, p)] += std::stoi(line.substr(p + 1));
-      }
-      else
-        ingest(line, tokenizer);
+      size_t p = line.find(" ");
+      if (p == std::string::npos || line.find(" ", p + 1) != std::string::npos)
+        throw std::runtime_error("Failed reading vocabulary file");
+      _vocab[line.substr(0, p)] += std::stoi(line.substr(p + 1));
     }
+  }
+
+  void BPELearner::ingest_token(const std::string& token)
+  {
+    _vocab[token]++;
+  }
+
+  void BPELearner::ingest(std::istream& is, const Tokenizer* tokenizer)
+  {
+    if (_dict_input)
+      load_from_dictionary(is);
+    else
+      SubwordLearner::ingest(is, tokenizer);
   }
 
   class change {

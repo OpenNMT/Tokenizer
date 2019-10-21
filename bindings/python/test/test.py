@@ -130,11 +130,18 @@ def test_bpe_learner(tmpdir):
     tokens, _ = tokenizer.tokenize("hello")
     assert tokens == ["h￭", "ell￭", "o"]
 
-def test_sp_learner(tmpdir):
-    learner = pyonmttok.SentencePieceLearner(vocab_size=17, character_coverage=0.98)
+@pytest.mark.parametrize("keep_vocab", [False, True])
+def test_sp_learner(tmpdir, keep_vocab):
+    learner = pyonmttok.SentencePieceLearner(
+        keep_vocab=keep_vocab, vocab_size=17, character_coverage=0.98)
     learner.ingest("hello word! how are you?")
-    model_path = str(tmpdir.join("sp.model"))
+    model_path = str(tmpdir.join("sp"))
     tokenizer = learner.learn(model_path)
+    if keep_vocab:
+        assert os.path.exists(model_path + ".model")
+        assert os.path.exists(model_path + ".vocab")
+    else:
+        assert os.path.exists(model_path)
     tokens, _ = tokenizer.tokenize("hello")
     assert tokens == ["▁h", "e", "l", "l", "o"]
 
@@ -148,5 +155,5 @@ def test_learner_with_invalid_files(tmpdir, learner):
     learner.ingest("hello word ! how are you ?")
     directory = tmpdir.join("directory")
     directory.ensure(dir=True)
-    with pytest.raises(ValueError):
+    with pytest.raises(Exception):
         learner.learn(str(directory))

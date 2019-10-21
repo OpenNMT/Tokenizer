@@ -102,6 +102,7 @@ learner = pyonmttok.BPELearner(
 # for available training options.
 learner = pyonmttok.SentencePieceLearner(
     tokenizer=None,  # Defaults to tokenization mode "none".
+    keep_vocab=False,  # Keep the generated vocabulary (model_path will act like model_prefix in spm_train)
     **training_options)
 
 learner.ingest(text: str)
