@@ -113,9 +113,23 @@ Path to the SentencePiece model.
 
 To replicate `spm_encode`, the tokenization mode should be `none`. If another mode is selected, SentencePiece will be used as a subtokenizer and receive tokens as inputs.
 
+```bash
+$ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model
+▁H ello ▁world !
+$ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model --joiner_annotate
+H ￭ello world ￭!
+```
+
 ### `sp_nbest_size` (int, default: `0`)
 
 Number of candidates for the SentencePiece sampling API. When the value is 0, the standard SentencePiece encoding is used.
+
+```bash
+$ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model --sp_nbest_size 64
+▁H e llo ▁world !
+$ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model --sp_nbest_size 64
+▁H el l o ▁world !
+```
 
 ### `sp_alpha` (float, default: `0.1`)
 
