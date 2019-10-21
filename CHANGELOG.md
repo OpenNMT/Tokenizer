@@ -23,6 +23,10 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.16.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.16.1) (2019-10-21)
+
+### Fixes and improvements
+
 * Fix invalid SentencePiece training file when generated with `SentencePieceLearner.ingest` (newlines were missing)
 * Correctly ignore placeholders when using `SentencePieceLearner` without a tokenizer
 
