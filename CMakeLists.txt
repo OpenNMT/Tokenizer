@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.1.0)
+
+# Set policy for setting the MSVC runtime library for static MSVC builds
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif()
+
 project(OpenNMTTokenizer)
 
 option(WITH_ICU "Compile with ICU" OFF)
@@ -8,7 +14,13 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall")
+  if(NOT BUILD_SHARED_LIBS)
+    if(CMAKE_VERSION VERSION_LESS "3.15.0")
+      message(FATAL_ERROR "Use CMake 3.15 or later when setting BUILD_SHARED_LIBS to OFF")
+    endif()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  endif()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
