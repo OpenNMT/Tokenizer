@@ -40,8 +40,6 @@ namespace onmt
     std::string _input_filename;
     bool _keep_vocab;
     std::unique_ptr<std::ofstream> _input_stream;
-
-    void init_input_stream();
   };
 
 }
