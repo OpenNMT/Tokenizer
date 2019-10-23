@@ -83,12 +83,6 @@ namespace onmt
           case_type = CaseModifier::extract_case_type(tokens[i].str()).second;
         tokens[i].set_case(case_type);
       }
-
-      if (token.begin_case_region())
-      {
-        tokens.front().set_case_region_begin(token.get_case());
-        tokens.back().set_case_region_end(token.get_case());
-      }
     }
 
     if (token.has_features())

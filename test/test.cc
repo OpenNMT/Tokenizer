@@ -314,6 +314,31 @@ TEST(TokenizerTest, CaseMarkupWithJoiners) {
                      "hello woRlD!", "hello wo￭ ｟mrk_case_modifier_C｠ rl￭ ｟mrk_case_modifier_C｠ d ￭!");
 }
 
+TEST(TokenizerTest, CaseMarkupUppercaseSequence) {
+  Tokenizer tokenizer(Tokenizer::Mode::Aggressive,
+                      Tokenizer::Flags::CaseMarkup | Tokenizer::Flags::JoinerAnnotate);
+  test_tok_and_detok(tokenizer,
+                     "AA.BB", "｟mrk_begin_case_region_U｠ aa ￭.￭ bb ｟mrk_end_case_region_U｠");
+  test_tok_and_detok(tokenizer,
+                     "A BC", "｟mrk_begin_case_region_U｠ a bc ｟mrk_end_case_region_U｠");
+  test_tok_and_detok(tokenizer,
+                     "AA.", "｟mrk_begin_case_region_U｠ aa ｟mrk_end_case_region_U｠ ￭.");
+  test_tok_and_detok(tokenizer,
+                     "A-B/C", "｟mrk_begin_case_region_U｠ a ￭-￭ b ￭/￭ c ｟mrk_end_case_region_U｠");
+  test_tok_and_detok(tokenizer,
+                     "A-B/c", "｟mrk_begin_case_region_U｠ a ￭-￭ b ｟mrk_end_case_region_U｠ ￭/￭ c");
+  test_tok_and_detok(tokenizer,
+                     "A", "｟mrk_case_modifier_C｠ a");
+  test_tok_and_detok(tokenizer,
+                     "A-", "｟mrk_case_modifier_C｠ a ￭-");
+  test_tok_and_detok(tokenizer,
+                     "ID: A23X52,",
+                     "｟mrk_begin_case_region_U｠ id ￭: a ￭23￭ x ￭52 ｟mrk_end_case_region_U｠ ￭,");
+  test_tok_and_detok(tokenizer,
+                     "Show PP-LX-DP",
+                     "｟mrk_case_modifier_C｠ show ｟mrk_begin_case_region_U｠ pp ￭-￭ lx ￭-￭ dp ｟mrk_end_case_region_U｠");
+}
+
 TEST(TokenizerTest, CaseMarkupWithJoinerNew) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       Tokenizer::Flags::CaseMarkup
@@ -352,7 +377,7 @@ TEST(TokenizerTest, CaseMarkupWithBPE) {
   test_tok_and_detok(tokenizer,
                      "Bonjour monde", "｟mrk_case_modifier_C｠ bon￭ j￭ our mon￭ de");
   test_tok_and_detok(tokenizer,
-                     "BONJOUR MONDE", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ ｟mrk_begin_case_region_U｠ mon￭ de ｟mrk_end_case_region_U｠");
+                     "BONJOUR MONDE", "｟mrk_begin_case_region_U｠ bon￭ j￭ our mon￭ de ｟mrk_end_case_region_U｠");
   test_tok_and_detok(tokenizer,
                      "BONJOUR monde", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ mon￭ de");
 }
