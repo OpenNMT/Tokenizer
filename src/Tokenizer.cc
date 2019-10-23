@@ -786,12 +786,10 @@ namespace onmt
         annotated_tokens.emplace_back(std::move(token));
     }
 
-    if (_case_markup)
+    if (_case_markup || _case_feature)
       annotate_case(annotated_tokens);
     if (_subword_encoder)
       annotated_tokens = encode_subword(annotated_tokens);
-    if (_case_feature)
-      annotate_case(annotated_tokens);
   }
 
   void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
