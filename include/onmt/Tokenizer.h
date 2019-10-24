@@ -42,7 +42,8 @@ namespace onmt
       SpacerNew = 1 << 13,
       PreserveSegmentedTokens = 1 << 14,
       CaseMarkup = 1 << 15,
-      SupportPriorJoiners = 1 << 16
+      SupportPriorJoiners = 1 << 16,
+      SoftCaseRegions = 1 << 17,
     };
 
     static const std::string joiner_marker;
@@ -128,6 +129,7 @@ namespace onmt
 
     bool _case_feature;
     bool _case_markup;
+    bool _soft_case_regions;
     bool _joiner_annotate;
     bool _joiner_new;
     bool _with_separators;

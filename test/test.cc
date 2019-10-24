@@ -314,9 +314,11 @@ TEST(TokenizerTest, CaseMarkupWithJoiners) {
                      "hello woRlD!", "hello wo￭ ｟mrk_case_modifier_C｠ rl￭ ｟mrk_case_modifier_C｠ d ￭!");
 }
 
-TEST(TokenizerTest, CaseMarkupUppercaseSequence) {
+TEST(TokenizerTest, CaseMarkupWithSoftUppercaseRegions) {
   Tokenizer tokenizer(Tokenizer::Mode::Aggressive,
-                      Tokenizer::Flags::CaseMarkup | Tokenizer::Flags::JoinerAnnotate);
+                      Tokenizer::Flags::CaseMarkup
+                      | Tokenizer::Flags::SoftCaseRegions
+                      | Tokenizer::Flags::JoinerAnnotate);
   test_tok_and_detok(tokenizer,
                      "AA.BB", "｟mrk_begin_case_region_U｠ aa ￭.￭ bb ｟mrk_end_case_region_U｠");
   test_tok_and_detok(tokenizer,
@@ -377,7 +379,7 @@ TEST(TokenizerTest, CaseMarkupWithBPE) {
   test_tok_and_detok(tokenizer,
                      "Bonjour monde", "｟mrk_case_modifier_C｠ bon￭ j￭ our mon￭ de");
   test_tok_and_detok(tokenizer,
-                     "BONJOUR MONDE", "｟mrk_begin_case_region_U｠ bon￭ j￭ our mon￭ de ｟mrk_end_case_region_U｠");
+                     "BONJOUR MONDE", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ ｟mrk_begin_case_region_U｠ mon￭ de ｟mrk_end_case_region_U｠");
   test_tok_and_detok(tokenizer,
                      "BONJOUR monde", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ mon￭ de");
 }

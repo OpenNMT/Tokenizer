@@ -84,6 +84,11 @@ namespace onmt
       auto pair = CaseModifier::extract_case_type(token.str());
       token.set(std::move(pair.first));
       token.set_case(pair.second);
+      if (pair.second == CaseModifier::Type::Uppercase)
+      {
+        token.set_case_region_begin(pair.second);
+        token.set_case_region_end(pair.second);
+      }
     }
   }
 
@@ -116,8 +121,15 @@ namespace onmt
   // Define uppercase regions in a sequence of tokens.
   // This function tries to minimize the number of regions by possibly including case
   // invariant characters (numbers, symbols, etc.) in uppercase regions.
-  static void set_uppercase_regions(std::vector<AnnotatedToken>& tokens)
+  static void set_soft_case_regions(std::vector<AnnotatedToken>& tokens)
   {
+    // Reset previous annotations.
+    for (auto& token : tokens)
+    {
+      token.set_case_region_begin(CaseModifier::Type::None);
+      token.set_case_region_end(CaseModifier::Type::None);
+    }
+
     bool in_uppercase_region = false;
     for (size_t i = 0; i < tokens.size(); ++i)
     {
@@ -236,6 +248,7 @@ namespace onmt
   {
     _case_feature = flags & Flags::CaseFeature;
     _case_markup = flags & Flags::CaseMarkup;
+    _soft_case_regions = flags & Flags::SoftCaseRegions;
     _joiner_annotate = flags & Flags::JoinerAnnotate;
     _joiner_new = flags & Flags::JoinerNew;
     _with_separators = flags & Flags::WithSeparators;
@@ -858,7 +871,8 @@ namespace onmt
       annotate_case(annotated_tokens);
     if (_subword_encoder)
       annotated_tokens = encode_subword(annotated_tokens);
-    set_uppercase_regions(annotated_tokens);
+    if (_soft_case_regions)
+      set_soft_case_regions(annotated_tokens);
   }
 
   void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,

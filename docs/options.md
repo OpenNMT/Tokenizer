@@ -97,6 +97,22 @@ $ echo "｟mrk_case_modifier_C｠ hello world !" | cli/detokenize
 Hello world !
 ```
 
+### `soft_case_regions` (boolean, default: `false`)
+
+With `case_markup`, allow uppercase regions to span over case invariant tokens to optimize the overall number of case regions.
+
+```bash
+$ echo "U.N" | cli/tokenize --case_markup
+｟mrk_case_modifier_C｠ u. ｟mrk_case_modifier_C｠ n
+$ echo "U.N" | cli/tokenize --case_markup --soft_case_regions
+｟mrk_begin_case_region_U｠ u. n ｟mrk_end_case_region_U｠
+
+$ echo "A-BC/D" | cli/tokenize --case_markup
+｟mrk_case_modifier_C｠ a- ｟mrk_begin_case_region_U｠ bc ｟mrk_end_case_region_U｠ / ｟mrk_case_modifier_C｠ d
+$ echo "A-BC/D" | cli/tokenize --case_markup --soft_case_regions
+｟mrk_begin_case_region_U｠ a- bc / d ｟mrk_end_case_region_U｠
+```
+
 ### `no_substitution` (boolean, default: `false`)
 
 Disable substitution of special characters defined by the Tokenizer and found in the input text (e.g. joiners, spacers, etc.).
