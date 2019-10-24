@@ -153,7 +153,6 @@ namespace onmt
           in_uppercase_region = true;
         }
       }
-
     }
 
     // Close last region, if any.
