@@ -142,6 +142,7 @@ namespace onmt
         if (case_type == CaseModifier::Type::Uppercase
             || case_type == CaseModifier::Type::CapitalizedFirst
             || (case_type == CaseModifier::Type::None
+                && !Tokenizer::is_placeholder(tokens[i].str())
                 && (has_connected_uppercase(tokens, i) || numbers_only(tokens[i].str()))))
         {
           // Mark intermediate token as uppercase.

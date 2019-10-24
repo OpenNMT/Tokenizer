@@ -339,6 +339,8 @@ TEST(TokenizerTest, CaseMarkupWithSoftUppercaseRegions) {
   test_tok_and_detok(tokenizer,
                      "Show PP-LX-DP",
                      "｟mrk_case_modifier_C｠ show ｟mrk_begin_case_region_U｠ pp ￭-￭ lx ￭-￭ dp ｟mrk_end_case_region_U｠");
+  test_tok_and_detok(tokenizer,
+                     "AA ｟BB｠ CC", "｟mrk_begin_case_region_U｠ aa ｟mrk_end_case_region_U｠ ｟BB｠ ｟mrk_begin_case_region_U｠ cc ｟mrk_end_case_region_U｠");
 }
 
 TEST(TokenizerTest, CaseMarkupWithJoinerNew) {
