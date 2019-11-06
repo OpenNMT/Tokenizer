@@ -24,7 +24,7 @@ namespace onmt
     SPMLearner(bool verbose,
                const std::unordered_map<std::string, std::string>& opts,
                const std::string& input_filename,
-               bool keep_vocab);
+               bool keep_vocab = false);
     ~SPMLearner();
 
     void set_input_filename(const std::string& filename);
