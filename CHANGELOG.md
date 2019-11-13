@@ -23,6 +23,17 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.17.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.17.0) (2019-11-13)
+
+### New features
+
+* Flag `soft_case_regions` to minimize the number of uppercase regions when using `case_markup`
+
+### Fixes and improvements
+
+* Fix mismatch between subword learning and encoding when using `case_feature`
+* [C++] Fix missing default value for new argument of constructor `SPMLearner`
+
 ## [v1.16.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.16.1) (2019-10-21)
 
 ### Fixes and improvements
