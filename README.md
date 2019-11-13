@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/OpenNMT/Tokenizer.svg?branch=master)](https://travis-ci.org/OpenNMT/Tokenizer)
+[![Build Status](https://api.travis-ci.org/OpenNMT/Tokenizer.svg?branch=master)](https://travis-ci.org/OpenNMT/Tokenizer) [![PyPI version](https://badge.fury.io/py/pyonmttok.svg)](https://badge.fury.io/py/pyonmttok)
 
 # Tokenizer
 
