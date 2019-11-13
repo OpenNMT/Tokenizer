@@ -87,6 +87,7 @@ public:
                    bool spacer_new,
                    bool case_feature,
                    bool case_markup,
+                   bool soft_case_regions,
                    bool no_substitution,
                    bool preserve_placeholders,
                    bool preserve_segmented_tokens,
@@ -126,6 +127,8 @@ public:
       flags |= onmt::Tokenizer::Flags::CaseFeature;
     if (case_markup)
       flags |= onmt::Tokenizer::Flags::CaseMarkup;
+    if (soft_case_regions)
+      flags |= onmt::Tokenizer::Flags::SoftCaseRegions;
     if (no_substitution)
       flags |= onmt::Tokenizer::Flags::NoSubstitution;
     if (preserve_placeholders)
@@ -370,7 +373,7 @@ private:
 PYBIND11_MODULE(pyonmttok, m)
 {
   py::class_<TokenizerWrapper>(m, "Tokenizer")
-    .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
+    .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
          py::arg("mode"),
          py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
@@ -387,6 +390,7 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("spacer_new")=false,
          py::arg("case_feature")=false,
          py::arg("case_markup")=false,
+         py::arg("soft_case_regions")=false,
          py::arg("no_substitution")=false,
          py::arg("preserve_placeholders")=false,
          py::arg("preserve_segmented_tokens")=false,

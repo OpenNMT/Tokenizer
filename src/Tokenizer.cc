@@ -92,6 +92,87 @@ namespace onmt
     }
   }
 
+  // Returns true if the token at offset can be connected to an uppercase token or
+  // capital letter. This useful to avoid closing an uppercase region if intermediate
+  // tokens are case invariant.
+  static bool has_connected_uppercase(std::vector<AnnotatedToken>& tokens, size_t offset)
+  {
+    for (size_t j = offset + 1; j < tokens.size(); ++j)
+    {
+      auto case_type = tokens[j].get_case();
+      if (case_type == CaseModifier::Type::Uppercase
+          || case_type == CaseModifier::Type::CapitalizedFirst)
+        return true;
+      else if (case_type != CaseModifier::Type::None)
+        break;
+    }
+    return false;
+  }
+
+  // Returns true if token only contains numbers.
+  static bool numbers_only(const std::string& token)
+  {
+    std::vector<std::string> chars;
+    std::vector<unicode::code_point_t> code_points;
+    unicode::explode_utf8(token, chars, code_points);
+    return std::all_of(code_points.begin(), code_points.end(), unicode::is_number);
+  }
+
+  // Define uppercase regions in a sequence of tokens.
+  // This function tries to minimize the number of regions by possibly including case
+  // invariant characters (numbers, symbols, etc.) in uppercase regions.
+  static void set_soft_case_regions(std::vector<AnnotatedToken>& tokens)
+  {
+    // Reset previous annotations.
+    for (auto& token : tokens)
+    {
+      token.set_case_region_begin(CaseModifier::Type::None);
+      token.set_case_region_end(CaseModifier::Type::None);
+    }
+
+    bool in_uppercase_region = false;
+    for (size_t i = 0; i < tokens.size(); ++i)
+    {
+      auto case_type = tokens[i].get_case();
+
+      if (in_uppercase_region)
+      {
+        // End region on lowercase tokens or case invariant tokens that are not numbers
+        // or not followed by another uppercase sequence.
+        if (case_type == CaseModifier::Type::Uppercase
+            || case_type == CaseModifier::Type::CapitalizedFirst
+            || (case_type == CaseModifier::Type::None
+                && !Tokenizer::is_placeholder(tokens[i].str())
+                && (has_connected_uppercase(tokens, i) || numbers_only(tokens[i].str()))))
+        {
+          // Mark intermediate token as uppercase.
+          tokens[i].set_case(CaseModifier::Type::Uppercase);
+        }
+        else
+        {
+          tokens[i - 1].set_case_region_end(CaseModifier::Type::Uppercase);
+          in_uppercase_region = false;
+        }
+      }
+      else
+      {
+        // Begin region on uppercase tokens or capital letter that are followed by
+        // another uppercase sequence.
+        if (case_type == CaseModifier::Type::Uppercase
+            || (case_type == CaseModifier::Type::CapitalizedFirst
+                && has_connected_uppercase(tokens, i)))
+        {
+          tokens[i].set_case_region_begin(CaseModifier::Type::Uppercase);
+          in_uppercase_region = true;
+        }
+      }
+    }
+
+    // Close last region, if any.
+    if (in_uppercase_region)
+      tokens.back().set_case_region_end(CaseModifier::Type::Uppercase);
+  }
+
   template <typename T>
   std::string int_to_hex(T i, int width = 4)
   {
@@ -168,6 +249,7 @@ namespace onmt
   {
     _case_feature = flags & Flags::CaseFeature;
     _case_markup = flags & Flags::CaseMarkup;
+    _soft_case_regions = flags & Flags::SoftCaseRegions;
     _joiner_annotate = flags & Flags::JoinerAnnotate;
     _joiner_new = flags & Flags::JoinerNew;
     _with_separators = flags & Flags::WithSeparators;
@@ -790,6 +872,8 @@ namespace onmt
       annotate_case(annotated_tokens);
     if (_subword_encoder)
       annotated_tokens = encode_subword(annotated_tokens);
+    if (_soft_case_regions)
+      set_soft_case_regions(annotated_tokens);
   }
 
   void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,

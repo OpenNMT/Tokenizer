@@ -26,6 +26,7 @@ int main(int argc, char* argv[])
     ("preserve_segmented_tokens", po::bool_switch()->default_value(false), "do not mark segmented tokens (segment_* options) with joiners or spacers")
     ("case_feature,c", po::bool_switch()->default_value(false), "lowercase corpus and generate case feature")
     ("case_markup", po::bool_switch()->default_value(false), "lowercase corpus and inject case markup tokens")
+    ("soft_case_regions", po::bool_switch()->default_value(false), "allow case invariant tokens to be included in case regions")
     ("segment_case", po::bool_switch()->default_value(false), "Segment case feature, splits AbC to Ab C to be able to restore case")
     ("segment_numbers", po::bool_switch()->default_value(false), "Segment numbers into single digits")
     ("segment_alphabet", po::value<std::string>()->default_value(""), "comma-separated list of alphabets on which to segment all letters.")
@@ -61,6 +62,8 @@ int main(int argc, char* argv[])
     flags |= onmt::Tokenizer::Flags::CaseFeature;
   if (vm["case_markup"].as<bool>())
     flags |= onmt::Tokenizer::Flags::CaseMarkup;
+  if (vm["soft_case_regions"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::SoftCaseRegions;
   if (vm["joiner_annotate"].as<bool>())
     flags |= onmt::Tokenizer::Flags::JoinerAnnotate;
   if (vm["joiner_new"].as<bool>())
