@@ -299,6 +299,22 @@ TEST(TokenizerTest, CaseFeature) {
            "test￨L \\￨N ￭\\￨N ￭\\￨N ￭\\￭￨N a￨L capitalized￨C lowercased￨L uppercasé￨U mixêd￨M -￨N cyrillic-б￨M");
 }
 
+TEST(TokenizerTest, CaseFeatureWithJoinerNew) {
+  Tokenizer tokenizer(Tokenizer::Mode::Aggressive,
+                      Tokenizer::Flags::CaseFeature
+                      | Tokenizer::Flags::JoinerAnnotate
+                      | Tokenizer::Flags::JoinerNew);
+  test_tok(tokenizer, "a-b.", "a￨L ￭￨N -￨N ￭￨N b￨L ￭￨N .￨N");
+}
+
+TEST(TokenizerTest, CaseFeatureWithSpacerNew) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::CaseFeature
+                      | Tokenizer::Flags::SpacerAnnotate
+                      | Tokenizer::Flags::SpacerNew);
+  test_tok(tokenizer, "a b", "a￨L ▁￨N b￨L");
+}
+
 TEST(TokenizerTest, CaseMarkupWithJoiners) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       Tokenizer::Flags::CaseMarkup | Tokenizer::Flags::JoinerAnnotate);
