@@ -66,21 +66,23 @@ namespace onmt
 
     for (size_t i = 0; i < chars.size(); ++i)
     {
-      unicode::code_point_t v = code_points[i];
+      const auto& c = chars[i];
+      const auto v = code_points[i];
       unicode::_type_letter type_letter;
 
       if (is_letter(v, type_letter))
       {
         current_case = update_type(current_case, type_letter);
-        unicode::code_point_t lower = unicode::get_lower(v);
-        if (lower)
-          v = lower;
+        if (type_letter == unicode::_letter_upper)
+          new_token += unicode::cp_to_utf8(unicode::get_lower(v));
+        else
+          new_token += c;
       }
-
-      new_token += unicode::cp_to_utf8(v);
+      else
+        new_token += c;
     }
 
-    return std::make_pair(new_token, current_case);
+    return std::make_pair(std::move(new_token), std::move(current_case));
   }
 
   std::string CaseModifier::apply_case(const std::string& token, char feat)
