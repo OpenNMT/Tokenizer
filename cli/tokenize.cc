@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
     ("spacer_annotate", po::bool_switch()->default_value(false), "mark spaces with spacer tokens (mutually exclusive with joiner_annotate)")
     ("spacer_new", po::bool_switch()->default_value(false), "make spacers independent tokens")
     ("preserve_placeholders", po::bool_switch()->default_value(false), "do not mark placeholders with joiners or spacers")
+    ("no_substitution", po::bool_switch()->default_value(false), "do not replace special characters found in the input text")
     ("preserve_segmented_tokens", po::bool_switch()->default_value(false), "do not mark segmented tokens (segment_* options) with joiners or spacers")
     ("case_feature,c", po::bool_switch()->default_value(false), "lowercase corpus and generate case feature")
     ("case_markup", po::bool_switch()->default_value(false), "lowercase corpus and inject case markup tokens")
@@ -72,6 +73,8 @@ int main(int argc, char* argv[])
     flags |= onmt::Tokenizer::Flags::SpacerAnnotate;
   if (vm["spacer_new"].as<bool>())
     flags |= onmt::Tokenizer::Flags::SpacerNew;
+  if (vm["no_substitution"].as<bool>())
+    flags |= onmt::Tokenizer::Flags::NoSubstitution;
   if (vm["preserve_placeholders"].as<bool>())
     flags |= onmt::Tokenizer::Flags::PreservePlaceholders;
   if (vm["preserve_segmented_tokens"].as<bool>())
