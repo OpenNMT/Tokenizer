@@ -363,7 +363,7 @@ namespace onmt
 #else
       map_unicode::const_iterator it = map_lower.find(u);
       if (it == map_lower.end())
-        return 0;
+        return u;
       return it->second;
 #endif
     }
@@ -387,7 +387,7 @@ namespace onmt
 
       map_unicode::const_iterator it = map_upper.find(u);
       if (it == map_upper.end())
-        return 0;
+        return u;
       return it->second;
 #endif
     }
