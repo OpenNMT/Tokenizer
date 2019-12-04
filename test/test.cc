@@ -143,6 +143,13 @@ TEST(TokenizerTest, NoneWithPlaceholders2) {
   test_tok(tokenizer, "Hello:｟World｠!", "Hello:￭ ｟World｠ ￭ !");
 }
 
+TEST(TokenizerTest, PreserveTokensInNoneMode) {
+  Tokenizer tokenizer(Tokenizer::Mode::None,
+                      Tokenizer::Flags::JoinerAnnotate
+                      | Tokenizer::Flags::PreserveSegmentedTokens);
+  test_tok(tokenizer, "Hello｟World｠!", "Hello ￭ ｟World｠ ￭ !");
+}
+
 TEST(TokenizerTest, BasicSpace) {
   Tokenizer tokenizer(Tokenizer::Mode::Space);
   test_tok(tokenizer,

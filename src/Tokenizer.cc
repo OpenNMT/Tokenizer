@@ -552,6 +552,8 @@ namespace onmt
             // Flush accumulated token and mark joint if it did not finish by a separator.
             if (i > 0 && !unicode::is_separator(code_points_main[i - 1]))
               token.join_right();
+            if (_preserve_segmented_tokens)
+              token.preserve();
             tokens.emplace_back(std::move(token));
             token.clear();
           }
@@ -575,7 +577,7 @@ namespace onmt
           // character was accumulated.
           if (i + 1 < chars.size() && !unicode::is_separator(code_points_main[i + 1]))
             token.join_right();
-          if (_preserve_placeholders)
+          if (_preserve_placeholders || _preserve_segmented_tokens)
             token.preserve();
           tokens.emplace_back(std::move(token));
           token.clear();

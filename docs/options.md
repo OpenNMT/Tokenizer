@@ -222,6 +222,40 @@ $ echo "Hello｟World｠" | cli/tokenize --joiner_annotate --preserve_placeholde
 Hello ￭ ｟World｠
 ```
 
+### `preserve_segmented_tokens` (boolean, default: `false`)
+
+Do not attach joiners or spacers to tokens that were segmented by:
+
+* a `segment_*` option (see next section)
+
+```bash
+$ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_change \
+    --joiner_annotate
+測￭ 試￭ abc
+$ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_change \
+    --joiner_annotate --preserve_segmented_tokens
+測 ￭ 試 ￭ abc
+```
+
+* the tokenization mode "none"
+
+```bash
+$ echo "a｟b｠" | cli/tokenize --mode none --joiner_annotate
+a￭ ｟b｠
+$ echo "a｟b｠" | cli/tokenize --mode none --joiner_annotate --preserve_segmented_tokens
+a ￭ ｟b｠
+```
+
+### `support_prior_joiners`(boolean, default: `false`)
+
+If the input already has joiners, support these joiners as pre-tokenization marks.
+
+```bash
+$ echo "pre￭ tokenization." | cli/tokenize --joiner_annotate --support_prior_joiners \
+   --mode aggressive
+pre￭ tokenization ￭.
+```
+
 ## Segmenting
 
 ### `segment_case` (boolean, default: `false`)
@@ -260,24 +294,4 @@ Split token on alphabet change.
 ```bash
 $ echo "測試abc" | cli/tokenize --segment_alphabet_change
 測試 abc
-```
-
-### `preserve_segmented_tokens` (boolean, default: `false`)
-
-Do not attach joiners or spacers to tokens that were segmented by any `segment_*` options above.
-
-```bash
-$ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_change \
-    --joiner_annotate --preserve_segmented_tokens
-測 ￭ 試 ￭ abc
-```
-
-### `support_prior_joiners`(boolean, default: `false`)
-
-If the input already has joiners, support these joiners as pre-tokenization marks.
-
-```bash
-$ echo "pre￭ tokenization." | cli/tokenize --joiner_annotate --support_prior_joiners \
-   --mode aggressive
-pre￭ tokenization ￭.
 ```
