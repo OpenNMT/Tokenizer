@@ -7,6 +7,7 @@
 namespace onmt
 {
 
+  // TODO: this should not be a class.
   class OPENNMTTOKENIZER_EXPORT CaseModifier
   {
   public:
