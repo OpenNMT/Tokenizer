@@ -663,6 +663,9 @@ namespace onmt
                                 std::vector<AnnotatedToken>& annotated_tokens,
                                 std::unordered_map<std::string, size_t>* alphabets) const
   {
+    // TODO: this method has grown big and is hard to follow. It should be refactored into
+    // smaller pieces to clarify its logic.
+
     {
       std::vector<std::string> chars;
       std::vector<unicode::code_point_t> code_points_main;
