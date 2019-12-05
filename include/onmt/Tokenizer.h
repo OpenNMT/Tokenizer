@@ -154,6 +154,12 @@ namespace onmt
 
     void tokenize_on_placeholders(const std::string& text,
                                   std::vector<AnnotatedToken>& annotated_tokens) const;
+    void tokenize_on_spaces(const std::string& text,
+                            std::vector<AnnotatedToken>& annotated_tokens) const;
+    void tokenize_text(const std::string& text,
+                       std::vector<AnnotatedToken>& annotated_tokens,
+                       std::unordered_map<std::string, size_t>* alphabets) const;
+
     void tokenize(const std::string& text,
                   std::vector<AnnotatedToken>& annotated_tokens,
                   std::unordered_map<std::string, size_t>* alphabets) const;

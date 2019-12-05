@@ -519,6 +519,46 @@ namespace onmt
     return tokenize(text, annotated_tokens, nullptr);
   }
 
+  void Tokenizer::tokenize(const std::string& text,
+                           std::vector<std::string>& words,
+                           std::vector<std::vector<std::string> >& features,
+                           std::unordered_map<std::string, size_t>* alphabets) const
+  {
+    std::vector<AnnotatedToken> annotated_tokens;
+    tokenize(text, annotated_tokens, alphabets);
+    finalize_tokens(annotated_tokens, words, features);
+  }
+
+  void Tokenizer::tokenize(const std::string& text,
+                           std::vector<AnnotatedToken>& annotated_tokens,
+                           std::unordered_map<std::string, size_t>* alphabets) const
+  {
+    if (text.empty())
+      return;
+
+    annotated_tokens.reserve(text.size());
+
+    switch (_mode)
+    {
+    case Mode::None:
+      tokenize_on_placeholders(text, annotated_tokens);
+      break;
+    case Mode::Space:
+      tokenize_on_spaces(text, annotated_tokens);
+      break;
+    default:
+      tokenize_text(text, annotated_tokens, alphabets);
+      break;
+    }
+
+    if (_case_markup || _case_feature)
+      annotate_case(annotated_tokens);
+    if (_subword_encoder)
+      annotated_tokens = encode_subword(annotated_tokens);
+    if (_soft_case_regions)
+      set_soft_case_regions(annotated_tokens);
+  }
+
   void Tokenizer::tokenize_on_placeholders(const std::string& text,
                                            std::vector<AnnotatedToken>& tokens) const
   {
@@ -591,28 +631,10 @@ namespace onmt
       tokens.emplace_back(std::move(token));
   }
 
-  void Tokenizer::tokenize(const std::string& text,
-                           std::vector<std::string>& words,
-                           std::vector<std::vector<std::string> >& features,
-                           std::unordered_map<std::string, size_t>* alphabets) const
+  void Tokenizer::tokenize_on_spaces(const std::string& text,
+                                     std::vector<AnnotatedToken>& annotated_tokens) const
   {
-    std::vector<AnnotatedToken> annotated_tokens;
-    tokenize(text, annotated_tokens, alphabets);
-    finalize_tokens(annotated_tokens, words, features);
-  }
-
-  void Tokenizer::tokenize(const std::string& text,
-                           std::vector<AnnotatedToken>& annotated_tokens,
-                           std::unordered_map<std::string, size_t>* alphabets) const
-  {
-    annotated_tokens.reserve(text.size());
-
-    if (_mode == Mode::None) {
-      tokenize_on_placeholders(text, annotated_tokens);
-    } else if (_mode == Mode::Space) {
-      if (text.empty())
-        return;
-
+    {
       std::vector<std::string> chunks = unicode::split_utf8(text, " ");
       for (auto& chunk: chunks)
       {
@@ -635,7 +657,13 @@ namespace onmt
         annotated_tokens.insert(annotated_tokens.end(), sub_tokens.begin(), sub_tokens.end());
       }
     }
-    else {
+  }
+
+  void Tokenizer::tokenize_text(const std::string& text,
+                                std::vector<AnnotatedToken>& annotated_tokens,
+                                std::unordered_map<std::string, size_t>* alphabets) const
+  {
+    {
       std::vector<std::string> chars;
       std::vector<unicode::code_point_t> code_points_main;
       std::vector<std::vector<unicode::code_point_t>> code_points_combining;
@@ -871,13 +899,6 @@ namespace onmt
       if (!token.str().empty())
         annotated_tokens.emplace_back(std::move(token));
     }
-
-    if (_case_markup || _case_feature)
-      annotate_case(annotated_tokens);
-    if (_subword_encoder)
-      annotated_tokens = encode_subword(annotated_tokens);
-    if (_soft_case_regions)
-      set_soft_case_regions(annotated_tokens);
   }
 
   template <typename T>
