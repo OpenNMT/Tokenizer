@@ -20,6 +20,8 @@ namespace onmt
 
     virtual std::vector<std::string> encode(const std::string& str) const = 0;
     virtual std::vector<AnnotatedToken> encode_and_annotate(const AnnotatedToken& token) const;
+    virtual std::vector<AnnotatedToken>
+    encode_and_annotate(const std::vector<AnnotatedToken>& tokens) const;
 
     static void propagate_token_properties(const AnnotatedToken& token,
                                            std::vector<AnnotatedToken>& tokens);

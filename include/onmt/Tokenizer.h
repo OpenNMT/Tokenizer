@@ -150,7 +150,6 @@ namespace onmt
     std::set<int> _segment_alphabet;
 
     void read_flags(int flags);
-    std::vector<AnnotatedToken> encode_subword(const std::vector<AnnotatedToken>& tokens) const;
 
     void tokenize_on_placeholders(const std::string& text,
                                   std::vector<AnnotatedToken>& annotated_tokens) const;

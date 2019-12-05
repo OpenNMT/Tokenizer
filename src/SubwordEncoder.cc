@@ -3,6 +3,8 @@
 #include <fstream>
 #include <stdexcept>
 
+#include "onmt/Tokenizer.h"
+
 namespace onmt
 {
 
@@ -54,6 +56,28 @@ namespace onmt
 
     propagate_token_properties(token, tokens);
     return tokens;
+  }
+
+  std::vector<AnnotatedToken>
+  SubwordEncoder::encode_and_annotate(const std::vector<AnnotatedToken>& tokens) const
+  {
+    std::vector<AnnotatedToken> segments;
+    segments.reserve(tokens.size() * 2);
+
+    for (const auto& token : tokens)
+    {
+      if (Tokenizer::is_placeholder(token.str())) {
+        segments.push_back(token);
+        continue;
+      }
+
+      std::vector<AnnotatedToken> sub_segments = encode_and_annotate(token);
+      segments.insert(segments.end(),
+                      std::make_move_iterator(sub_segments.begin()),
+                      std::make_move_iterator(sub_segments.end()));
+    }
+
+    return segments;
   }
 
   void SubwordEncoder::propagate_token_properties(const AnnotatedToken& token,

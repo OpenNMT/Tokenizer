@@ -554,7 +554,7 @@ namespace onmt
     if (_case_markup || _case_feature)
       annotate_case(annotated_tokens);
     if (_subword_encoder)
-      annotated_tokens = encode_subword(annotated_tokens);
+      annotated_tokens = _subword_encoder->encode_and_annotate(annotated_tokens);
     if (_soft_case_regions)
       set_soft_case_regions(annotated_tokens);
   }
@@ -997,25 +997,6 @@ namespace onmt
       if (_case_markup && token.end_case_region())
         tokens.emplace_back(CaseModifier::generate_case_markup_end(token.get_case_region_end()));
     }
-  }
-
-  std::vector<AnnotatedToken> Tokenizer::encode_subword(
-      const std::vector<AnnotatedToken>& tokens) const
-  {
-    std::vector<AnnotatedToken> segments;
-
-    for (const auto& token : tokens)
-    {
-      if (is_placeholder(token.str())) {
-        segments.push_back(token);
-        continue;
-      }
-
-      std::vector<AnnotatedToken> sub_segments = _subword_encoder->encode_and_annotate(token);
-      segments.insert(segments.end(), sub_segments.begin(), sub_segments.end());
-    }
-
-    return segments;
   }
 
   Tokenizer& Tokenizer::set_joiner(const std::string& joiner)
