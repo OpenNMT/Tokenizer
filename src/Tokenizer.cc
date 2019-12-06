@@ -967,6 +967,8 @@ namespace onmt
           prefix = &_joiner;
         if (token.is_joined_right() && i + 1 < annotated_tokens.size())
           suffix = &_joiner;
+        if (token.is_spacer())
+          attach = true;  // Ignore preserve flag for spacers in joiner mode.
         attach = attach && !_joiner_new;
       }
       else if (_spacer_annotate)

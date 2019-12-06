@@ -7,6 +7,7 @@ namespace onmt
 {
 
   static const std::string sp_marker("▁");
+  static const auto sp_marker_length = sp_marker.length();
 
   class SentencePieceProcessor : public sentencepiece::SentencePieceProcessor
   {
@@ -86,34 +87,52 @@ namespace onmt
 
   std::vector<AnnotatedToken> SentencePiece::encode_and_annotate(const AnnotatedToken& token) const
   {
-    std::vector<std::string> encoded = encode(token.str());
+    std::vector<std::string> pieces = encode(token.str());
+
+    // SentencePiece sometimes returns no pieces for a non empty input. In this case
+    // we simply return the original token.
+    if (pieces.empty())
+      return std::vector<AnnotatedToken>(1, token);
+
     std::vector<AnnotatedToken> tokens;
-    if (encoded.empty())
+    tokens.reserve(pieces.size());
+    bool apply_spacer_on_next = false;
+
+    for (auto& piece : pieces)
     {
-      tokens.push_back(token);
-      return tokens;
-    }
+      const auto piece_length = piece.length();
 
-    tokens.reserve(encoded.size());
-
-    for (size_t j = 0; j < encoded.size(); ++j)
-    {
-      const auto& piece = encoded[j];
-      const bool is_marked = (piece.length() >= sp_marker.length()
-                              && piece.compare(0, sp_marker.length(), sp_marker) == 0);
-
-      tokens.emplace_back();
-      auto& new_token = tokens.back();
-
-      if (is_marked)
-        new_token.set(piece.substr(sp_marker.length()));
+      // Prefixed by the spacer.
+      if (piece_length >= sp_marker_length && piece.compare(0, sp_marker_length, sp_marker) == 0)
+      {
+        if (piece_length == sp_marker_length)  // Piece is just the spacer.
+        {
+          // Skip this isolated spacer and mark the next piece with the spacer flag.
+          apply_spacer_on_next = true;
+          continue;
+        }
+        else
+        {
+          AnnotatedToken sub_token(piece.substr(sp_marker_length));
+          sub_token.spacer();
+          tokens.emplace_back(std::move(sub_token));
+        }
+      }
       else
-        new_token.set(std::move(piece));
-
-      if (j > 0 && !is_marked)
-        new_token.join_left();
-      if (is_marked)
-        new_token.spacer();
+      {
+        AnnotatedToken sub_token(std::move(piece));
+        if (apply_spacer_on_next)
+        {
+          sub_token.spacer();
+          sub_token.preserve();  // The spacer was not attached to this piece so preserve it.
+          apply_spacer_on_next = false;
+        }
+        else if (!tokens.empty())
+        {
+          sub_token.join_left();  // No spacer means it should be joined with the previous subtoken.
+        }
+        tokens.emplace_back(std::move(sub_token));
+      }
     }
 
     propagate_token_properties(token, tokens);
