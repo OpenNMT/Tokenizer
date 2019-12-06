@@ -730,6 +730,34 @@ TEST(TokenizerTest, AggressiveWithSentencePieceAndJoiners) {
                      "The t ￭wo s ￭how ￭s ￭, called D ￭es ￭ir ￭e and Se ￭c ￭re ￭t ￭s ￭, will be one ￭-￭ hour p ￭rime ￭-￭ time s ￭how ￭s ￭.");
 }
 
+TEST(TokenizerTest, SentencePieceIsolatedSpacer)
+{
+  Tokenizer tokenizer(Tokenizer::Mode::None,
+                      Tokenizer::Flags::SentencePieceModel | Tokenizer::Flags::PreservePlaceholders,
+                      get_data("sp-models/wmtende.model"));
+  test_tok(tokenizer, "a crumpled sofa", "▁a ▁ cru mpl ed ▁sofa");
+  test_tok(tokenizer, "a ｟ph｠crumpled sofa", "▁a ▁ ｟ph｠ cru mpl ed ▁sofa");
+}
+
+TEST(TokenizerTest, SentencePieceIsolatedSpacerAndJoinerAnnotate)
+{
+  Tokenizer tokenizer(Tokenizer::Mode::None,
+                      Tokenizer::Flags::SentencePieceModel
+                      | Tokenizer::Flags::JoinerAnnotate
+                      | Tokenizer::Flags::PreservePlaceholders,
+                      get_data("sp-models/wmtende.model"));
+  test_tok(tokenizer, "a crumpled sofa", "a cru ￭mpl ￭ed sofa");
+  test_tok(tokenizer, "a ｟ph｠crumpled sofa", "a ｟ph｠ ￭ cru ￭mpl ￭ed sofa");
+  test_tok(tokenizer, "｟ph｠,", "｟ph｠ ￭ ,");
+}
+
+TEST(TokenizerTest, AggressiveWithSentencePieceIsolatedSpacerAndJoinerAnnotate) {
+  Tokenizer tokenizer(Tokenizer::Mode::Aggressive,
+                      Tokenizer::Flags::SentencePieceModel | Tokenizer::Flags::JoinerAnnotate,
+                      get_data("sp-models/wmtende.model"));
+  test_tok(tokenizer, "depending on its temperature.", "depending on its temperature ￭.");
+}
+
 #else
 
 TEST(TokenizerTest, NoSentencePieceSupport) {
