@@ -23,6 +23,10 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.17.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.17.2) (2019-12-06)
+
+### Fixes and improvements
+
 * Fix joiner annotation when SentencePiece returns isolated spacers
 * Apply `preserve_segmented_tokens` in "none" tokenization mode
 * Performance improvements when using `case_feature` or `case_markup`
