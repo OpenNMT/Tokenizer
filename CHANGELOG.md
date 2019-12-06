@@ -23,6 +23,11 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+* Fix joiner annotation when SentencePiece returns isolated spacers
+* Apply `preserve_segmented_tokens` in "none" tokenization mode
+* Performance improvements when using `case_feature` or `case_markup`
+* Add missing `--no_substitution` flag on the command line client
+
 ## [v1.17.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.17.1) (2019-11-28)
 
 ### Fixes and improvements
