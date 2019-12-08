@@ -51,6 +51,12 @@ $ echo "a｟b｠c" | cli/tokenize --mode none
 a ｟b｠ c
 ```
 
+### `no_substitution` (boolean, default: `false`)
+
+Disable substitution of special characters defined by the Tokenizer and found in the input text (e.g. joiners, spacers, etc.).
+
+## Case annotation
+
 ### `case_feature` (boolean, default: `false`)
 
 Lowercase text input and attach case information with the special separator ￨. In the Python and C++ APIs, the case feature is returned in a separate data structure.
@@ -113,11 +119,7 @@ $ echo "A-BC/D" | cli/tokenize --case_markup --soft_case_regions
 ｟mrk_begin_case_region_U｠ a- bc / d ｟mrk_end_case_region_U｠
 ```
 
-### `no_substitution` (boolean, default: `false`)
-
-Disable substitution of special characters defined by the Tokenizer and found in the input text (e.g. joiners, spacers, etc.).
-
-## Subword
+## Subword encoding
 
 ### `bpe_model_path` (string, default: `""`)
 
@@ -159,9 +161,9 @@ Path to the vocabulary file. If set, subword encoders will only generate tokens 
 
 When using `vocabulary`, any words with a frequency lower than `vocabulary_threshold` will be treated as OOV.
 
-## Marking joint tokens
+## Reversible tokenization
 
-These options inject characters to make the tokenization reversible.
+These options inject special characters to make the tokenization reversible.
 
 ### `joiner_annotate` (boolean, default: `false`)
 
