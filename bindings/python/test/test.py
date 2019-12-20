@@ -130,6 +130,15 @@ def test_bpe_learner(tmpdir):
     tokens, _ = tokenizer.tokenize("hello")
     assert tokens == ["h￭", "ell￭", "o"]
 
+def test_bpe_learner_tokens(tmpdir):
+    learner = pyonmttok.BPELearner(symbols=2, min_frequency=1)
+    learner.ingest_token("hello")
+    learner.ingest_token("world")
+    model_path = str(tmpdir.join("bpe.model"))
+    learner.learn(model_path)
+    with open(model_path) as model:
+        assert model.read() == "#version: 0.2\ne l\nel l\n"
+
 @pytest.mark.parametrize("keep_vocab", [False, True])
 def test_sp_learner(tmpdir, keep_vocab):
     learner = pyonmttok.SentencePieceLearner(

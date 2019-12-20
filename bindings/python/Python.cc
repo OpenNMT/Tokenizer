@@ -268,6 +268,11 @@ public:
     _learner->ingest(text, _tokenizer.get());
   }
 
+  void ingest_token(const std::string& token)
+  {
+    _learner->ingest_token(token);
+  }
+
   TokenizerWrapper learn(const std::string& model_path, bool verbose)
   {
     {
@@ -423,6 +428,7 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("total_symbols")=false)
     .def("ingest", &BPELearnerWrapper::ingest, py::arg("text"))
     .def("ingest_file", &BPELearnerWrapper::ingest_file, py::arg("path"))
+    .def("ingest_token", &BPELearnerWrapper::ingest_token, py::arg("token"))
     .def("learn", &BPELearnerWrapper::learn,
          py::arg("model_path"), py::arg("verbose")=false)
     ;
@@ -433,6 +439,7 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("keep_vocab")=false)
     .def("ingest", &SentencePieceLearnerWrapper::ingest, py::arg("text"))
     .def("ingest_file", &SentencePieceLearnerWrapper::ingest_file, py::arg("path"))
+    .def("ingest_token", &SentencePieceLearnerWrapper::ingest_token, py::arg("token"))
     .def("learn", &SentencePieceLearnerWrapper::learn,
          py::arg("model_path"), py::arg("verbose")=false)
     ;
