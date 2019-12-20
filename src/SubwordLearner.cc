@@ -15,6 +15,12 @@ namespace onmt
   {
   }
 
+  void SubwordLearner::ingest_token(const std::string& token)
+  {
+    if (!Tokenizer::is_placeholder(token))
+      ingest_token_impl(token);
+  }
+
   void SubwordLearner::ingest(const std::string& text, const Tokenizer* tokenizer)
   {
     if (!tokenizer)
@@ -23,10 +29,7 @@ namespace onmt
     std::vector<AnnotatedToken> tokens;
     tokenizer->tokenize(text, tokens);
     for (const auto& token : tokens)
-    {
-      if (!Tokenizer::is_placeholder(token.str()))
-        ingest_token(token.str());
-    }
+      ingest_token(token.str());
   }
 
   void SubwordLearner::ingest(std::istream& is, const Tokenizer* tokenizer)

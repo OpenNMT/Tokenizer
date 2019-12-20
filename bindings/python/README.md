@@ -70,11 +70,11 @@ learner = pyonmttok.SentencePieceLearner(vocab_size=32000, character_coverage=0.
 **2\. Feed some raw data:**
 
 ```python
-# Feed sentence by sentence:
+# Feed detokenized sentences:
 learner.ingest("Hello world!")
 learner.ingest("How are you?")
 
-# or feed text files:
+# or detokenized text files:
 learner.ingest_file("/data/train1.en")
 learner.ingest_file("/data/train2.en")
 ```
@@ -107,6 +107,7 @@ learner = pyonmttok.SentencePieceLearner(
 
 learner.ingest(text: str)
 learner.ingest_file(path: str)
+learner.ingest_token(token: str)  # Low-level token-based function.
 
 tokenizer = learner.learn(model_path: str, verbose=False)
 ```

@@ -51,7 +51,7 @@ namespace onmt
     }
   }
 
-  void BPELearner::ingest_token(const std::string& token)
+  void BPELearner::ingest_token_impl(const std::string& token)
   {
     _vocab[token]++;
   }

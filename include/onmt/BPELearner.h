@@ -15,7 +15,7 @@ namespace onmt
     void ingest(std::istream& is, const Tokenizer* tokenizer = nullptr) override;
     void learn(std::ostream& os, const char* description = 0, bool verbose = false) override;
   protected:
-    void ingest_token(const std::string& token) override;
+    void ingest_token_impl(const std::string& token) final;
   private:
     void load_from_dictionary(std::istream& is);
     int _symbols;

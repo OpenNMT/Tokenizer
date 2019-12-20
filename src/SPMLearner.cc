@@ -52,7 +52,7 @@ namespace onmt
     _input_filename = filename;
   }
 
-  void SPMLearner::ingest_token(const std::string& token)
+  void SPMLearner::ingest_token_impl(const std::string& token)
   {
     if (!_input_stream)
       _input_stream.reset(new std::ofstream(_input_filename));
