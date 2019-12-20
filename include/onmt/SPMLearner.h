@@ -34,7 +34,7 @@ namespace onmt
                const char* description = 0,
                bool verbose = false) override;
   protected:
-    void ingest_token_impl(const std::string& token) final override;
+    void ingest_token_impl(const std::string& token) final;
   private:
     std::string _args;
     std::string _input_filename;
