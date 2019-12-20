@@ -370,8 +370,15 @@ private:
   bool _keep_vocab;
 };
 
+static bool is_placeholder(const std::string& token)
+{
+  return onmt::Tokenizer::is_placeholder(token);
+}
+
 PYBIND11_MODULE(pyonmttok, m)
 {
+  m.def("is_placeholder", &is_placeholder, py::arg("token"));
+
   py::class_<TokenizerWrapper>(m, "Tokenizer")
     .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
          py::arg("mode"),
