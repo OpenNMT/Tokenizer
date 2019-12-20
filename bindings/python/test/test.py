@@ -13,6 +13,10 @@ except ImportError:
 
 import pyonmttok
 
+def test_is_placeholder():
+    assert not pyonmttok.is_placeholder("hello")
+    assert pyonmttok.is_placeholder("｟hello｠")
+
 def test_simple():
     tokenizer = pyonmttok.Tokenizer(
         "aggressive",
