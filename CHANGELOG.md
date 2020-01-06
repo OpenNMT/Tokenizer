@@ -21,10 +21,14 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.18.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.0) (2020-01-06)
+
+### New features
+
 * Include `is_placeholder` function in the Python API
 * Add `ingest_token` method to learner objects to allow external tokenization
-
-### Fixes and improvements
 
 ## [v1.17.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.17.2) (2019-12-06)
 
