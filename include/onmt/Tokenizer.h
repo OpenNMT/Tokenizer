@@ -62,6 +62,8 @@ namespace onmt
               int bpe_vocab_threshold = 50);
 
     // External subword encoder constructor.
+    // Note: the tokenizer takes ownership of the subword_encoder pointer unless
+    // the CacheModel flag is set.
     Tokenizer(Mode mode,
               const SubwordEncoder* subword_encoder,
               int flags = Flags::None,
