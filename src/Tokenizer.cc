@@ -214,7 +214,6 @@ namespace onmt
     , _joiner(joiner)
   {
     read_flags(flags);
-    _cache_model = true;
 #ifdef WITH_SP
     if (dynamic_cast<const SentencePiece*>(subword_encoder) != nullptr
         && _mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
