@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.18.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.1) (2020-01-16)
+
+### Fixes and improvements
+
+* [Python] Fix memory leak when deleting Tokenizer object
+
 ## [v1.18.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.0) (2020-01-06)
 
 ### New features
