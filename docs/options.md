@@ -29,12 +29,16 @@ Defines the tokenization mode:
 ```bash
 $ echo "It costs £2,000." | cli/tokenize --mode conservative
 It costs £ 2,000 .
+
 $ echo "It costs £2,000." | cli/tokenize --mode aggressive
 It costs £ 2 , 000 .
+
 $ echo "It costs £2,000." | cli/tokenize --mode char
 I t c o s t s £ 2 , 0 0 0 .
+
 $ echo "It costs £2,000." | cli/tokenize --mode space
 It costs £2,000.
+
 $ echo "It costs £2,000." | cli/tokenize --mode none
 It costs £2,000.
 ```
@@ -47,6 +51,7 @@ It costs £2,000.
 ```bash
 $ echo "a｟b｠c" | cli/tokenize --mode space
 a ｟b｠ c
+
 $ echo "a｟b｠c" | cli/tokenize --mode none
 a ｟b｠ c
 ```
@@ -88,10 +93,13 @@ Lowercase text input and inject case markups as additional tokens. This option a
 ```bash
 $ echo "Hello world!" | cli/tokenize --case_markup
 ｟mrk_case_modifier_C｠ hello world !
+
 $ echo "Hello WORLD!" | cli/tokenize --case_markup
 ｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ world ｟mrk_end_case_region_U｠ !
+
 $ echo "Hello WOrld!" | cli/tokenize --case_markup
 ｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ wo ｟mrk_end_case_region_U｠ rld !
+
 $ echo "Hello WORLD!" | cli/tokenize --case_markup --bpe_model model.bpe
 ｟mrk_case_modifier_C｠ he llo ｟mrk_begin_case_region_U｠ wo rld ｟mrk_end_case_region_U｠ !
 ```
@@ -110,11 +118,13 @@ With `case_markup`, allow uppercase regions to span over case invariant tokens t
 ```bash
 $ echo "U.N" | cli/tokenize --case_markup
 ｟mrk_case_modifier_C｠ u. ｟mrk_case_modifier_C｠ n
+
 $ echo "U.N" | cli/tokenize --case_markup --soft_case_regions
 ｟mrk_begin_case_region_U｠ u. n ｟mrk_end_case_region_U｠
 
 $ echo "A-BC/D" | cli/tokenize --case_markup
 ｟mrk_case_modifier_C｠ a- ｟mrk_begin_case_region_U｠ bc ｟mrk_end_case_region_U｠ / ｟mrk_case_modifier_C｠ d
+
 $ echo "A-BC/D" | cli/tokenize --case_markup --soft_case_regions
 ｟mrk_begin_case_region_U｠ a- bc / d ｟mrk_end_case_region_U｠
 ```
@@ -134,6 +144,7 @@ To replicate `spm_encode`, the tokenization mode should be `none`. If another mo
 ```bash
 $ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model
 ▁H ello ▁world !
+
 $ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model --joiner_annotate
 H ￭ello world ￭!
 ```
@@ -145,6 +156,7 @@ Number of candidates for the SentencePiece sampling API. When the value is 0, th
 ```bash
 $ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model --sp_nbest_size 64
 ▁H e llo ▁world !
+
 $ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model --sp_nbest_size 64
 ▁H el l o ▁world !
 ```
@@ -172,6 +184,7 @@ Mark joints with joiner characters (mutually exclusive with `spacer_annotate`). 
 ```bash
 $ echo "Hello World!" | cli/tokenize --joiner_annotate
 Hello World ￭!
+
 $ echo "It costs £2,000." | cli/tokenize --mode aggressive --joiner_annotate
 It costs £￭ 2 ￭,￭ 000 ￭.
 ```
@@ -209,6 +222,7 @@ When using `spacer_annotate`, make spacers independent tokens.
 ```bash
 $ echo "Hello World!" | cli/tokenize --spacer_annotate --spacer_new
 Hello ▁ World !
+
 $ echo "Hello World!" | cli/tokenize --spacer_annotate --spacer_new --mode char
 H e l l o ▁ W o r l d !
 ```
@@ -220,6 +234,7 @@ Do not attach joiners or spacers to placeholders.
 ```bash
 $ echo "Hello｟World｠" | cli/tokenize --joiner_annotate
 Hello ￭｟World｠
+
 $ echo "Hello｟World｠" | cli/tokenize --joiner_annotate --preserve_placeholders
 Hello ￭ ｟World｠
 ```
@@ -234,6 +249,7 @@ Do not attach joiners or spacers to tokens that were segmented by:
 $ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_change \
     --joiner_annotate
 測￭ 試￭ abc
+
 $ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_change \
     --joiner_annotate --preserve_segmented_tokens
 測 ￭ 試 ￭ abc
@@ -244,6 +260,7 @@ $ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_chan
 ```bash
 $ echo "a｟b｠" | cli/tokenize --mode none --joiner_annotate
 a￭ ｟b｠
+
 $ echo "a｟b｠" | cli/tokenize --mode none --joiner_annotate --preserve_segmented_tokens
 a ￭ ｟b｠
 ```
@@ -285,6 +302,7 @@ List of alphabets for which to split all letters. A complete list of supported a
 ```bash
 $ echo "測試 abc" | cli/tokenize --segment_alphabet Han
 測 試 abc
+
 $ echo "測試 abc" | cli/tokenize --segment_alphabet Han,Latin
 測 試 a b c
 ```
