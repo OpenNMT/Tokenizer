@@ -21,7 +21,7 @@ This file documents the options of the Tokenizer interface which can be used in:
 Defines the tokenization mode:
 
 * `conservative`: standard OpenNMT tokenization
-* `aggressive`: standard OpenNMT tokenization but only keep sequences of the same character type (e.g. "2,000" is tokenized to "2 , 0000", "soft-landing" to "soft - landing", etc.)
+* `aggressive`: standard OpenNMT tokenization but only keep sequences of the same character type (e.g. "2,000" is tokenized to "2 , 000", "soft-landing" to "soft - landing", etc.)
 * `char`: character tokenization
 * `space`: space tokenization
 * `none`: no tokenization is applied and the input is passed directly to the BPE or SentencePiece model if set.
