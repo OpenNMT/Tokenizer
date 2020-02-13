@@ -306,17 +306,14 @@ namespace onmt
       _symbols -= uniq_char_internal.size() + uniq_char_final.size();
     }
 
-    std::set<std::pair<int, bigram > > invstats;
-    for(auto it = stats.begin(); it != stats.end(); it++)
-      invstats.insert(std::make_pair(-it->second, it->first));
-
+    const bool empty_stats = stats.empty();
     const int max = get_most_frequent(stats).second;
 
     float threshold = max / 10.;
     for(int i = 0; i < _symbols; i++) {
       const bigram* most_frequent = get_most_frequent(stats).first;
 
-      if (invstats.size() == 0 || (i && stats[*most_frequent] < threshold)) {
+      if (empty_stats || (i && stats[*most_frequent] < threshold)) {
         prune_stats(stats, big_stats, threshold);
         stats = big_stats;
         most_frequent = get_most_frequent(stats).first;
