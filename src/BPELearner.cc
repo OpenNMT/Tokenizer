@@ -14,7 +14,6 @@ The code is converted from bpe_learn.py (https://github.com/rsennrich/subword-nm
 
 #include <algorithm>
 #include <limits>
-#include <list>
 #include <map>
 
 #include "onmt/unicode/Unicode.h"
@@ -76,7 +75,7 @@ namespace onmt
   };
 
   static void update_pair_statistics(const bigram &pair,
-                                     std::list<change> &changed,
+                                     std::vector<change> &changed,
                                      std::map<bigram, int> &stats,
                                      std::map<bigram, std::map<int, int> > &indices) {
     /* Minimally update the indices and frequency of symbol pairs
@@ -177,7 +176,7 @@ namespace onmt
     }
   }
 
-  static std::list<change> replace_pair(
+  static std::vector<change> replace_pair(
             const bigram pair,
             std::vector<std::pair<int, sequence > > &sorted_vocab,
             std::map<bigram, std::map<int, int> > &indices) {
@@ -185,7 +184,7 @@ namespace onmt
     const std::string &A = pair.first;
     const std::string &B = pair.second;
     
-    std::list<change> changes;
+    std::vector<change> changes;
     for(auto it = indices[pair].begin(); 
         it != indices[pair].end(); it++) {
       if (it->second < 1)
@@ -200,7 +199,7 @@ namespace onmt
           word[h] += B;
           word.erase(word.begin()+h+1);
         }
-      changes.push_back(change(j, word, wordcopy, freq));
+      changes.emplace_back(j, word, wordcopy, freq);
     }
 
     return changes;
@@ -339,7 +338,7 @@ namespace onmt
       
       os << most_frequent.first << " " << most_frequent.second << "\n";
 
-      std::list<change> changes = replace_pair(most_frequent, sorted_vocab, indices);
+      std::vector<change> changes = replace_pair(most_frequent, sorted_vocab, indices);
       update_pair_statistics(most_frequent, changes, stats, indices);
       stats[most_frequent] = 0;
       if (i % 100 == 0)
