@@ -231,6 +231,30 @@ namespace onmt
     }
   }
 
+  static std::vector<std::pair<int, sequence>>
+  get_inv_char_frequency(const std::unordered_map<std::string, int>& vocab) {
+    /* convert vocab into character sequence+</w> and sort by inv frequency */
+    std::multimap<int, sequence> char_vocab;
+    for (const auto& pair : vocab) {
+      const std::string& token = pair.first;
+      const int frequency = pair.second;
+      sequence chars;
+      unicode::explode_utf8_with_marks(token, chars);
+      chars.back().append("</w>");
+      char_vocab.emplace(-frequency, std::move(chars));
+    }
+
+    std::vector<std::pair<int, sequence>> sorted_vocab;
+    sorted_vocab.reserve(char_vocab.size());
+    for (auto& pair : char_vocab) {
+      const int inv_frequency = pair.first;
+      sequence& chars = pair.second;
+      sorted_vocab.emplace_back(-inv_frequency, std::move(chars));
+    }
+
+    return sorted_vocab;
+  }
+
   void BPELearner::learn(std::ostream &os, const char *description, bool verbose) {
     verbose = verbose || _verbose;
     os << "#version: 0.2\n";    
@@ -244,19 +268,7 @@ namespace onmt
       os << desc << std::endl;
     }
 
-    /* convert vocab into character sequence+</w> and sort by inv frequency */
-    std::multimap<int, sequence > charvocab;
-    for(auto it = _vocab.begin(); it != _vocab.end(); it++) {
-      sequence chars;
-      unicode::explode_utf8_with_marks(it->first, chars);
-      chars.back().append("</w>");
-      charvocab.insert(std::make_pair(-it->second, chars));
-    }
-    std::vector<std::pair<int, sequence > > sorted_vocab;
-    sorted_vocab.reserve(charvocab.size());
-    for(auto it = charvocab.begin(); it != charvocab.end(); it++)
-      sorted_vocab.push_back(std::make_pair(-it->first, it->second));
-
+    std::vector<std::pair<int, sequence>> sorted_vocab = get_inv_char_frequency(_vocab);
     std::map<bigram, int> stats;
     std::map<bigram, std::map<int, int> > indices;
     get_pair_statistics(sorted_vocab, stats, indices);
