@@ -96,8 +96,8 @@ namespace onmt
   static void update_pair_statistics(bigram_collection& collection,
                                      const bigram* pair,
                                      std::vector<change> &changed,
-                                     std::map<const bigram*, int> &stats,
-                                     std::map<const bigram*, std::map<int, int> > &indices) {
+                                     std::unordered_map<const bigram*, int> &stats,
+                                     std::unordered_map<const bigram*, std::map<int, int> > &indices) {
     /* Minimally update the indices and frequency of symbol pairs
 
     if we merge a pair of symbols, only pairs that overlap with occurrences
@@ -175,8 +175,8 @@ namespace onmt
 
   static void get_pair_statistics(bigram_collection& collection,
                                   const std::vector<std::pair<int, sequence > > &sorted_vocab,
-                                  std::map<const bigram*, int> &stats,
-                                  std::map<const bigram*, std::map<int, int> > &indices) {
+                                  std::unordered_map<const bigram*, int> &stats,
+                                  std::unordered_map<const bigram*, std::map<int, int> > &indices) {
     /* Count frequency of all symbol pairs, and create index */
     
     std::set<std::string> uniq_char_internal;
@@ -200,7 +200,7 @@ namespace onmt
   static std::vector<change> replace_pair(
             const bigram* pair,
             std::vector<std::pair<int, sequence > > &sorted_vocab,
-            std::map<const bigram*, std::map<int, int> > &indices) {
+            std::unordered_map<const bigram*, std::map<int, int> > &indices) {
     /* Replace all occurrences of a symbol pair ('A', 'B') with a new symbol 'AB' */
     const std::string &A = pair->first;
     const std::string &B = pair->second;
@@ -226,8 +226,8 @@ namespace onmt
     return changes;
   }
 
-  static void prune_stats(std::map<const bigram*, int> &stats,
-                          std::map<const bigram*, int> &big_stats,
+  static void prune_stats(std::unordered_map<const bigram*, int> &stats,
+                          std::unordered_map<const bigram*, int> &big_stats,
                           float threshold) {
     /* Prune statistics dict for efficiency of max()
 
@@ -276,7 +276,7 @@ namespace onmt
   }
 
   static std::pair<const bigram*, int>
-  get_most_frequent(const std::map<const bigram*, int>& stats) {
+  get_most_frequent(const std::unordered_map<const bigram*, int>& stats) {
     static const bigram empty;
 
     const bigram* most_frequent = &empty;
@@ -306,11 +306,11 @@ namespace onmt
 
     std::vector<std::pair<int, sequence>> sorted_vocab = get_inv_char_frequency(_vocab);
     bigram_collection collection;
-    std::map<const bigram*, int> stats;
-    std::map<const bigram*, std::map<int, int> > indices;
+    std::unordered_map<const bigram*, int> stats;
+    std::unordered_map<const bigram*, std::map<int, int> > indices;
     get_pair_statistics(collection, sorted_vocab, stats, indices);
 
-    std::map<const bigram*, int> big_stats(stats);
+    std::unordered_map<const bigram*, int> big_stats(stats);
 
     if (_total_symbols) {
       std::set<std::string> uniq_char_internal;
