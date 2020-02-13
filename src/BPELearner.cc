@@ -254,6 +254,21 @@ namespace onmt
     return sorted_vocab;
   }
 
+  static std::pair<const bigram*, int> get_most_frequent(const std::map<bigram, int>& stats) {
+    static const bigram empty;
+
+    const bigram* most_frequent = &empty;
+    int frequency = -1;
+    for (const auto& stat : stats) {
+      if (stat.second > frequency) {
+        most_frequent = &stat.first;
+        frequency = stat.second;
+      }
+    }
+
+    return std::make_pair(most_frequent, frequency);
+  }
+
   void BPELearner::learn(std::ostream &os, const char *description, bool verbose) {
     verbose = verbose || _verbose;
     os << "#version: 0.2\n";    
@@ -295,52 +310,35 @@ namespace onmt
     for(auto it = stats.begin(); it != stats.end(); it++)
       invstats.insert(std::make_pair(-it->second, it->first));
 
-    int max = -1;
-    for(auto k = stats.begin(); k != stats.end(); k++) 
-      if (k->second > max) {
-        max = k->second;
-      }
+    const int max = get_most_frequent(stats).second;
 
     float threshold = max / 10.;
     for(int i = 0; i < _symbols; i++) {
-      bigram most_frequent;
-      if (stats.size() > 0) {
-        int frequency = -1;
-        for(auto k = stats.begin(); k != stats.end(); k++) 
-          if (k->second > frequency) {
-            most_frequent = k->first;
-            frequency = k->second;
-          }
-      }
+      const bigram* most_frequent = get_most_frequent(stats).first;
 
-      if (invstats.size() == 0 || (i && stats[most_frequent] < threshold)) {
+      if (invstats.size() == 0 || (i && stats[*most_frequent] < threshold)) {
         prune_stats(stats, big_stats, threshold);
         stats = big_stats;
-        int frequency = -1;
-        for(auto k = stats.begin(); k != stats.end(); k++) 
-          if (k->second > frequency) {
-            most_frequent = k->first;
-            frequency = k->second;
-          }
+        most_frequent = get_most_frequent(stats).first;
         // threshold is inspired by Zipfian assumption, but should only affect speed
-        threshold = stats[most_frequent] * i/(i+10000.0);
+        threshold = stats[*most_frequent] * i/(i+10000.0);
         prune_stats(stats, big_stats, threshold);
       }
 
-      if (stats[most_frequent] < _min_frequency) {
+      if (stats[*most_frequent] < _min_frequency) {
         std::cerr << "no pair has frequency >= " << _min_frequency << ". Stopping\n";
         break;
       }
       if (verbose)
-        std::cerr << "pair " << i << ": " << most_frequent.first << " " << most_frequent.second <<
-                     " -> " << most_frequent.first << most_frequent.second <<
-                     " (frequency " << stats[most_frequent] << ")\n";
+        std::cerr << "pair " << i << ": " << most_frequent->first << " " << most_frequent->second <<
+                     " -> " << most_frequent->first << most_frequent->second <<
+                     " (frequency " << stats[*most_frequent] << ")\n";
       
-      os << most_frequent.first << " " << most_frequent.second << "\n";
+      os << most_frequent->first << " " << most_frequent->second << "\n";
 
-      std::vector<change> changes = replace_pair(most_frequent, sorted_vocab, indices);
-      update_pair_statistics(most_frequent, changes, stats, indices);
-      stats[most_frequent] = 0;
+      std::vector<change> changes = replace_pair(*most_frequent, sorted_vocab, indices);
+      update_pair_statistics(*most_frequent, changes, stats, indices);
+      stats[*most_frequent] = 0;
       if (i % 100 == 0)
         prune_stats(stats, big_stats, threshold);
     }
