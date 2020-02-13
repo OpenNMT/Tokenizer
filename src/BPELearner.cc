@@ -93,8 +93,8 @@ namespace onmt
 
     for(auto &change: changed) {
       int j = change._j;
-      sequence word = change._new_word;
-      sequence old_word = change._word;
+      const sequence& word = change._new_word;
+      const sequence& old_word = change._word;
       int freq = change._freq;
 
       // find all instances of pair, and update frequency/indices around it
@@ -177,7 +177,7 @@ namespace onmt
   }
 
   static std::vector<change> replace_pair(
-            const bigram pair,
+            const bigram& pair,
             std::vector<std::pair<int, sequence > > &sorted_vocab,
             std::map<bigram, std::map<int, int> > &indices) {
     /* Replace all occurrences of a symbol pair ('A', 'B') with a new symbol 'AB' */
@@ -217,7 +217,7 @@ namespace onmt
     for(auto it = stats.begin(); it != stats.end();) {
       auto itnext = it;
       itnext++;
-      bigram item = it->first;
+      const bigram& item = it->first;
       int freq = it->second;
       if (freq < threshold) {
         stats.erase(it);
