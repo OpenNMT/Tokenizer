@@ -15,6 +15,7 @@ The code is converted from bpe_learn.py (https://github.com/rsennrich/subword-nm
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <unordered_set>
 
 #include "onmt/unicode/Unicode.h"
 
@@ -74,10 +75,29 @@ namespace onmt
     int _freq;
   };
 
-  static void update_pair_statistics(const bigram &pair,
+  struct pair_hash {
+    template <typename T1, typename T2>
+    std::size_t operator () (const std::pair<T1, T2>& pair) const {
+      const std::size_t h1 = std::hash<T1>()(pair.first);
+      const std::size_t h2 = std::hash<T2>()(pair.second);
+      return h1 ^ h2;
+    }
+  };
+
+  using bigram_collection = std::unordered_set<bigram, pair_hash>;
+
+  static const bigram*
+  get_bigram(bigram_collection& collection,
+             const std::string& a,
+             const std::string& b) {
+    return &(*collection.emplace(a, b).first);
+  }
+
+  static void update_pair_statistics(bigram_collection& collection,
+                                     const bigram* pair,
                                      std::vector<change> &changed,
-                                     std::map<bigram, int> &stats,
-                                     std::map<bigram, std::map<int, int> > &indices) {
+                                     std::map<const bigram*, int> &stats,
+                                     std::map<const bigram*, std::map<int, int> > &indices) {
     /* Minimally update the indices and frequency of symbol pairs
 
     if we merge a pair of symbols, only pairs that overlap with occurrences
@@ -86,8 +106,8 @@ namespace onmt
 
     stats[pair] = 0;
     indices[pair].clear();
-    const std::string &first = pair.first;
-    const std::string &second = pair.second;
+    const std::string &first = pair->first;
+    const std::string &second = pair->second;
 
     std::string new_pair = first + second;
 
@@ -109,7 +129,7 @@ namespace onmt
         if (i < old_word.size()-1 && old_word[i+1] == second) {
           // assuming a symbol sequence "A B C", if "B C" is merged, reduce the frequency of "A B"
           if (i > 0) {
-            bigram prev(old_word[i-1], old_word[i]);
+            const bigram* prev = get_bigram(collection, old_word[i-1], old_word[i]);
             stats[prev] -= freq;
             indices[prev][j] -= 1;
           }
@@ -117,7 +137,7 @@ namespace onmt
             // assuming a symbol sequence "A B C B", if "B C" is merged, reduce the frequency of "C B".
             // however, skip this if the sequence is A B C B C, because the frequency of "C B" will be reduced by the previous code block
             if (old_word[i+2] != first || i >= old_word.size()-3 || old_word[i+3] != second) {
-              bigram nex(old_word[i+1], old_word[i+2]);
+              const bigram* nex = get_bigram(collection, old_word[i+1], old_word[i+2]);
               stats[nex] -= freq;
               indices[nex][j] -= 1;
             }
@@ -137,14 +157,14 @@ namespace onmt
         i = it - word.begin();
         // assuming a symbol sequence "A BC D", if "B C" is merged, increase the frequency of "A BC"
         if (i) {
-          bigram prev(word[i-1], word[i]);
+          const bigram* prev = get_bigram(collection, word[i-1], word[i]);
           stats[prev] += freq;
           indices[prev][j] += 1;
         }
         // assuming a symbol sequence "A BC B", if "B C" is merged, increase the frequency of "BC B"
         // however, if the sequence is A BC BC, skip this step because the count of "BC BC" will be incremented by the previous code block
         if (i < word.size()-1 && word[i+1] != new_pair) {
-          bigram nex(word[i], word[i+1]);
+          const bigram* nex = get_bigram(collection, word[i], word[i+1]);
           stats[nex] += freq;
           indices[nex][j] += 1;
         }
@@ -153,9 +173,10 @@ namespace onmt
     }
   }
 
-  static void get_pair_statistics(const std::vector<std::pair<int, sequence > > &sorted_vocab,
-                                  std::map<bigram, int> &stats,
-                                  std::map<bigram, std::map<int, int> > &indices) {
+  static void get_pair_statistics(bigram_collection& collection,
+                                  const std::vector<std::pair<int, sequence > > &sorted_vocab,
+                                  std::map<const bigram*, int> &stats,
+                                  std::map<const bigram*, std::map<int, int> > &indices) {
     /* Count frequency of all symbol pairs, and create index */
     
     std::set<std::string> uniq_char_internal;
@@ -165,7 +186,7 @@ namespace onmt
       int freq = sorted_vocab[i].first;
       const sequence &word = sorted_vocab[i].second;
       for(size_t j = 1; j < word.size(); j++) {
-        bigram pair = std::make_pair(word[j-1], word[j]);
+        const bigram* pair = get_bigram(collection, word[j-1], word[j]);
         stats[pair] += freq;
         if (stats[pair] > max)
           max = stats[pair];
@@ -177,12 +198,12 @@ namespace onmt
   }
 
   static std::vector<change> replace_pair(
-            const bigram& pair,
+            const bigram* pair,
             std::vector<std::pair<int, sequence > > &sorted_vocab,
-            std::map<bigram, std::map<int, int> > &indices) {
+            std::map<const bigram*, std::map<int, int> > &indices) {
     /* Replace all occurrences of a symbol pair ('A', 'B') with a new symbol 'AB' */
-    const std::string &A = pair.first;
-    const std::string &B = pair.second;
+    const std::string &A = pair->first;
+    const std::string &B = pair->second;
     
     std::vector<change> changes;
     for(auto it = indices[pair].begin(); 
@@ -205,8 +226,8 @@ namespace onmt
     return changes;
   }
 
-  static void prune_stats(std::map<bigram, int> &stats,
-                          std::map<bigram, int> &big_stats,
+  static void prune_stats(std::map<const bigram*, int> &stats,
+                          std::map<const bigram*, int> &big_stats,
                           float threshold) {
     /* Prune statistics dict for efficiency of max()
 
@@ -217,7 +238,7 @@ namespace onmt
     for(auto it = stats.begin(); it != stats.end();) {
       auto itnext = it;
       itnext++;
-      const bigram& item = it->first;
+      const bigram* item = it->first;
       int freq = it->second;
       if (freq < threshold) {
         stats.erase(it);
@@ -254,14 +275,15 @@ namespace onmt
     return sorted_vocab;
   }
 
-  static std::pair<const bigram*, int> get_most_frequent(const std::map<bigram, int>& stats) {
+  static std::pair<const bigram*, int>
+  get_most_frequent(const std::map<const bigram*, int>& stats) {
     static const bigram empty;
 
     const bigram* most_frequent = &empty;
     int frequency = -1;
     for (const auto& stat : stats) {
       if (stat.second > frequency) {
-        most_frequent = &stat.first;
+        most_frequent = stat.first;
         frequency = stat.second;
       }
     }
@@ -283,11 +305,12 @@ namespace onmt
     }
 
     std::vector<std::pair<int, sequence>> sorted_vocab = get_inv_char_frequency(_vocab);
-    std::map<bigram, int> stats;
-    std::map<bigram, std::map<int, int> > indices;
-    get_pair_statistics(sorted_vocab, stats, indices);
+    bigram_collection collection;
+    std::map<const bigram*, int> stats;
+    std::map<const bigram*, std::map<int, int> > indices;
+    get_pair_statistics(collection, sorted_vocab, stats, indices);
 
-    std::map<bigram, int> big_stats(stats);
+    std::map<const bigram*, int> big_stats(stats);
 
     if (_total_symbols) {
       std::set<std::string> uniq_char_internal;
@@ -313,29 +336,29 @@ namespace onmt
     for(int i = 0; i < _symbols; i++) {
       const bigram* most_frequent = get_most_frequent(stats).first;
 
-      if (empty_stats || (i && stats[*most_frequent] < threshold)) {
+      if (empty_stats || (i && stats[most_frequent] < threshold)) {
         prune_stats(stats, big_stats, threshold);
         stats = big_stats;
         most_frequent = get_most_frequent(stats).first;
         // threshold is inspired by Zipfian assumption, but should only affect speed
-        threshold = stats[*most_frequent] * i/(i+10000.0);
+        threshold = stats[most_frequent] * i/(i+10000.0);
         prune_stats(stats, big_stats, threshold);
       }
 
-      if (stats[*most_frequent] < _min_frequency) {
+      if (stats[most_frequent] < _min_frequency) {
         std::cerr << "no pair has frequency >= " << _min_frequency << ". Stopping\n";
         break;
       }
       if (verbose)
         std::cerr << "pair " << i << ": " << most_frequent->first << " " << most_frequent->second <<
                      " -> " << most_frequent->first << most_frequent->second <<
-                     " (frequency " << stats[*most_frequent] << ")\n";
+                     " (frequency " << stats[most_frequent] << ")\n";
       
       os << most_frequent->first << " " << most_frequent->second << "\n";
 
-      std::vector<change> changes = replace_pair(*most_frequent, sorted_vocab, indices);
-      update_pair_statistics(*most_frequent, changes, stats, indices);
-      stats[*most_frequent] = 0;
+      std::vector<change> changes = replace_pair(most_frequent, sorted_vocab, indices);
+      update_pair_statistics(collection, most_frequent, changes, stats, indices);
+      stats[most_frequent] = 0;
       if (i % 100 == 0)
         prune_stats(stats, big_stats, threshold);
     }
