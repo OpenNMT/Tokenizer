@@ -95,7 +95,7 @@ namespace onmt
 
   static void update_pair_statistics(bigram_collection& collection,
                                      const bigram* pair,
-                                     std::vector<change> &changed,
+                                     const std::vector<change> &changed,
                                      std::unordered_map<const bigram*, int> &stats,
                                      std::unordered_map<const bigram*, std::map<int, int> > &indices) {
     /* Minimally update the indices and frequency of symbol pairs
@@ -111,11 +111,11 @@ namespace onmt
 
     std::string new_pair = first + second;
 
-    for(auto &change: changed) {
-      int j = change._j;
+    for(const auto& change : changed) {
+      const int j = change._j;
       const sequence& word = change._new_word;
       const sequence& old_word = change._word;
-      int freq = change._freq;
+      const int freq = change._freq;
 
       // find all instances of pair, and update frequency/indices around it
       size_t i = 0;
@@ -355,7 +355,7 @@ namespace onmt
       
       os << most_frequent->first << " " << most_frequent->second << "\n";
 
-      std::vector<change> changes = replace_pair(most_frequent, sorted_vocab, indices);
+      const std::vector<change> changes = replace_pair(most_frequent, sorted_vocab, indices);
       update_pair_statistics(collection, most_frequent, changes, stats, indices);
       stats[most_frequent] = 0;
       if (i % 100 == 0)
