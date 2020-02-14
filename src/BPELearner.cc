@@ -236,20 +236,20 @@ namespace onmt
     (until we the most frequent pair is less frequent than a pair we previously pruned)
     big_stats keeps full statistics for when we need to access pruned items
     */
-    for(auto it = stats.begin(); it != stats.end();) {
-      auto itnext = it;
-      itnext++;
-      const bigram* item = it->first;
-      int freq = it->second;
+    std::unordered_map<const bigram*, int> pruned_stats;
+    for (auto& stat : stats) {
+      const int freq = stat.second;
       if (freq < threshold) {
-        stats.erase(it);
+        const bigram* item = stat.first;
         if (freq < 0)
           big_stats[item] += freq;
         else
           big_stats[item] = freq;
+      } else {
+        pruned_stats.emplace(std::move(stat));
       }
-      it = itnext;
     }
+    stats = std::move(pruned_stats);
   }
 
   static std::vector<std::pair<int, sequence>>
