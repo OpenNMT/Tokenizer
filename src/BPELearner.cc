@@ -111,7 +111,7 @@ namespace onmt
     */
 
     stats[pair] = 0;
-    indices[pair].clear();
+    indices[pair] = std::unordered_map<int, int>();
     const std::string &first = pair->first;
     const std::string &second = pair->second;
 
