@@ -204,13 +204,14 @@ namespace onmt
     /* Replace all occurrences of a symbol pair ('A', 'B') with a new symbol 'AB' */
     const std::string &A = pair->first;
     const std::string &B = pair->second;
-    
+
+    const auto& pair_indices = indices[pair];
     std::vector<change> changes;
-    for(auto it = indices[pair].begin(); 
-        it != indices[pair].end(); it++) {
-      if (it->second < 1)
+    changes.reserve(pair_indices.size());
+    for (const auto& index : pair_indices) {
+      if (index.second < 1)
         continue;
-      int j = it->first;
+      const int j = index.first;
       sequence &word = sorted_vocab[j].second;
       int freq = sorted_vocab[j].first;
 
