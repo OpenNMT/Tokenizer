@@ -63,15 +63,21 @@ namespace onmt
       SubwordLearner::ingest(is, tokenizer);
   }
 
-  class change {
-  public:
-    change(int j, const sequence &new_word,
-          const sequence &word, int freq):
-      _j(j), _new_word(new_word), _word(word), _freq(freq) {}
-    int _j;
-    sequence _new_word;
-    sequence _word;
-    int _freq;
+  struct Change {
+    Change(int j_,
+           const sequence& word_,
+           sequence&& old_word_,
+           int freq_)
+      : j(j_)
+      , word(word_)
+      , old_word(old_word_)
+      , freq(freq_) {
+    }
+
+    int j;
+    const sequence& word;
+    sequence old_word;
+    int freq;
   };
 
   struct pair_hash {
@@ -95,7 +101,7 @@ namespace onmt
   static void
   update_pair_statistics(bigram_collection& collection,
                          const bigram* pair,
-                         const std::vector<change>& changed,
+                         const std::vector<Change>& changed,
                          std::unordered_map<const bigram*, int>& stats,
                          std::unordered_map<const bigram*, std::unordered_map<int, int>>& indices) {
     /* Minimally update the indices and frequency of symbol pairs
@@ -112,10 +118,10 @@ namespace onmt
     std::string new_pair = first + second;
 
     for(const auto& change : changed) {
-      const int j = change._j;
-      const sequence& word = change._new_word;
-      const sequence& old_word = change._word;
-      const int freq = change._freq;
+      const int j = change.j;
+      const sequence& word = change.word;
+      const sequence& old_word = change.old_word;
+      const int freq = change.freq;
 
       // find all instances of pair, and update frequency/indices around it
       size_t i = 0;
@@ -198,7 +204,7 @@ namespace onmt
     }
   }
 
-  static std::vector<change>
+  static std::vector<Change>
   replace_pair(const bigram* pair,
                std::vector<std::pair<int, sequence>>& sorted_vocab,
                std::unordered_map<const bigram*, std::unordered_map<int, int>>& indices) {
@@ -207,7 +213,7 @@ namespace onmt
     const std::string &B = pair->second;
 
     const auto& pair_indices = indices[pair];
-    std::vector<change> changes;
+    std::vector<Change> changes;
     changes.reserve(pair_indices.size());
     for (const auto& index : pair_indices) {
       if (index.second < 1)
@@ -222,7 +228,7 @@ namespace onmt
           word[h] += B;
           word.erase(word.begin()+h+1);
         }
-      changes.emplace_back(j, word, wordcopy, freq);
+      changes.emplace_back(j, word, std::move(wordcopy), freq);
     }
 
     return changes;
@@ -356,7 +362,7 @@ namespace onmt
       
       os << most_frequent->first << " " << most_frequent->second << "\n";
 
-      const std::vector<change> changes = replace_pair(most_frequent, sorted_vocab, indices);
+      const std::vector<Change> changes = replace_pair(most_frequent, sorted_vocab, indices);
       update_pair_statistics(collection, most_frequent, changes, stats, indices);
       stats[most_frequent] = 0;
       if (i % 100 == 0)
