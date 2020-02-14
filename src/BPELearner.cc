@@ -277,18 +277,14 @@ namespace onmt
 
   static std::pair<const bigram*, int>
   get_most_frequent(const std::unordered_map<const bigram*, int>& stats) {
-    static const bigram empty;
-
-    const bigram* most_frequent = &empty;
-    int frequency = -1;
-    for (const auto& stat : stats) {
-      if (stat.second > frequency) {
-        most_frequent = stat.first;
-        frequency = stat.second;
-      }
-    }
-
-    return std::make_pair(most_frequent, frequency);
+    // The comparison on the bigram is to have the same priority as previous
+    // versions of this code that iterates on a std::map.
+    return *std::max_element(stats.begin(), stats.end(),
+                             [](const std::pair<const bigram*, int>& a,
+                                const std::pair<const bigram*, int>& b) {
+                               return (a.second < b.second
+                                       || (a.second == b.second && *a.first > *b.first));
+                             });
   }
 
   void BPELearner::learn(std::ostream &os, const char *description, bool verbose) {
@@ -329,30 +325,32 @@ namespace onmt
       _symbols -= uniq_char_internal.size() + uniq_char_final.size();
     }
 
-    const bool empty_stats = stats.empty();
-    const int max = get_most_frequent(stats).second;
+    const int max = stats.empty() ? -1: get_most_frequent(stats).second;
 
     float threshold = max / 10.;
     for(int i = 0; i < _symbols; i++) {
-      const bigram* most_frequent = get_most_frequent(stats).first;
+      const bigram* most_frequent = nullptr;
+      int max_freq = -1;
+      if (!stats.empty())
+        std::tie(most_frequent, max_freq) = get_most_frequent(stats);
 
-      if (empty_stats || (i && stats[most_frequent] < threshold)) {
+      if (stats.empty() || (i && max_freq < threshold)) {
         prune_stats(stats, big_stats, threshold);
         stats = big_stats;
-        most_frequent = get_most_frequent(stats).first;
+        std::tie(most_frequent, max_freq) = get_most_frequent(stats);
         // threshold is inspired by Zipfian assumption, but should only affect speed
-        threshold = stats[most_frequent] * i/(i+10000.0);
+        threshold = max_freq * i/(i+10000.0);
         prune_stats(stats, big_stats, threshold);
       }
 
-      if (stats[most_frequent] < _min_frequency) {
+      if (max_freq < _min_frequency) {
         std::cerr << "no pair has frequency >= " << _min_frequency << ". Stopping\n";
         break;
       }
       if (verbose)
         std::cerr << "pair " << i << ": " << most_frequent->first << " " << most_frequent->second <<
                      " -> " << most_frequent->first << most_frequent->second <<
-                     " (frequency " << stats[most_frequent] << ")\n";
+                     " (frequency " << max_freq << ")\n";
       
       os << most_frequent->first << " " << most_frequent->second << "\n";
 
