@@ -179,8 +179,8 @@ namespace onmt
                                   std::unordered_map<const bigram*, std::map<int, int> > &indices) {
     /* Count frequency of all symbol pairs, and create index */
     
-    std::set<std::string> uniq_char_internal;
-    std::set<std::string> uniq_char_final;
+    std::unordered_set<std::string> uniq_char_internal;
+    std::unordered_set<std::string> uniq_char_final;
     int max = 0;
     for(size_t i = 0; i < sorted_vocab.size(); i++) {
       int freq = sorted_vocab[i].first;
@@ -309,8 +309,8 @@ namespace onmt
     std::unordered_map<const bigram*, int> big_stats(stats);
 
     if (_total_symbols) {
-      std::set<std::string> uniq_char_internal;
-      std::set<std::string> uniq_char_final;
+      std::unordered_set<std::string> uniq_char_internal;
+      std::unordered_set<std::string> uniq_char_final;
       for(size_t i = 0; i < sorted_vocab.size(); i++) {
         const sequence &word = sorted_vocab[i].second;
         for(size_t j = 1; j < word.size(); j++) {
