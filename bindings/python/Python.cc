@@ -270,7 +270,7 @@ public:
 
   void ingest_token(const std::string& token)
   {
-    _learner->ingest_token(token);
+    _learner->ingest_token(token, _tokenizer.get());
   }
 
   TokenizerWrapper learn(const std::string& model_path, bool verbose)

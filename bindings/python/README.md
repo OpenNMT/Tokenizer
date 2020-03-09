@@ -105,7 +105,7 @@ learner = pyonmttok.SentencePieceLearner(
 
 learner.ingest(text: str)
 learner.ingest_file(path: str)
-learner.ingest_token(token: str)  # Low-level token-based function.
+learner.ingest_token(token: str)
 
 tokenizer = learner.learn(model_path: str, verbose=False)
 ```

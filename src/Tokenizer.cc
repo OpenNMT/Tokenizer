@@ -405,6 +405,41 @@ namespace onmt
     return line;
   }
 
+  AnnotatedToken Tokenizer::annotate_token(const std::string& word) const
+  {
+    AnnotatedToken token;
+    size_t subpos = 0;
+    size_t sublen = word.size();
+
+    if (_spacer_annotate)
+    {
+      if (has_left_marker(word, spacer_marker))
+      {
+        subpos += spacer_marker.length();
+        sublen -= spacer_marker.length();
+      }
+      else
+        token.join_left();
+    }
+    else
+    {
+      if (has_right_marker(word, _joiner))
+      {
+        token.join_right();
+        sublen -= _joiner.length();
+      }
+      if (has_left_marker(word, _joiner))
+      {
+        token.join_left();
+        subpos += _joiner.length();
+        sublen -= _joiner.length();
+      }
+    }
+
+    token.set(word.substr(subpos, sublen));
+    return token;
+  }
+
   void Tokenizer::annotate_tokens(const std::vector<std::string>& words,
                                   const std::vector<std::vector<std::string>>& features,
                                   std::vector<AnnotatedToken>& tokens) const
@@ -445,37 +480,7 @@ namespace onmt
         }
       }
 
-      const std::string& word = words[i];
-      size_t subpos = 0;
-      size_t sublen = word.size();
-      AnnotatedToken token;
-
-      if (_spacer_annotate)
-      {
-        if (has_left_marker(word, spacer_marker))
-        {
-          subpos += spacer_marker.length();
-          sublen -= spacer_marker.length();
-        }
-        else
-          token.join_left();
-      }
-      else
-      {
-        if (has_right_join(word))
-        {
-          token.join_right();
-          sublen -= _joiner.length();
-        }
-        if (has_left_join(word))
-        {
-          token.join_left();
-          subpos += _joiner.length();
-          sublen -= _joiner.length();
-        }
-      }
-
-      token.set(word.substr(subpos, sublen));
+      AnnotatedToken token = annotate_token(words[i]);
       token.set_case(case_modifier);
       token.set_index(i);
       if (!features.empty())
