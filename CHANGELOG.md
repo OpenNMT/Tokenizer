@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.18.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.3) (2020-03-09)
+
+### Fixes and improvements
+
+* Strip token annotations when calling `SubwordLearner.ingest_token`
+
 ## [v1.18.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.2) (2020-02-17)
 
 ### Fixes and improvements
