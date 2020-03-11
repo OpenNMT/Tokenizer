@@ -54,7 +54,8 @@ namespace onmt
     if (num_threads <= 1) // Fast path for sequential processing.
     {
       while (std::getline(in, line))
-        out << function(line) << std::endl;
+        out << function(line) << '\n';
+      out.flush();
       return;
     }
 
@@ -80,7 +81,7 @@ namespace onmt
       while (!futures.empty()
              && (blocking
                  || futures.front().wait_for(zero_sec) == std::future_status::ready)) {
-        out << futures.front().get() << std::endl;
+        out << futures.front().get() << '\n';
         futures.pop();
       }
     };
@@ -111,6 +112,7 @@ namespace onmt
     cv.notify_all();
     for (auto& worker : workers)
       worker.join();
+    out.flush();
   }
 
 
