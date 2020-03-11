@@ -299,7 +299,7 @@ namespace onmt
         desc.replace(p, 1, "\n# ");
         p = desc.find("\n", p+1);
       }
-      os << desc << std::endl;
+      os << desc << '\n';
     }
 
     std::vector<std::pair<int, sequence>> sorted_vocab = get_inv_char_frequency(_vocab);
@@ -354,7 +354,7 @@ namespace onmt
                      " -> " << most_frequent->first << most_frequent->second <<
                      " (frequency " << max_freq << ")\n";
       
-      os << most_frequent->first << " " << most_frequent->second << "\n";
+      os << most_frequent->first << ' ' << most_frequent->second << '\n';
 
       const std::vector<Change> changes = replace_pair(most_frequent, sorted_vocab, indices);
       update_pair_statistics(collection, most_frequent, changes, stats, indices);
@@ -362,6 +362,8 @@ namespace onmt
       if (i % 100 == 0)
         prune_stats(stats, big_stats, threshold);
     }
+
+    os.flush();
   }
 
 }

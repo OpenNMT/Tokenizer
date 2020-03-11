@@ -56,7 +56,7 @@ namespace onmt
   {
     if (!_input_stream)
       _input_stream.reset(new std::ofstream(_input_filename));
-    *_input_stream << token << std::endl;
+    *_input_stream << token << '\n';
   }
 
   void SPMLearner::learn(std::ostream& os, const char* description, bool verbose)
@@ -74,6 +74,7 @@ namespace onmt
   void SPMLearner::learn(const std::string& model_path, const char*, bool verbose)
   {
     verbose = verbose || _verbose;
+    _input_stream->flush();
     _input_stream.reset();  // Freeze the input file for training.
 
     if (!verbose)
