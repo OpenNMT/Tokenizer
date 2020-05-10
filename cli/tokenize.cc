@@ -102,12 +102,12 @@ int main(int argc, char* argv[])
     vocabulary_threshold = vm["bpe_vocab_threshold"].as<int>();
   }
 
-  std::unique_ptr<onmt::SubwordEncoder> subword_encoder;
+  onmt::SubwordEncoder* subword_encoder = nullptr;
   std::string bpe_model = (vm.count("bpe_model_path")
                            ? vm["bpe_model_path"].as<std::string>()
                            : vm["bpe_model"].as<std::string>());
   if (!bpe_model.empty())
-    subword_encoder.reset(new onmt::BPE(bpe_model, vm["joiner"].as<std::string>()));
+    subword_encoder = new onmt::BPE(bpe_model, vm["joiner"].as<std::string>());
 #ifdef WITH_SP
   else
   {
@@ -115,9 +115,9 @@ int main(int argc, char* argv[])
                             ? vm["sp_model_path"].as<std::string>()
                             : vm["sp_model"].as<std::string>());
     if (!sp_model.empty())
-      subword_encoder.reset(new onmt::SentencePiece(sp_model,
-                                                    vm["sp_nbest_size"].as<int>(),
-                                                    vm["sp_alpha"].as<float>()));
+      subword_encoder = new onmt::SentencePiece(sp_model,
+                                                vm["sp_nbest_size"].as<int>(),
+                                                vm["sp_alpha"].as<float>());
   }
 #endif
 
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
     subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);
 
   onmt::Tokenizer tokenizer(onmt::Tokenizer::str_to_mode(vm["mode"].as<std::string>()),
-                            subword_encoder.get(),
+                            subword_encoder,
                             flags,
                             vm["joiner"].as<std::string>());
 
