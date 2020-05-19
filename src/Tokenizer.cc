@@ -450,6 +450,9 @@ namespace onmt
 
     for (size_t i = 0; i < words.size(); ++i)
     {
+      if (words[i].empty())
+        continue;
+
       size_t features_offset = 0;
       if (_case_feature)
       {
