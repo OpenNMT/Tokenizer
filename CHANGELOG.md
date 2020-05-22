@@ -23,6 +23,15 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.18.4](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.4) (2020-05-22)
+
+### Fixes and improvements
+
+* Fix segmentation fault on `cli/tokenize` exit
+* Ignore empty tokens during detokenization
+* When writing to a file, avoid flushing the output stream on each line
+* Update `cli/CMakeLists.txt` to mark Boost.ProgramOptions as required
+
 ## [v1.18.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.3) (2020-03-09)
 
 ### Fixes and improvements
