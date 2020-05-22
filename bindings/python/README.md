@@ -11,40 +11,39 @@ import pyonmttok
 
 tokenizer = pyonmttok.Tokenizer(
     mode: str,
-    bpe_model_path="",
-    vocabulary_path="",
-    vocabulary_threshold=0,
-    sp_model_path="",
-    sp_nbest_size=0,
-    sp_alpha=0.1,
-    joiner="￭",
-    joiner_annotate=False,
-    joiner_new=False,
-    spacer_annotate=False,
-    spacer_new=False,
-    case_feature=False,
-    case_markup=False,
-    no_substitution=False,
-    preserve_placeholders=False,
-    preserve_segmented_tokens=False,
-    segment_case=False,
-    segment_numbers=False,
-    segment_alphabet_change=False,
-    support_prior_joiners=False,
-    segment_alphabet=[])
+    bpe_model_path: str = "",
+    vocabulary_path: str = "",
+    vocabulary_threshold: int = 0,
+    sp_model_path: str = "",
+    sp_nbest_size: int = 0,
+    sp_alpha: float = 0.1,
+    joiner: str = "￭",
+    joiner_annotate: bool = False,
+    joiner_new: bool = False,
+    spacer_annotate: bool = False,
+    spacer_new: bool = False,
+    case_feature: bool = False,
+    case_markup: bool = False,
+    no_substitution: bool = False,
+    preserve_placeholders: bool = False,
+    preserve_segmented_tokens: bool = False,
+    segment_case: bool = False,
+    segment_numbers: bool = False,
+    segment_alphabet_change: bool = False,
+    support_prior_joiners: bool = False,
+    segment_alphabet: list = [])
 
 tokens, features = tokenizer.tokenize(text: str)
 
-text = tokenizer.detokenize(tokens, features)
-text = tokenizer.detokenize(tokens)  # will fail if case_feature is set.
+text = tokenizer.detokenize(tokens: list, features: list = None)
 
 # Function that also returns a dictionary mapping a token index to a range in
 # the detokenized text. Set merge_ranges=True to merge consecutive ranges, e.g.
 # subwords of the same token in case of subword tokenization.
-text, ranges = tokenizer.detokenize_with_ranges(tokens, merge_ranges=True)
+text, ranges = tokenizer.detokenize_with_ranges(tokens: list, merge_ranges: bool = True)
 
 # File-based APIs
-tokenizer.tokenize_file(input_path: str, output_path: str, num_threads=1)
+tokenizer.tokenize_file(input_path: str, output_path: str, num_threads: int = 1)
 tokenizer.detokenize_file(input_path: str, output_path: str)
 ```
 
@@ -91,21 +90,21 @@ The returned `tokenizer` instance can be used to apply subword tokenization on n
 # See https://github.com/rsennrich/subword-nmt/blob/master/subword_nmt/learn_bpe.py
 # for argument documentation.
 learner = pyonmttok.BPELearner(
-    tokenizer=None,  # Defaults to tokenization mode "space".
-    symbols=10000,
-    min_frequency=2,
-    total_symbols=False)
+    tokenizer: pyonmttok.Tokenizer = None,  # Defaults to tokenization mode "space".
+    symbols: int = 10000,
+    min_frequency: int = 2,
+    total_symbols: bool = False)
 
 # See https://github.com/google/sentencepiece/blob/master/src/spm_train_main.cc
 # for available training options.
 learner = pyonmttok.SentencePieceLearner(
-    tokenizer=None,  # Defaults to tokenization mode "none".
-    keep_vocab=False,  # Keep the generated vocabulary (model_path will act like model_prefix in spm_train)
+    tokenizer: pyonmttok.Tokenizer = None,  # Defaults to tokenization mode "none".
+    keep_vocab: bool = False,  # Keep the generated vocabulary (model_path will act like model_prefix in spm_train)
     **training_options)
 
 learner.ingest(text: str)
 learner.ingest_file(path: str)
 learner.ingest_token(token: str)
 
-tokenizer = learner.learn(model_path: str, verbose=False)
+tokenizer = learner.learn(model_path: str, verbose: bool = False)
 ```
