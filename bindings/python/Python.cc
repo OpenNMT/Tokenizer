@@ -31,18 +31,18 @@ std::vector<T> to_std_vector(const py::list& list)
 template <typename T>
 py::list to_py_list(const std::vector<T>& vec)
 {
-  py::list list;
-  for (const auto& elem : vec)
-    list.append(elem);
+  py::list list(vec.size());
+  for (size_t i = 0; i < vec.size(); ++i)
+    list[i] = vec[i];
   return list;
 }
 
 template<>
 py::list to_py_list(const std::vector<std::string>& vec)
 {
-  py::list list;
-  for (const auto& elem : vec)
-    list.append(STR_TYPE(elem));
+  py::list list(vec.size());
+  for (size_t i = 0; i < vec.size(); ++i)
+    list[i] = STR_TYPE(vec[i]);
   return list;
 }
 
@@ -182,11 +182,12 @@ public:
     onmt::Ranges ranges;
     std::string text = _tokenizer->detokenize(to_std_vector<std::string>(words),
                                               ranges, merge_ranges);
-    py::list ranges_py;
+    py::list ranges_py(ranges.size());
+    size_t index = 0;
     for (const auto& pair : ranges)
     {
       auto range = py::make_tuple(pair.second.first, pair.second.second);
-      ranges_py.append(py::make_tuple(pair.first, range));
+      ranges_py[index++] = py::make_tuple(pair.first, range);
     }
 
     return py::make_tuple(STR_TYPE(text), py::dict(ranges_py));
