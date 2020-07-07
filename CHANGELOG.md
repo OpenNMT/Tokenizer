@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.18.5](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.5) (2020-07-07)
+
+### Fixes and improvements
+
+* Fix possible crash when applying a case insensitive BPE model on Unicode characters
+
 ## [v1.18.4](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.4) (2020-05-22)
 
 ### Fixes and improvements
