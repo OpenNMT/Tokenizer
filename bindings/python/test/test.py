@@ -14,7 +14,7 @@ except ImportError:
 import pyonmttok
 
 _DATA_DIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "test", "data");
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "test", "data")
 
 def test_is_placeholder():
     assert not pyonmttok.is_placeholder("hello")
