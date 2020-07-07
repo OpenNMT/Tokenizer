@@ -153,27 +153,34 @@ namespace onmt
 
     if (_case_insensitive)
     {
-      std::vector<std::string> word_tc;
+      // Return true case pieces.
+      std::vector<std::string> words_tc;
+      words_tc.reserve(chars.size());
 
       std::vector<std::string> chars_tc;
       std::vector<unicode::code_point_t> code_points_tc;
-
       unicode::explode_utf8(str, chars_tc, code_points_tc);
 
-      std::vector<std::string>::iterator it = chars_tc.begin();
-      for (size_t i = 0; i < chars.size(); ++i)
+      for (size_t word_index = 0, char_index = 0; word_index < chars.size(); ++word_index)
       {
-        size_t curr_length = unicode::utf8len(chars[i]);
-        std::string curr_str;
-        std::vector<std::string>::iterator it_end = it + curr_length;
-        while (it != it_end)
+        // We accumulate true case characters from the original input (str) until the length
+        // of their lower case version (length_lc) matches the length of lowercase word that
+        // was merged by BPE (word_lc).
+        const std::string& word_lc = chars[word_index];
+        std::string word_tc;
+        for (size_t length_lc = 0;
+             char_index < code_points_tc.size() && length_lc < word_lc.size();
+             ++char_index)
         {
-          curr_str += *it;
-          it++;
+          const unicode::code_point_t cp_lc = unicode::get_lower(code_points_tc[char_index]);
+          const std::string char_lc = unicode::cp_to_utf8(cp_lc);
+          length_lc += char_lc.size();
+          word_tc += chars_tc[char_index];
         }
-        word_tc.push_back(curr_str);
+        words_tc.emplace_back(std::move(word_tc));
       }
-      chars.swap(word_tc);
+
+      chars = std::move(words_tc);
     }
 
     if (!_bpe_vocab.empty())
