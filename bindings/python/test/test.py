@@ -13,6 +13,9 @@ except ImportError:
 
 import pyonmttok
 
+_DATA_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "test", "data")
+
 def test_is_placeholder():
     assert not pyonmttok.is_placeholder("hello")
     assert pyonmttok.is_placeholder("｟hello｠")
@@ -122,6 +125,12 @@ def test_detok_with_ranges():
     assert len(ranges) == 2
     assert ranges[0] == (0, 0)
     assert ranges[1] == (2, 2)
+
+def test_bpe_case_insensitive_issue_147():
+    tokenizer = pyonmttok.Tokenizer(
+        "conservative",
+        bpe_model_path=os.path.join(_DATA_DIR, "bpe-models", "issue-147.txt"))
+    tokenizer.tokenize("𝘛𝘩𝘦𝘳𝘦'𝘴 𝘯𝘰𝘵𝘩𝘪𝘯𝘨 𝘮𝘰𝘳𝘦 𝘨𝘭𝘢𝘮𝘰𝘳𝘰𝘶𝘴 𝘵𝘩𝘢𝘯 𝘭𝘰𝘰𝘬𝘪𝘯𝘨 𝘵𝘰𝘸𝘢𝘳𝘥𝘴 𝘵𝘩𝘦 𝘧𝘶𝘵𝘶𝘳𝘦")
 
 def test_bpe_learner(tmpdir):
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
