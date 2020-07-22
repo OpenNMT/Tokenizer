@@ -92,6 +92,15 @@ TEST(TokenizerTest, DetokenizeWithRanges) {
   EXPECT_EQ(ranges[6], (std::pair<size_t, size_t>(11, 11)));
 }
 
+TEST(TokenizerTest, DetokenizeWithUnicodeRanges) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative);
+  Ranges ranges;
+  tokenizer.detokenize(std::vector<std::string>{"测", "试"}, ranges, false, true);
+  ASSERT_EQ(ranges.size(), 2);
+  EXPECT_EQ(ranges[0], (std::pair<size_t, size_t>(0, 0)));
+  EXPECT_EQ(ranges[1], (std::pair<size_t, size_t>(2, 2)));
+}
+
 TEST(TokenizerTest, DetokenizeWithMergedRanges) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative);
   Ranges ranges;

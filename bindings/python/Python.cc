@@ -177,11 +177,15 @@ public:
     }
   }
 
-  py::tuple detokenize_with_ranges(const py::list& words, bool merge_ranges) const
+  py::tuple detokenize_with_ranges(const py::list& words,
+                                   bool merge_ranges,
+                                   bool unicode_ranges) const
   {
     onmt::Ranges ranges;
     std::string text = _tokenizer->detokenize(to_std_vector<std::string>(words),
-                                              ranges, merge_ranges);
+                                              ranges,
+                                              merge_ranges,
+                                              unicode_ranges);
     py::list ranges_py(ranges.size());
     size_t index = 0;
     for (const auto& pair : ranges)
@@ -415,7 +419,9 @@ PYBIND11_MODULE(pyonmttok, m)
     .def("detokenize", &TokenizerWrapper::detokenize,
          py::arg("tokens"), py::arg("features")=py::none())
     .def("detokenize_with_ranges", &TokenizerWrapper::detokenize_with_ranges,
-         py::arg("tokens"), py::arg("merge_ranges")=false)
+         py::arg("tokens"),
+         py::arg("merge_ranges")=false,
+         py::arg("unicode_ranges")=false)
     .def("detokenize_file", &TokenizerWrapper::detokenize_file,
          py::arg("input_path"),
          py::arg("output_path"))

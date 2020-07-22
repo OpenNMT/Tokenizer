@@ -288,9 +288,11 @@ namespace onmt
   std::string
   Tokenizer::detokenize(const std::vector<std::string>& words,
                         const std::vector<std::vector<std::string> >& features,
-                        Ranges& ranges, bool merge_ranges) const
+                        Ranges& ranges,
+                        bool merge_ranges,
+                        bool unicode_ranges) const
   {
-    return detokenize(words, features, &ranges, merge_ranges);
+    return detokenize(words, features, &ranges, merge_ranges, unicode_ranges);
   }
 
   std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens) const
@@ -299,9 +301,11 @@ namespace onmt
   }
 
   std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens,
-                                    Ranges& ranges, bool merge_ranges) const
+                                    Ranges& ranges,
+                                    bool merge_ranges,
+                                    bool unicode_ranges) const
   {
-    return detokenize(tokens, &ranges, merge_ranges);
+    return detokenize(tokens, &ranges, merge_ranges, unicode_ranges);
   }
 
   static Ranges merge_consecutive_ranges(const std::string& text, const Ranges& ranges)
@@ -359,16 +363,22 @@ namespace onmt
   }
 
   std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens,
-                                    Ranges* ranges, bool merge_ranges) const
+                                    Ranges* ranges,
+                                    bool merge_ranges,
+                                    bool unicode_ranges) const
   {
     std::string line;
     line.reserve(tokens.size() * 10);
 
+    size_t line_size = 0;
     for (size_t i = 0; i < tokens.size(); ++i)
     {
       const auto& token = tokens[i];
       if (i > 0 && !tokens[i - 1].is_joined_right() && !token.is_joined_left())
+      {
         line += ' ';
+        line_size += 1;
+      }
 
       std::string prep_word = token.str();
 
@@ -391,9 +401,15 @@ namespace onmt
       if (!prep_word.empty())
       {
         if (ranges)
+        {
+          const size_t range_size = (unicode_ranges
+                                     ? unicode::utf8len(prep_word)
+                                     : prep_word.size());
           ranges->emplace(std::piecewise_construct,
                           std::forward_as_tuple(token.get_index()),
-                          std::forward_as_tuple(line.size(), line.size() + prep_word.size() - 1));
+                          std::forward_as_tuple(line_size, line_size + range_size - 1));
+          line_size += range_size;
+        }
 
         line.append(prep_word);
       }
@@ -501,11 +517,13 @@ namespace onmt
 
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,
                                     const std::vector<std::vector<std::string> >& features,
-                                    Ranges* ranges, bool merge_ranges) const
+                                    Ranges* ranges,
+                                    bool merge_ranges,
+                                    bool unicode_ranges) const
   {
     std::vector<AnnotatedToken> tokens;
     annotate_tokens(words, features, tokens);
-    return detokenize(tokens, ranges, merge_ranges);
+    return detokenize(tokens, ranges, merge_ranges, unicode_ranges);
   }
 
   void Tokenizer::tokenize(const std::string& text,

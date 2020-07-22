@@ -157,15 +157,17 @@ namespace onmt
   }
 
   std::string ITokenizer::detokenize(const std::vector<std::string>& words,
-                                     Ranges& ranges, bool merge_ranges) const
+                                     Ranges& ranges,
+                                     bool merge_ranges,
+                                     bool unicode_ranges) const
   {
     std::vector<std::vector<std::string>> features;
-    return detokenize(words, features, ranges, merge_ranges);
+    return detokenize(words, features, ranges, merge_ranges, unicode_ranges);
   }
 
   std::string ITokenizer::detokenize(const std::vector<std::string>& words,
                                      const std::vector<std::vector<std::string> >& features,
-                                     Ranges&, bool) const
+                                     Ranges&, bool, bool) const
   {
     return detokenize(words, features);
   }

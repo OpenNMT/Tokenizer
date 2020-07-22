@@ -38,9 +38,13 @@ tokens, features = tokenizer.tokenize(text: str)
 text = tokenizer.detokenize(tokens: list, features: list = None)
 
 # Function that also returns a dictionary mapping a token index to a range in
-# the detokenized text. Set merge_ranges=True to merge consecutive ranges, e.g.
-# subwords of the same token in case of subword tokenization.
-text, ranges = tokenizer.detokenize_with_ranges(tokens: list, merge_ranges: bool = True)
+# the detokenized text (in bytes, unless unicode_ranges is set).
+# Set merge_ranges=True to merge consecutive ranges, e.g. subwords of the same
+# token in case of subword tokenization.
+text, ranges = tokenizer.detokenize_with_ranges(
+    tokens: list,
+    merge_ranges: bool = False,
+    unicode_ranges: bool = False)
 
 # File-based APIs
 tokenizer.tokenize_file(input_path: str, output_path: str, num_threads: int = 1)

@@ -35,9 +35,13 @@ namespace onmt
     virtual std::string detokenize(const std::vector<std::string>& words) const;
     virtual std::string detokenize(const std::vector<std::string>& words,
                                    const std::vector<std::vector<std::string> >& features,
-                                   Ranges& ranges, bool merge_ranges = false) const;
+                                   Ranges& ranges,
+                                   bool merge_ranges = false,
+                                   bool unicode_ranges = false) const;
     virtual std::string detokenize(const std::vector<std::string>& words,
-                                   Ranges& ranges, bool merge_ranges = false) const;
+                                   Ranges& ranges,
+                                   bool merge_ranges = false,
+                                   bool unicode_ranges = false) const;
 
     // Tokenize and use spaces as token separators.
     virtual std::string tokenize(const std::string& text) const;

@@ -102,13 +102,17 @@ namespace onmt
                          std::vector<std::vector<std::string>>& features) const;
     std::string detokenize(const std::vector<AnnotatedToken>& tokens) const;
     std::string detokenize(const std::vector<AnnotatedToken>& tokens,
-                           Ranges& ranges, bool merge_ranges = false) const;
+                           Ranges& ranges,
+                           bool merge_ranges = false,
+                           bool unicode_ranges = false) const;
 
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features) const override;
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features,
-                           Ranges& ranges, bool merge_ranges = false) const override;
+                           Ranges& ranges,
+                           bool merge_ranges = false,
+                           bool unicode_ranges = false) const override;
 
     Tokenizer& set_joiner(const std::string& joiner);
 
@@ -170,10 +174,14 @@ namespace onmt
                   std::vector<std::vector<std::string> >& features,
                   std::unordered_map<std::string, size_t>* alphabets) const;
     std::string detokenize(const std::vector<AnnotatedToken>& tokens,
-                           Ranges* ranges, bool merge_ranges = false) const;
+                           Ranges* ranges,
+                           bool merge_ranges = false,
+                           bool unicode_ranges = false) const;
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features,
-                           Ranges* ranges, bool merge_ranges = false) const;
+                           Ranges* ranges,
+                           bool merge_ranges = false,
+                           bool unicode_ranges = false) const;
 
     bool has_left_join(const std::string& word) const;
     bool has_right_join(const std::string& word) const;
