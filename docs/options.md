@@ -113,7 +113,7 @@ Hello world !
 
 ### `soft_case_regions` (boolean, default: `false`)
 
-With `case_markup`, allow uppercase regions to span over case invariant tokens to optimize the overall number of case regions.
+With `case_markup`, allow uppercase regions to span over case invariant tokens to minimize the number of uppercase regions.
 
 ```bash
 $ echo "U.N" | cli/tokenize --case_markup
@@ -246,6 +246,12 @@ Do not attach joiners or spacers to tokens that were segmented by:
 * a `segment_*` option (see next section)
 
 ```bash
+$ echo "WiFi" | cli/tokenize --segment_case --joiner_annotate
+Wi￭ Fi
+
+$ echo "WiFi" | cli/tokenize --segment_case --joiner_annotate --preserve_segmented_tokens
+Wi ￭ Fi
+
 $ echo "測試abc" | cli/tokenize --segment_alphabet Han --segment_alphabet_change \
     --joiner_annotate
 測￭ 試￭ abc
@@ -267,7 +273,7 @@ a ￭ ｟b｠
 
 ### `support_prior_joiners`(boolean, default: `false`)
 
-If the input already has joiners, support these joiners as pre-tokenization marks.
+If the input already has joiners, use these joiners as pre-tokenization marks.
 
 ```bash
 $ echo "pre￭ tokenization." | cli/tokenize --joiner_annotate --support_prior_joiners \
