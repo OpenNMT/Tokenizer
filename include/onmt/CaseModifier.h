@@ -17,7 +17,6 @@ namespace onmt
       Uppercase,
       Mixed,
       Capitalized,
-      CapitalizedFirst,
       None
     };
 

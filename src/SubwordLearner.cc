@@ -15,9 +15,9 @@ namespace onmt
   {
   }
 
-  void SubwordLearner::ingest_token(const AnnotatedToken& token)
+  void SubwordLearner::ingest_token(const Token& token)
   {
-    const std::string& surface = token.str();
+    const std::string& surface = token.surface;
     if (!surface.empty() && !Tokenizer::is_placeholder(surface))
       ingest_token_impl(surface);
   }
@@ -34,7 +34,7 @@ namespace onmt
     if (!tokenizer)
       tokenizer = _default_tokenizer.get();
 
-    std::vector<AnnotatedToken> tokens;
+    std::vector<Token> tokens;
     tokenizer->tokenize(text, tokens);
     for (const auto& token : tokens)
       ingest_token(token);

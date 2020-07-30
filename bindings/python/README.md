@@ -6,6 +6,18 @@ pip install pyonmttok
 
 ## Tokenization
 
+### Example
+
+```python
+>>> import pyonmtok
+>>> tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+>>> tokens, _ = tokenizer.tokenize("Hello World!")
+>>> tokens
+['Hello', 'World', '￭!']
+```
+
+### Interface
+
 ```python
 import pyonmttok
 
@@ -33,7 +45,8 @@ tokenizer = pyonmttok.Tokenizer(
     support_prior_joiners: bool = False,
     segment_alphabet: list = [])
 
-tokens, features = tokenizer.tokenize(text: str)
+# See section "Token API" below for more information about the as_tokens argument.
+tokens, features = tokenizer.tokenize(text: str, as_tokens: bool = False)
 
 text = tokenizer.detokenize(tokens: list, features: list = None)
 
@@ -50,6 +63,8 @@ tokenizer.detokenize_file(input_path: str, output_path: str)
 See the [documentation](../../docs/options.md) for a description of each option.
 
 ## Subword learning
+
+### Example
 
 The Python wrapper supports BPE and SentencePiece subword learning through a common interface:
 
@@ -107,4 +122,56 @@ learner.ingest_file(path: str)
 learner.ingest_token(token: str)
 
 tokenizer = learner.learn(model_path: str, verbose: bool = False)
+```
+
+## Token API
+
+The Token API allows to tokenize text into `pyonmttok.Token` objects. This API can be useful to apply some logics at the token level but still retain enough information to write the tokenization on disk or detokenize.
+
+### Example
+
+```python
+>>> tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+>>> tokens = tokenizer.tokenize("Hello World!", as_tokens=True)
+>>> tokens[-1].surface
+'!'
+>>> tokenizer.serialize_tokens(tokens)[0]
+['Hello', 'World', '￭!']
+>>> tokens[-1].surface = '.'
+>>> tokenizer.serialize_tokens(tokens)[0]
+['Hello', 'World', '￭.']
+>>> tokenizer.detokenize(tokens)
+'Hello World.'
+```
+
+### Interface
+
+The `pyonmttok.Token` class has the following attributes:
+
+* `surface`: a string, the token value
+* `join_left`: a boolean, whether the token should be joined to the token on the left or not
+* `join_right`: a boolean, whether the token should be joined to the token on the right or not
+* `spacer`: a boolean, whether the token is a spacer
+* `preserve`: a boolean, whether joiners and spacers can be attached to this token or not
+* `features`: a list of string, the features attached to the token
+* `casing`: a `pyonmttok.Casing` value, the casing of the token
+* `begin_case_region`: a `pyonmttok.Casing` value, the casing region that the token opens
+* `end_case_region`: a `pyonmttok.Casing` value, the casing region that the token closes
+
+The `pyonmttok.Casing` enumeration can take the following values:
+
+* `Casing.LOWERCASE`
+* `Casing.UPPERCASE`
+* `Casing.MIXED`
+* `Casing.CAPITALIZED`
+* `Casing.NONE`
+
+The `Tokenizer` instances provide methods to serialize or deserialize `Token` objects:
+
+```python
+# Serialize Token objects to strings that can be saved on disk.
+tokens, features = tokenizer.serialize_tokens(tokens: list)
+
+# Deserialize strings into Token objects.
+tokens = tokenizer.deserialize_tokens(tokens: list, features: list = None)
 ```

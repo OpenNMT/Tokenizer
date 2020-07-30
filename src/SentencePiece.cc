@@ -85,16 +85,16 @@ namespace onmt
     return pieces;
   }
 
-  std::vector<AnnotatedToken> SentencePiece::encode_and_annotate(const AnnotatedToken& token) const
+  std::vector<Token> SentencePiece::encode_and_annotate(const Token& token) const
   {
-    std::vector<std::string> pieces = encode(token.str());
+    std::vector<std::string> pieces = encode(token.surface);
 
     // SentencePiece sometimes returns no pieces for a non empty input. In this case
     // we simply return the original token.
     if (pieces.empty())
-      return std::vector<AnnotatedToken>(1, token);
+      return std::vector<Token>(1, token);
 
-    std::vector<AnnotatedToken> tokens;
+    std::vector<Token> tokens;
     tokens.reserve(pieces.size());
     bool apply_spacer_on_next = false;
 
@@ -113,23 +113,23 @@ namespace onmt
         }
         else
         {
-          AnnotatedToken sub_token(piece.substr(sp_marker_length));
-          sub_token.spacer();
+          Token sub_token(piece.substr(sp_marker_length));
+          sub_token.spacer = true;
           tokens.emplace_back(std::move(sub_token));
         }
       }
       else
       {
-        AnnotatedToken sub_token(std::move(piece));
+        Token sub_token(std::move(piece));
         if (apply_spacer_on_next)
         {
-          sub_token.spacer();
-          sub_token.preserve();  // The spacer was not attached to this piece so preserve it.
+          sub_token.spacer = true;
+          sub_token.preserve = true;  // The spacer was not attached to this piece so preserve it.
           apply_spacer_on_next = false;
         }
         else if (!tokens.empty())
         {
-          sub_token.join_left();  // No spacer means it should be joined with the previous subtoken.
+          sub_token.join_left = true;  // No spacer means it should be joined with the previous subtoken.
         }
         tokens.emplace_back(std::move(sub_token));
       }

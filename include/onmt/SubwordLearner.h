@@ -15,7 +15,7 @@ namespace onmt
   public:
     SubwordLearner(bool verbose, const Tokenizer* default_tokenizer = nullptr);
     virtual ~SubwordLearner() = default;
-    virtual void ingest_token(const AnnotatedToken& token);
+    virtual void ingest_token(const Token& token);
     virtual void ingest_token(const std::string& token, const Tokenizer* tokenizer = nullptr);
     virtual void ingest(const std::string& text, const Tokenizer* tokenizer = nullptr);
     virtual void ingest(std::istream& in, const Tokenizer* tokenizer = nullptr);

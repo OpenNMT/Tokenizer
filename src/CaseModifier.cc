@@ -10,7 +10,9 @@ namespace onmt
   static std::string case_markup_begin_prefix = "mrk_begin_case_region_";
   static std::string case_markup_end_prefix = "mrk_end_case_region_";
 
-  static CaseModifier::Type update_type(CaseModifier::Type current, unicode::_type_letter type)
+  static CaseModifier::Type update_type(CaseModifier::Type current,
+                                        unicode::_type_letter type,
+                                        size_t letter_index)
   {
     switch (current)
     {
@@ -18,21 +20,25 @@ namespace onmt
       if (type == unicode::_letter_lower)
         return CaseModifier::Type::Lowercase;
       if (type == unicode::_letter_upper)
-        return CaseModifier::Type::CapitalizedFirst;
+        return CaseModifier::Type::Capitalized;
       break;
     case CaseModifier::Type::Lowercase:
       if (type == unicode::_letter_upper)
         return CaseModifier::Type::Mixed;
       break;
-    case CaseModifier::Type::CapitalizedFirst:
-      if (type == unicode::_letter_lower)
-        return CaseModifier::Type::Capitalized;
-      if (type == unicode::_letter_upper)
-        return CaseModifier::Type::Uppercase;
-      break;
     case CaseModifier::Type::Capitalized:
-      if (type == unicode::_letter_upper)
-        return CaseModifier::Type::Mixed;
+      if (letter_index == 1)
+      {
+        if (type == unicode::_letter_lower)
+          return CaseModifier::Type::Capitalized;
+        if (type == unicode::_letter_upper)
+          return CaseModifier::Type::Uppercase;
+      }
+      else
+      {
+        if (type == unicode::_letter_upper)
+          return CaseModifier::Type::Mixed;
+      }
       break;
     case CaseModifier::Type::Uppercase:
       if (type == unicode::_letter_lower)
@@ -64,7 +70,7 @@ namespace onmt
     std::string new_token;
     new_token.reserve(chars.size());
 
-    for (size_t i = 0; i < chars.size(); ++i)
+    for (size_t i = 0, letter_index = 0; i < chars.size(); ++i)
     {
       const auto& c = chars[i];
       const auto v = code_points[i];
@@ -72,7 +78,7 @@ namespace onmt
 
       if (is_letter(v, type_letter))
       {
-        current_case = update_type(current_case, type_letter);
+        current_case = update_type(current_case, type_letter, letter_index++);
         if (type_letter == unicode::_letter_upper)
           new_token += unicode::cp_to_utf8(unicode::get_lower(v));
         else
@@ -131,7 +137,6 @@ namespace onmt
     case Type::Mixed:
       return 'M';
     case Type::Capitalized:
-    case Type::CapitalizedFirst:
       return 'C';
     default:
       return 'N';

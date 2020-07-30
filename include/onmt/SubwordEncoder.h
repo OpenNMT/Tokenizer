@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "onmt/opennmttokenizer_export.h"
-#include "onmt/AnnotatedToken.h"
+#include "onmt/Token.h"
 
 namespace onmt
 {
@@ -19,12 +19,10 @@ namespace onmt
     virtual void reset_vocabulary();
 
     virtual std::vector<std::string> encode(const std::string& str) const = 0;
-    virtual std::vector<AnnotatedToken> encode_and_annotate(const AnnotatedToken& token) const;
-    virtual std::vector<AnnotatedToken>
-    encode_and_annotate(const std::vector<AnnotatedToken>& tokens) const;
+    virtual std::vector<Token> encode_and_annotate(const Token& token) const;
+    virtual std::vector<Token> encode_and_annotate(const std::vector<Token>& tokens) const;
 
-    static void propagate_token_properties(const AnnotatedToken& token,
-                                           std::vector<AnnotatedToken>& tokens);
+    static void propagate_token_properties(const Token& token, std::vector<Token>& tokens);
   };
 
 }

@@ -23,7 +23,7 @@ namespace onmt
     void enable_regularization(int nbest_size, float alpha);
 
     std::vector<std::string> encode(const std::string& str) const override;
-    std::vector<AnnotatedToken> encode_and_annotate(const AnnotatedToken& token) const override;
+    std::vector<Token> encode_and_annotate(const Token& token) const override;
 
   private:
     SentencePieceProcessor* _processor;
