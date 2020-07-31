@@ -457,8 +457,7 @@ PYBIND11_MODULE(pyonmttok, m)
     .def_readwrite("preserve", &onmt::Token::preserve)
     .def_readwrite("features", &onmt::Token::features)
     .def_readwrite("casing", &onmt::Token::case_type)
-    .def_readwrite("begin_case_region", &onmt::Token::begin_case_region)
-    .def_readwrite("end_case_region", &onmt::Token::end_case_region)
+    .def_readwrite("subword", &onmt::Token::subword)
     .def("__eq__", &onmt::Token::operator==)
     ;
 

@@ -14,14 +14,12 @@ namespace onmt
   {
     std::string surface;
     CaseModifier::Type case_type = CaseModifier::Type::None;
-    CaseModifier::Type begin_case_region = CaseModifier::Type::None;
-    CaseModifier::Type end_case_region = CaseModifier::Type::None;
     bool join_left = false;
     bool join_right = false;
     bool spacer = false;
     bool preserve = false;
+    bool subword = false;
     std::vector<std::string> features;
-    size_t index = 0;
 
     Token() = default;
     Token(std::string str)
@@ -55,16 +53,6 @@ namespace onmt
       return case_type != CaseModifier::Type::None;
     }
 
-    bool begins_case_region() const
-    {
-      return begin_case_region != CaseModifier::Type::None;
-    }
-
-    bool ends_case_region() const
-    {
-      return end_case_region != CaseModifier::Type::None;
-    }
-
     void append_feature(std::string feature)
     {
       features.emplace_back(std::move(feature));
@@ -83,9 +71,7 @@ namespace onmt
               && spacer == other.spacer
               && preserve == other.preserve
               && features == other.features
-              && case_type == other.case_type
-              && begin_case_region == other.begin_case_region
-              && end_case_region == other.end_case_region);
+              && case_type == other.case_type);
     }
 
   };

@@ -84,94 +84,7 @@ namespace onmt
       auto pair = CaseModifier::extract_case_type(token.surface);
       token.surface = std::move(pair.first);
       token.case_type = pair.second;
-      if (pair.second == CaseModifier::Type::Uppercase)
-      {
-        token.begin_case_region = pair.second;
-        token.end_case_region = pair.second;
-      }
     }
-  }
-
-  // Returns true if the token at offset can be connected to an uppercase token or
-  // capital letter. This useful to avoid closing an uppercase region if intermediate
-  // tokens are case invariant.
-  static bool has_connected_uppercase(std::vector<Token>& tokens, size_t offset)
-  {
-    for (size_t j = offset + 1; j < tokens.size(); ++j)
-    {
-      auto case_type = tokens[j].case_type;
-      if (case_type == CaseModifier::Type::Uppercase
-          || (case_type == CaseModifier::Type::Capitalized && tokens[j].unicode_length() == 1))
-        return true;
-      else if (case_type != CaseModifier::Type::None)
-        break;
-    }
-    return false;
-  }
-
-  // Returns true if token only contains numbers.
-  static bool numbers_only(const std::string& token)
-  {
-    std::vector<std::string> chars;
-    std::vector<unicode::code_point_t> code_points;
-    unicode::explode_utf8(token, chars, code_points);
-    return std::all_of(code_points.begin(), code_points.end(), unicode::is_number);
-  }
-
-  // Define uppercase regions in a sequence of tokens.
-  // This function tries to minimize the number of regions by possibly including case
-  // invariant characters (numbers, symbols, etc.) in uppercase regions.
-  static void set_soft_case_regions(std::vector<Token>& tokens)
-  {
-    // Reset previous annotations.
-    for (auto& token : tokens)
-    {
-      token.begin_case_region = CaseModifier::Type::None;
-      token.end_case_region = CaseModifier::Type::None;
-    }
-
-    bool in_uppercase_region = false;
-    for (size_t i = 0; i < tokens.size(); ++i)
-    {
-      auto case_type = tokens[i].case_type;
-
-      if (in_uppercase_region)
-      {
-        // End region on lowercase tokens or case invariant tokens that are not numbers
-        // or not followed by another uppercase sequence.
-        if (case_type == CaseModifier::Type::Uppercase
-            || (case_type == CaseModifier::Type::Capitalized && tokens[i].unicode_length() == 1)
-            || (case_type == CaseModifier::Type::None
-                && !Tokenizer::is_placeholder(tokens[i].surface)
-                && (has_connected_uppercase(tokens, i) || numbers_only(tokens[i].surface))))
-        {
-          // Mark intermediate token as uppercase.
-          tokens[i].case_type = CaseModifier::Type::Uppercase;
-        }
-        else
-        {
-          tokens[i - 1].end_case_region = CaseModifier::Type::Uppercase;
-          in_uppercase_region = false;
-        }
-      }
-      else
-      {
-        // Begin region on uppercase tokens or capital letter that are followed by
-        // another uppercase sequence.
-        if (case_type == CaseModifier::Type::Uppercase
-            || (case_type == CaseModifier::Type::Capitalized
-                && tokens[i].unicode_length() == 1
-                && has_connected_uppercase(tokens, i)))
-        {
-          tokens[i].begin_case_region = CaseModifier::Type::Uppercase;
-          in_uppercase_region = true;
-        }
-      }
-    }
-
-    // Close last region, if any.
-    if (in_uppercase_region)
-      tokens.back().end_case_region = CaseModifier::Type::Uppercase;
   }
 
   template <typename T>
@@ -360,7 +273,9 @@ namespace onmt
   }
 
   std::string Tokenizer::detokenize(const std::vector<Token>& tokens,
-                                    Ranges* ranges, bool merge_ranges) const
+                                    Ranges* ranges,
+                                    bool merge_ranges,
+                                    const std::vector<size_t>* index_map) const
   {
     std::string line;
     line.reserve(tokens.size() * 10);
@@ -393,7 +308,7 @@ namespace onmt
       {
         if (ranges)
           ranges->emplace(std::piecewise_construct,
-                          std::forward_as_tuple(token.index),
+                          std::forward_as_tuple(index_map ? index_map->at(i) : i),
                           std::forward_as_tuple(line.size(), line.size() + prep_word.size() - 1));
 
         line.append(prep_word);
@@ -445,10 +360,22 @@ namespace onmt
                                   const std::vector<std::vector<std::string>>& features,
                                   std::vector<Token>& tokens) const
   {
+    if (_subword_encoder)
+      tokenize(detokenize(words, features), tokens);
+    else
+      parse_tokens(words, features, tokens);
+  }
+
+  void Tokenizer::parse_tokens(const std::vector<std::string>& words,
+                               const std::vector<std::vector<std::string>>& features,
+                               std::vector<Token>& tokens,
+                               std::vector<size_t>* index_map) const
+  {
     tokens.reserve(words.size());
+    if (index_map)
+      index_map->reserve(words.size());
     CaseModifier::Type case_region = CaseModifier::Type::None;
     CaseModifier::Type case_modifier = CaseModifier::Type::None;
-    bool open_case_region = false;
 
     for (size_t i = 0; i < words.size(); ++i)
     {
@@ -471,11 +398,8 @@ namespace onmt
         case CaseModifier::Markup::RegionBegin:
           case_region = CaseModifier::get_case_modifier_from_markup(words[i]);
           case_modifier = CaseModifier::Type::None;
-          open_case_region = true;
           continue;
         case CaseModifier::Markup::RegionEnd:
-          if (!tokens.empty())
-            tokens.back().end_case_region = case_region;
           case_region = CaseModifier::Type::None;
           case_modifier = CaseModifier::Type::None;
           continue;
@@ -490,12 +414,6 @@ namespace onmt
 
       Token token = annotate_token(words[i]);
       token.case_type = case_modifier;
-      token.index = i;
-      if (open_case_region)
-      {
-        token.begin_case_region = case_modifier;
-        open_case_region = false;
-      }
       if (!features.empty())
       {
         for (size_t j = features_offset; j < features.size(); ++j)
@@ -506,6 +424,8 @@ namespace onmt
         case_modifier = CaseModifier::Type::None;
 
       tokens.emplace_back(std::move(token));
+      if (index_map)
+        index_map->push_back(i);
     }
   }
 
@@ -514,8 +434,9 @@ namespace onmt
                                     Ranges* ranges, bool merge_ranges) const
   {
     std::vector<Token> tokens;
-    annotate_tokens(words, features, tokens);
-    return detokenize(tokens, ranges, merge_ranges);
+    std::vector<size_t> index_map;
+    parse_tokens(words, features, tokens, &index_map);
+    return detokenize(tokens, ranges, merge_ranges, &index_map);
   }
 
   void Tokenizer::tokenize(const std::string& text,
@@ -572,8 +493,6 @@ namespace onmt
       annotate_case(annotated_tokens);
     if (_subword_encoder)
       annotated_tokens = _subword_encoder->encode_and_annotate(annotated_tokens);
-    if (_soft_case_regions)
-      set_soft_case_regions(annotated_tokens);
   }
 
   void Tokenizer::tokenize_on_placeholders(const std::string& text,
@@ -951,6 +870,10 @@ namespace onmt
       features.back().reserve(annotated_tokens.size());
     }
 
+    std::vector<CaseModifier::TokenMarkup> case_markups;
+    if (_case_markup)
+      case_markups = CaseModifier::get_case_markups(annotated_tokens, _soft_case_regions);
+
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
       const auto& token = annotated_tokens[i];
@@ -964,13 +887,9 @@ namespace onmt
           features[j].push_back(token_features[j]);
       }
 
-      if (_case_markup)
-      {
-        if (token.begins_case_region())
-          tokens.emplace_back(CaseModifier::generate_case_markup_begin(token.begin_case_region));
-        else if (case_type == CaseModifier::Type::Capitalized)
-          tokens.emplace_back(CaseModifier::generate_case_markup(case_type));
-      }
+      if (_case_markup && case_markups[i].prefix != CaseModifier::Markup::None)
+        tokens.emplace_back(CaseModifier::generate_case_markup(case_markups[i].prefix,
+                                                               case_markups[i].type));
 
       const std::string* prefix = nullptr;
       const std::string* suffix = nullptr;
@@ -1011,8 +930,9 @@ namespace onmt
           add_final_token(tokens, features, _case_feature, *suffix);
       }
 
-      if (_case_markup && token.ends_case_region())
-        tokens.emplace_back(CaseModifier::generate_case_markup_end(token.end_case_region));
+      if (_case_markup && case_markups[i].suffix != CaseModifier::Markup::None)
+        tokens.emplace_back(CaseModifier::generate_case_markup(case_markups[i].suffix,
+                                                               case_markups[i].type));
     }
   }
 

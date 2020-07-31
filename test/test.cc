@@ -330,6 +330,8 @@ TEST(TokenizerTest, CaseMarkupWithJoiners) {
   test_tok_and_detok(tokenizer,
                      "Hello WORLD!", "｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ world ｟mrk_end_case_region_U｠ ￭!");
   test_tok_and_detok(tokenizer,
+                     "HELLO WORLD!", "｟mrk_begin_case_region_U｠ hello ｟mrk_end_case_region_U｠ ｟mrk_begin_case_region_U｠ world ｟mrk_end_case_region_U｠ ￭!");
+  test_tok_and_detok(tokenizer,
                      "Hello WOrld!", "｟mrk_case_modifier_C｠ hello ｟mrk_begin_case_region_U｠ wo￭ ｟mrk_end_case_region_U｠ rld ￭!");
   test_tok_and_detok(tokenizer,
                      "hello woRld!", "hello wo￭ ｟mrk_case_modifier_C｠ rld ￭!");

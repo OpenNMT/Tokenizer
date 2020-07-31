@@ -170,10 +170,17 @@ namespace onmt
                   std::vector<std::vector<std::string> >& features,
                   std::unordered_map<std::string, size_t>* alphabets) const;
     std::string detokenize(const std::vector<Token>& tokens,
-                           Ranges* ranges, bool merge_ranges = false) const;
+                           Ranges* ranges,
+                           bool merge_ranges = false,
+                           const std::vector<size_t>* index_map = nullptr) const;
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features,
                            Ranges* ranges, bool merge_ranges = false) const;
+
+    void parse_tokens(const std::vector<std::string>& words,
+                      const std::vector<std::vector<std::string>>& features,
+                      std::vector<Token>& tokens,
+                      std::vector<size_t>* index_map = nullptr) const;
 
     bool has_left_join(const std::string& word) const;
     bool has_right_join(const std::string& word) const;

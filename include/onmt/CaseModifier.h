@@ -1,11 +1,14 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "onmt/opennmttokenizer_export.h"
 
 namespace onmt
 {
+
+  class Token;
 
   // TODO: this should not be a class.
   class OPENNMTTOKENIZER_EXPORT CaseModifier
@@ -37,10 +40,27 @@ namespace onmt
     };
 
     static Markup get_case_markup(const std::string& str);
+    static std::string generate_case_markup(Markup markup, Type type);
     static Type get_case_modifier_from_markup(const std::string& markup);
-    static std::string generate_case_markup(Type type);
-    static std::string generate_case_markup_begin(Type type);
-    static std::string generate_case_markup_end(Type type);
+
+    struct TokenMarkup
+    {
+      TokenMarkup(Markup prefix_, Markup suffix_, Type type_)
+        : prefix(prefix_)
+        , suffix(suffix_)
+        , type(type_)
+      {
+      }
+      Markup prefix;
+      Markup suffix;
+      Type type;
+    };
+
+    // In "soft" mode, this function tries to minimize the number of uppercase regions by possibly
+    // including case invariant characters (numbers, symbols, etc.) in uppercase regions.
+    static std::vector<TokenMarkup>
+    get_case_markups(const std::vector<Token>& tokens, const bool soft = true);
+
   };
 
 }

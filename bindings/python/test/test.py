@@ -187,7 +187,8 @@ def test_learner_with_invalid_files(tmpdir, learner):
 def test_token_api():
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, case_markup=True)
 
-    tokens = tokenizer.tokenize("Hello WORLD!", as_tokens=True)
+    text = "Hello WORLD!"
+    tokens = tokenizer.tokenize(text, as_tokens=True)
     assert len(tokens) == 3
     for token in tokens:
         assert isinstance(token, pyonmttok.Token)
@@ -196,12 +197,13 @@ def test_token_api():
     assert tokens[0].casing == pyonmttok.Casing.CAPITALIZED
     assert tokens[1].surface == "world"
     assert tokens[1].casing == pyonmttok.Casing.UPPERCASE
-    assert tokens[1].begin_case_region == pyonmttok.Casing.UPPERCASE
-    assert tokens[1].end_case_region == pyonmttok.Casing.UPPERCASE
     assert tokens[2].surface == "!"
     assert tokens[2].join_left
-    assert tokenizer.detokenize(tokens) == "Hello WORLD!"
-    assert tokenizer.detokenize_with_ranges(tokens)[0] == "Hello WORLD!"
+
+    assert tokenizer.detokenize(tokens) == text
+    detokenized_text, ranges = tokenizer.detokenize_with_ranges(tokens)
+    assert detokenized_text == text
+    assert list(sorted(ranges.keys())) == [0, 1, 2]
 
     serialized_tokens, _ = tokenizer.serialize_tokens(tokens)
     assert serialized_tokens == [
@@ -219,3 +221,28 @@ def test_token_api():
     tokens[0].casing = pyonmttok.Casing.LOWERCASE
     tokens[2].join_left = False
     assert tokenizer.detokenize(tokens) == "toto WORLD !"
+
+def test_token_api_with_subword():
+    tokenizer = pyonmttok.Tokenizer(
+        "conservative",
+        case_markup=True,
+        joiner_annotate=True,
+        bpe_model_path=os.path.join(_DATA_DIR, "bpe-models", "codes_suffix_case_insensitive.fr"))
+
+    text = "BONJOUR MONDE"
+    def _check_subword(tokens):
+        assert len(tokens) == 5
+        assert not tokens[0].subword  # bon
+        assert tokens[1].subword      # j
+        assert tokens[2].subword      # our
+        assert not tokens[3].subword  # mon
+        assert tokens[4].subword      # de
+
+    tokens = tokenizer.tokenize(text, as_tokens=True)
+    _check_subword(tokens)
+    serialized_tokens, _ = tokenizer.serialize_tokens(tokens)
+
+    # Deserialization should not loose subword information.
+    tokens = tokenizer.deserialize_tokens(serialized_tokens)
+    _check_subword(tokens)
+    assert serialized_tokens == tokenizer.serialize_tokens(tokens)[0]

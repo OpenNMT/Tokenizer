@@ -155,8 +155,7 @@ The `pyonmttok.Token` class has the following attributes:
 * `preserve`: a boolean, whether joiners and spacers can be attached to this token or not
 * `features`: a list of string, the features attached to the token
 * `casing`: a `pyonmttok.Casing` value, the casing of the token
-* `begin_case_region`: a `pyonmttok.Casing` value, the casing region that the token opens
-* `end_case_region`: a `pyonmttok.Casing` value, the casing region that the token closes
+* `subword`: a boolean, whether the token is a subword
 
 The `pyonmttok.Casing` enumeration can take the following values:
 

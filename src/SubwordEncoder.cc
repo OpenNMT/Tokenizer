@@ -94,9 +94,11 @@ namespace onmt
         tokens.back().preserve = true;
     }
 
-    if (token.has_case())
+    for (size_t i = 0; i < tokens.size(); ++i)
     {
-      for (size_t i = 0; i < tokens.size(); ++i)
+      if (i > 0)
+        tokens[i].subword = true;
+      if (token.has_case())
       {
         auto case_type = token.case_type;
         if (case_type == CaseModifier::Type::Capitalized && i > 0)
@@ -104,12 +106,6 @@ namespace onmt
         else if (case_type == CaseModifier::Type::Mixed)
           case_type = CaseModifier::extract_case_type(tokens[i].surface).second;
         tokens[i].case_type = case_type;
-      }
-
-      if (token.begins_case_region())
-      {
-        tokens.front().begin_case_region = token.case_type;
-        tokens.back().end_case_region = token.case_type;
       }
     }
 
