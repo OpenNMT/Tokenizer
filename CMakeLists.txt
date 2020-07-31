@@ -32,7 +32,7 @@ set(INCLUDE_DIRECTORIES
 
 set(PUBLIC_HEADERS
   include/onmt/Alphabet.h
-  include/onmt/AnnotatedToken.h
+  include/onmt/Token.h
   include/onmt/BPE.h
   include/onmt/BPELearner.h
   include/onmt/CaseModifier.h
@@ -45,7 +45,6 @@ set(PUBLIC_HEADERS
 
 set(SOURCES
   src/Alphabet.cc
-  src/AnnotatedToken.cc
   src/BPE.cc
   src/BPELearner.cc
   src/CaseModifier.cc

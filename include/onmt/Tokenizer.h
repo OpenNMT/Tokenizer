@@ -92,16 +92,16 @@ namespace onmt
                   std::unordered_map<std::string, size_t>& alphabets) const override;
 
     void tokenize(const std::string& text,
-                  std::vector<AnnotatedToken>& annotated_tokens) const;
-    AnnotatedToken annotate_token(const std::string& word) const;
+                  std::vector<Token>& annotated_tokens) const;
+    Token annotate_token(const std::string& word) const;
     void annotate_tokens(const std::vector<std::string>& words,
                          const std::vector<std::vector<std::string>>& features,
-                         std::vector<AnnotatedToken>& tokens) const;
-    void finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
+                         std::vector<Token>& tokens) const;
+    void finalize_tokens(const std::vector<Token>& annotated_tokens,
                          std::vector<std::string>& tokens,
                          std::vector<std::vector<std::string>>& features) const;
-    std::string detokenize(const std::vector<AnnotatedToken>& tokens) const;
-    std::string detokenize(const std::vector<AnnotatedToken>& tokens,
+    std::string detokenize(const std::vector<Token>& tokens) const;
+    std::string detokenize(const std::vector<Token>& tokens,
                            Ranges& ranges, bool merge_ranges = false) const;
 
     std::string detokenize(const std::vector<std::string>& words,
@@ -155,21 +155,21 @@ namespace onmt
     void read_flags(int flags);
 
     void tokenize_on_placeholders(const std::string& text,
-                                  std::vector<AnnotatedToken>& annotated_tokens) const;
+                                  std::vector<Token>& annotated_tokens) const;
     void tokenize_on_spaces(const std::string& text,
-                            std::vector<AnnotatedToken>& annotated_tokens) const;
+                            std::vector<Token>& annotated_tokens) const;
     void tokenize_text(const std::string& text,
-                       std::vector<AnnotatedToken>& annotated_tokens,
+                       std::vector<Token>& annotated_tokens,
                        std::unordered_map<std::string, size_t>* alphabets) const;
 
     void tokenize(const std::string& text,
-                  std::vector<AnnotatedToken>& annotated_tokens,
+                  std::vector<Token>& annotated_tokens,
                   std::unordered_map<std::string, size_t>* alphabets) const;
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
                   std::vector<std::vector<std::string> >& features,
                   std::unordered_map<std::string, size_t>* alphabets) const;
-    std::string detokenize(const std::vector<AnnotatedToken>& tokens,
+    std::string detokenize(const std::vector<Token>& tokens,
                            Ranges* ranges, bool merge_ranges = false) const;
     std::string detokenize(const std::vector<std::string>& words,
                            const std::vector<std::vector<std::string> >& features,

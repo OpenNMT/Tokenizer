@@ -790,16 +790,16 @@ TEST(TokenizerTest, WithVocabulary) {
            "Oliver Gr@@ ü@@ n , wel@@ le");
 }
 
-TEST(TokenizerTest, AnnotatedTokenInterface)
+TEST(TokenizerTest, TokenInterface)
 {
   Tokenizer tokenizer(Tokenizer::Mode::Aggressive,
                       Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::CaseMarkup);
   const std::string text = "Hello world!";
-  std::vector<AnnotatedToken> tokens;
+  std::vector<Token> tokens;
   tokenizer.tokenize(text, tokens);
-  EXPECT_EQ(tokens[0].str(), "hello");
-  EXPECT_EQ(tokens[1].str(), "world");
-  EXPECT_EQ(tokens[2].str(), "!");
+  EXPECT_EQ(tokens[0].surface, "hello");
+  EXPECT_EQ(tokens[1].surface, "world");
+  EXPECT_EQ(tokens[2].surface, "!");
   EXPECT_EQ(tokenizer.detokenize(tokens), text);
 }
 

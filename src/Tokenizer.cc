@@ -75,19 +75,19 @@ namespace onmt
     return c;
   }
 
-  static void annotate_case(std::vector<AnnotatedToken>& annotated_tokens)
+  static void annotate_case(std::vector<Token>& annotated_tokens)
   {
     for (auto& token : annotated_tokens)
     {
-      if (Tokenizer::is_placeholder(token.str()))
+      if (Tokenizer::is_placeholder(token.surface))
         continue;
-      auto pair = CaseModifier::extract_case_type(token.str());
-      token.set(std::move(pair.first));
-      token.set_case(pair.second);
+      auto pair = CaseModifier::extract_case_type(token.surface);
+      token.surface = std::move(pair.first);
+      token.case_type = pair.second;
       if (pair.second == CaseModifier::Type::Uppercase)
       {
-        token.set_case_region_begin(pair.second);
-        token.set_case_region_end(pair.second);
+        token.begin_case_region = pair.second;
+        token.end_case_region = pair.second;
       }
     }
   }
@@ -95,13 +95,13 @@ namespace onmt
   // Returns true if the token at offset can be connected to an uppercase token or
   // capital letter. This useful to avoid closing an uppercase region if intermediate
   // tokens are case invariant.
-  static bool has_connected_uppercase(std::vector<AnnotatedToken>& tokens, size_t offset)
+  static bool has_connected_uppercase(std::vector<Token>& tokens, size_t offset)
   {
     for (size_t j = offset + 1; j < tokens.size(); ++j)
     {
-      auto case_type = tokens[j].get_case();
+      auto case_type = tokens[j].case_type;
       if (case_type == CaseModifier::Type::Uppercase
-          || case_type == CaseModifier::Type::CapitalizedFirst)
+          || (case_type == CaseModifier::Type::Capitalized && tokens[j].unicode_length() == 1))
         return true;
       else if (case_type != CaseModifier::Type::None)
         break;
@@ -121,36 +121,36 @@ namespace onmt
   // Define uppercase regions in a sequence of tokens.
   // This function tries to minimize the number of regions by possibly including case
   // invariant characters (numbers, symbols, etc.) in uppercase regions.
-  static void set_soft_case_regions(std::vector<AnnotatedToken>& tokens)
+  static void set_soft_case_regions(std::vector<Token>& tokens)
   {
     // Reset previous annotations.
     for (auto& token : tokens)
     {
-      token.set_case_region_begin(CaseModifier::Type::None);
-      token.set_case_region_end(CaseModifier::Type::None);
+      token.begin_case_region = CaseModifier::Type::None;
+      token.end_case_region = CaseModifier::Type::None;
     }
 
     bool in_uppercase_region = false;
     for (size_t i = 0; i < tokens.size(); ++i)
     {
-      auto case_type = tokens[i].get_case();
+      auto case_type = tokens[i].case_type;
 
       if (in_uppercase_region)
       {
         // End region on lowercase tokens or case invariant tokens that are not numbers
         // or not followed by another uppercase sequence.
         if (case_type == CaseModifier::Type::Uppercase
-            || case_type == CaseModifier::Type::CapitalizedFirst
+            || (case_type == CaseModifier::Type::Capitalized && tokens[i].unicode_length() == 1)
             || (case_type == CaseModifier::Type::None
-                && !Tokenizer::is_placeholder(tokens[i].str())
-                && (has_connected_uppercase(tokens, i) || numbers_only(tokens[i].str()))))
+                && !Tokenizer::is_placeholder(tokens[i].surface)
+                && (has_connected_uppercase(tokens, i) || numbers_only(tokens[i].surface))))
         {
           // Mark intermediate token as uppercase.
-          tokens[i].set_case(CaseModifier::Type::Uppercase);
+          tokens[i].case_type = CaseModifier::Type::Uppercase;
         }
         else
         {
-          tokens[i - 1].set_case_region_end(CaseModifier::Type::Uppercase);
+          tokens[i - 1].end_case_region = CaseModifier::Type::Uppercase;
           in_uppercase_region = false;
         }
       }
@@ -159,10 +159,11 @@ namespace onmt
         // Begin region on uppercase tokens or capital letter that are followed by
         // another uppercase sequence.
         if (case_type == CaseModifier::Type::Uppercase
-            || (case_type == CaseModifier::Type::CapitalizedFirst
+            || (case_type == CaseModifier::Type::Capitalized
+                && tokens[i].unicode_length() == 1
                 && has_connected_uppercase(tokens, i)))
         {
-          tokens[i].set_case_region_begin(CaseModifier::Type::Uppercase);
+          tokens[i].begin_case_region = CaseModifier::Type::Uppercase;
           in_uppercase_region = true;
         }
       }
@@ -170,7 +171,7 @@ namespace onmt
 
     // Close last region, if any.
     if (in_uppercase_region)
-      tokens.back().set_case_region_end(CaseModifier::Type::Uppercase);
+      tokens.back().end_case_region = CaseModifier::Type::Uppercase;
   }
 
   template <typename T>
@@ -293,12 +294,12 @@ namespace onmt
     return detokenize(words, features, &ranges, merge_ranges);
   }
 
-  std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens) const
+  std::string Tokenizer::detokenize(const std::vector<Token>& tokens) const
   {
     return detokenize(tokens, nullptr);
   }
 
-  std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens,
+  std::string Tokenizer::detokenize(const std::vector<Token>& tokens,
                                     Ranges& ranges, bool merge_ranges) const
   {
     return detokenize(tokens, &ranges, merge_ranges);
@@ -358,7 +359,7 @@ namespace onmt
     return merged_ranges;
   }
 
-  std::string Tokenizer::detokenize(const std::vector<AnnotatedToken>& tokens,
+  std::string Tokenizer::detokenize(const std::vector<Token>& tokens,
                                     Ranges* ranges, bool merge_ranges) const
   {
     std::string line;
@@ -367,14 +368,14 @@ namespace onmt
     for (size_t i = 0; i < tokens.size(); ++i)
     {
       const auto& token = tokens[i];
-      if (i > 0 && !tokens[i - 1].is_joined_right() && !token.is_joined_left())
+      if (i > 0 && !tokens[i - 1].join_right && !token.join_left)
         line += ' ';
 
-      std::string prep_word = token.str();
+      std::string prep_word = token.surface;
 
       if (!is_placeholder(prep_word))
       {
-        auto case_modifier = token.get_case();
+        auto case_modifier = token.case_type;
         if (case_modifier != CaseModifier::Type::None)
           prep_word = CaseModifier::apply_case(prep_word, case_modifier);
 
@@ -392,7 +393,7 @@ namespace onmt
       {
         if (ranges)
           ranges->emplace(std::piecewise_construct,
-                          std::forward_as_tuple(token.get_index()),
+                          std::forward_as_tuple(token.index),
                           std::forward_as_tuple(line.size(), line.size() + prep_word.size() - 1));
 
         line.append(prep_word);
@@ -405,9 +406,9 @@ namespace onmt
     return line;
   }
 
-  AnnotatedToken Tokenizer::annotate_token(const std::string& word) const
+  Token Tokenizer::annotate_token(const std::string& word) const
   {
-    AnnotatedToken token;
+    Token token;
     size_t subpos = 0;
     size_t sublen = word.size();
 
@@ -419,34 +420,35 @@ namespace onmt
         sublen -= spacer_marker.length();
       }
       else
-        token.join_left();
+        token.join_left = true;
     }
     else
     {
       if (has_right_marker(word, _joiner))
       {
-        token.join_right();
+        token.join_right = true;
         sublen -= _joiner.length();
       }
       if (has_left_marker(word, _joiner))
       {
-        token.join_left();
+        token.join_left = true;
         subpos += _joiner.length();
         sublen -= _joiner.length();
       }
     }
 
-    token.set(word.substr(subpos, sublen));
+    token.surface = word.substr(subpos, sublen);
     return token;
   }
 
   void Tokenizer::annotate_tokens(const std::vector<std::string>& words,
                                   const std::vector<std::vector<std::string>>& features,
-                                  std::vector<AnnotatedToken>& tokens) const
+                                  std::vector<Token>& tokens) const
   {
     tokens.reserve(words.size());
     CaseModifier::Type case_region = CaseModifier::Type::None;
     CaseModifier::Type case_modifier = CaseModifier::Type::None;
+    bool open_case_region = false;
 
     for (size_t i = 0; i < words.size(); ++i)
     {
@@ -469,8 +471,11 @@ namespace onmt
         case CaseModifier::Markup::RegionBegin:
           case_region = CaseModifier::get_case_modifier_from_markup(words[i]);
           case_modifier = CaseModifier::Type::None;
+          open_case_region = true;
           continue;
         case CaseModifier::Markup::RegionEnd:
+          if (!tokens.empty())
+            tokens.back().end_case_region = case_region;
           case_region = CaseModifier::Type::None;
           case_modifier = CaseModifier::Type::None;
           continue;
@@ -483,16 +488,21 @@ namespace onmt
         }
       }
 
-      AnnotatedToken token = annotate_token(words[i]);
-      token.set_case(case_modifier);
-      token.set_index(i);
+      Token token = annotate_token(words[i]);
+      token.case_type = case_modifier;
+      token.index = i;
+      if (open_case_region)
+      {
+        token.begin_case_region = case_modifier;
+        open_case_region = false;
+      }
       if (!features.empty())
       {
         for (size_t j = features_offset; j < features.size(); ++j)
-          token.insert_feature(features[j][i]);
+          token.append_feature(features[j][i]);
       }
       // Forward the case modifier if the current token is a joiner or spacer.
-      if (!token.str().empty())
+      if (!token.empty())
         case_modifier = CaseModifier::Type::None;
 
       tokens.emplace_back(std::move(token));
@@ -503,7 +513,7 @@ namespace onmt
                                     const std::vector<std::vector<std::string> >& features,
                                     Ranges* ranges, bool merge_ranges) const
   {
-    std::vector<AnnotatedToken> tokens;
+    std::vector<Token> tokens;
     annotate_tokens(words, features, tokens);
     return detokenize(tokens, ranges, merge_ranges);
   }
@@ -522,7 +532,7 @@ namespace onmt
   }
 
   void Tokenizer::tokenize(const std::string& text,
-                           std::vector<AnnotatedToken>& annotated_tokens) const {
+                           std::vector<Token>& annotated_tokens) const {
     return tokenize(text, annotated_tokens, nullptr);
   }
 
@@ -531,13 +541,13 @@ namespace onmt
                            std::vector<std::vector<std::string> >& features,
                            std::unordered_map<std::string, size_t>* alphabets) const
   {
-    std::vector<AnnotatedToken> annotated_tokens;
+    std::vector<Token> annotated_tokens;
     tokenize(text, annotated_tokens, alphabets);
     finalize_tokens(annotated_tokens, words, features);
   }
 
   void Tokenizer::tokenize(const std::string& text,
-                           std::vector<AnnotatedToken>& annotated_tokens,
+                           std::vector<Token>& annotated_tokens,
                            std::unordered_map<std::string, size_t>* alphabets) const
   {
     if (text.empty())
@@ -567,7 +577,7 @@ namespace onmt
   }
 
   void Tokenizer::tokenize_on_placeholders(const std::string& text,
-                                           std::vector<AnnotatedToken>& tokens) const
+                                           std::vector<Token>& tokens) const
   {
     // Split on characters.
     std::vector<std::string> chars;
@@ -575,7 +585,7 @@ namespace onmt
     std::vector<std::vector<unicode::code_point_t>> code_points_combining;
     unicode::explode_utf8_with_marks(text, chars, code_points_main, code_points_combining);
 
-    AnnotatedToken token;  // Accumulate characters in this.
+    Token token;  // Accumulate characters in this.
     bool in_placeholder = false;
 
     for (size_t i = 0; i < chars.size(); ++i)
@@ -587,20 +597,20 @@ namespace onmt
         if (_support_prior_joiners && c == _joiner)
         {
           // Mark joint but discard character.
-          if (token.str().empty())
-            token.join_left();
+          if (token.empty())
+            token.join_left = true;
           else
-            token.join_right();
+            token.join_right = true;
         }
         else if (c == ph_marker_open)
         {
-          if (!token.str().empty())
+          if (!token.empty())
           {
             // Flush accumulated token and mark joint if it did not finish by a separator.
             if (i > 0 && !unicode::is_separator(code_points_main[i - 1]))
-              token.join_right();
+              token.join_right = true;
             if (_preserve_segmented_tokens)
-              token.preserve();
+              token.preserve = true;
             tokens.emplace_back(std::move(token));
             token.clear();
           }
@@ -623,9 +633,9 @@ namespace onmt
           // No need to check for emptiness as in_placeholder == true means at least the opening
           // character was accumulated.
           if (i + 1 < chars.size() && !unicode::is_separator(code_points_main[i + 1]))
-            token.join_right();
+            token.join_right = true;
           if (_preserve_placeholders || _preserve_segmented_tokens)
-            token.preserve();
+            token.preserve = true;
           tokens.emplace_back(std::move(token));
           token.clear();
           in_placeholder = false;
@@ -634,12 +644,12 @@ namespace onmt
     }
 
     // Flush remaining token.
-    if (!token.str().empty())
+    if (!token.empty())
       tokens.emplace_back(std::move(token));
   }
 
   void Tokenizer::tokenize_on_spaces(const std::string& text,
-                                     std::vector<AnnotatedToken>& annotated_tokens) const
+                                     std::vector<Token>& annotated_tokens) const
   {
     {
       std::vector<std::string> chunks = unicode::split_utf8(text, " ");
@@ -651,14 +661,14 @@ namespace onmt
         std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
         auto& token = fields[0];
 
-        std::vector<AnnotatedToken> sub_tokens;
+        std::vector<Token> sub_tokens;
         tokenize_on_placeholders(token, sub_tokens);
 
         for (size_t i = 1; i < fields.size(); ++i)
         {
           // Replicate the features to each sub token.
           for (auto& sub_token : sub_tokens)
-            sub_token.insert_feature(fields[i]);
+            sub_token.append_feature(fields[i]);
         }
 
         annotated_tokens.insert(annotated_tokens.end(), sub_tokens.begin(), sub_tokens.end());
@@ -667,7 +677,7 @@ namespace onmt
   }
 
   void Tokenizer::tokenize_text(const std::string& text,
-                                std::vector<AnnotatedToken>& annotated_tokens,
+                                std::vector<Token>& annotated_tokens,
                                 std::unordered_map<std::string, size_t>* alphabets) const
   {
     // TODO: this method has grown big and is hard to follow. It should be refactored into
@@ -684,7 +694,7 @@ namespace onmt
                                        &code_points_combining,
                                        &exclude_combining);
 
-      AnnotatedToken token;
+      Token token;
 
       bool uppercase = false;
       bool uppercase_sequence = false;
@@ -705,14 +715,14 @@ namespace onmt
              or a closed token (other & space), or a unclosed token - in that case it is a right joiner.
             */
           if (other) {
-            annotated_tokens.back().join_right();
+            annotated_tokens.back().join_right = true;
             continue;
           }
           else if (space) {
-            token.join_left();
+            token.join_left = true;
             continue;
           } else {
-            token.join_right();
+            token.join_right = true;
             annotated_tokens.emplace_back(std::move(token));
             token.clear();
             state = State::Space;
@@ -727,7 +737,7 @@ namespace onmt
           if (c == Tokenizer::ph_marker_close) {
             token.append(c);
             if (_preserve_placeholders)
-              token.preserve();
+              token.preserve = true;
             prev_alphabet = placeholder_alphabet;
             state = State::Letter;
           } else {
@@ -740,15 +750,15 @@ namespace onmt
         }
         else if (c == Tokenizer::ph_marker_open) {
           if (!space) {
-            AnnotatedToken next_token;
+            Token next_token;
             if ((letter && prev_alphabet != placeholder_alphabet) || number)
-              next_token.join_left();
+              next_token.join_left = true;
             else
-              token.join_right();
+              token.join_right = true;
             annotated_tokens.emplace_back(std::move(token));
             std::swap(token, next_token);
-          } else if (other && token.str().empty()) {
-            annotated_tokens.back().join_right();
+          } else if (other && token.empty()) {
+            annotated_tokens.back().join_right = true;
           }
           token.append(c);
           state = State::Placeholder;
@@ -764,11 +774,11 @@ namespace onmt
           if (v == 0x200D) // Zero-Width joiner.
           {
             if (other || (number && unicode::is_letter(next_v)))
-              annotated_tokens.back().join_right();
+              annotated_tokens.back().join_right = true;
             else
             {
               token.clear();
-              token.join_left();
+              token.join_left = true;
             }
           }
           else if (_with_separators)
@@ -830,18 +840,18 @@ namespace onmt
                                && ((type_letter == unicode::_letter_upper && !uppercase)
                                    || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))))
               {
-                token.join_right();
+                token.join_right = true;
                 if (_preserve_segmented_tokens
                     && (segment_case || segment_alphabet || segment_alphabet_change))
-                  token.preserve();
+                  token.preserve = true;
                 annotated_tokens.emplace_back(std::move(token));
                 token.clear();
                 uppercase = (type_letter == unicode::_letter_upper);
                 uppercase_sequence = false;
               }
-              else if (other && token.str().empty())
+              else if (other && token.empty())
               {
-                annotated_tokens.back().join_right();
+                annotated_tokens.back().join_right = true;
                 uppercase = (type_letter == unicode::_letter_upper);
                 uppercase_sequence = false;
               } else {
@@ -857,19 +867,19 @@ namespace onmt
             {
               if (letter || (number && _segment_numbers) || (!number && !space))
               {
-                AnnotatedToken next_token;
+                Token next_token;
                 if (!letter || prev_alphabet == placeholder_alphabet)
-                  token.join_right();
+                  token.join_right = true;
                 else
-                  next_token.join_left();
+                  next_token.join_left = true;
                 if (_preserve_segmented_tokens && number && _segment_numbers)
-                  token.preserve();
+                  token.preserve = true;
                 annotated_tokens.emplace_back(std::move(token));
                 std::swap(token, next_token);
               }
               else if (other)
               {
-                annotated_tokens.back().join_right();
+                annotated_tokens.back().join_right = true;
               }
 
               token.append(sub_c);
@@ -883,12 +893,12 @@ namespace onmt
               {
                 annotated_tokens.emplace_back(std::move(token));
                 token.clear();
-                token.join_left();
+                token.join_left = true;
               }
               else if (other)
               {
                 token.clear();
-                token.join_left();
+                token.join_left = true;
               }
 
               if (sub_c[0] == ' ' && !_no_substitution)
@@ -906,33 +916,32 @@ namespace onmt
         }
       }
 
-      if (!token.str().empty())
+      if (!token.empty())
         annotated_tokens.emplace_back(std::move(token));
     }
   }
 
-  template <typename T>
-  void add_final_token(std::vector<std::string>& tokens,
-                       std::vector<std::vector<std::string>>& features,
-                       bool case_feature,
-                       T&& token,
-                       CaseModifier::Type case_type = CaseModifier::Type::None)
+  static void add_final_token(std::vector<std::string>& tokens,
+                              std::vector<std::vector<std::string>>& features,
+                              bool case_feature,
+                              std::string token,
+                              CaseModifier::Type case_type = CaseModifier::Type::None)
   {
     if (token.empty())
       return;
-    tokens.emplace_back(std::forward<T>(token));  // Forward lvalue or rvalue as is.
+    tokens.emplace_back(std::move(token));
     if (case_feature)
       features.back().emplace_back(1, CaseModifier::type_to_char(case_type));
   }
 
-  void Tokenizer::finalize_tokens(std::vector<AnnotatedToken>& annotated_tokens,
+  void Tokenizer::finalize_tokens(const std::vector<Token>& annotated_tokens,
                                   std::vector<std::string>& tokens,
                                   std::vector<std::vector<std::string>>& features) const
   {
     tokens.reserve(annotated_tokens.size());
     size_t num_features = 0;
     if (annotated_tokens.size() > 0 && annotated_tokens[0].has_features())
-      num_features = annotated_tokens[0].features().size();
+      num_features = annotated_tokens[0].features.size();
     if (_case_feature)
       num_features += 1;
 
@@ -944,51 +953,50 @@ namespace onmt
 
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
-      auto& token = annotated_tokens[i];
-      auto& str = token.get_str();  // Non const getter to allow moving str into tokens.
-      const auto case_type = token.get_case();
+      const auto& token = annotated_tokens[i];
+      const auto& str = token.surface;
+      const auto case_type = token.case_type;
 
       if (token.has_features())
       {
-        const auto& token_features = token.features();
+        const auto& token_features = token.features;
         for (size_t j = 0; j < token_features.size(); ++j)
           features[j].push_back(token_features[j]);
       }
 
       if (_case_markup)
       {
-        if (token.begin_case_region())
-          tokens.emplace_back(CaseModifier::generate_case_markup_begin(token.get_case_region_begin()));
-        else if (case_type == CaseModifier::Type::Capitalized
-                 || case_type == CaseModifier::Type::CapitalizedFirst)
+        if (token.begins_case_region())
+          tokens.emplace_back(CaseModifier::generate_case_markup_begin(token.begin_case_region));
+        else if (case_type == CaseModifier::Type::Capitalized)
           tokens.emplace_back(CaseModifier::generate_case_markup(case_type));
       }
 
       const std::string* prefix = nullptr;
       const std::string* suffix = nullptr;
-      bool attach = !token.should_preserve();
+      bool attach = !token.preserve;
 
       if (_joiner_annotate)
       {
-        if (token.is_joined_left() && i > 0)
+        if (token.join_left && i > 0)
           prefix = &_joiner;
-        if (token.is_joined_right() && i + 1 < annotated_tokens.size())
+        if (token.join_right && i + 1 < annotated_tokens.size())
           suffix = &_joiner;
-        if (token.is_spacer())
+        if (token.spacer)
           attach = true;  // Ignore preserve flag for spacers in joiner mode.
         attach = attach && !_joiner_new;
       }
       else if (_spacer_annotate)
       {
-        bool joined_left = (token.is_joined_left()
-                            || (i > 0 && annotated_tokens[i - 1].is_joined_right()));
-        if (!joined_left && (i != 0 || token.is_spacer()))
+        bool joined_left = (token.join_left
+                            || (i > 0 && annotated_tokens[i - 1].join_right));
+        if (!joined_left && (i != 0 || token.spacer))
           prefix = &spacer_marker;
         attach = attach && !_spacer_new;
       }
 
       if (!prefix && !suffix)
-        add_final_token(tokens, features, _case_feature, std::move(str), case_type);
+        add_final_token(tokens, features, _case_feature, str, case_type);
       else if (attach)
       {
         std::string final_token = (prefix ? *prefix : "") + str + (suffix ? *suffix : "");
@@ -998,13 +1006,13 @@ namespace onmt
       {
         if (prefix)
           add_final_token(tokens, features, _case_feature, *prefix);
-        add_final_token(tokens, features, _case_feature, std::move(str), case_type);
+        add_final_token(tokens, features, _case_feature, str, case_type);
         if (suffix)
           add_final_token(tokens, features, _case_feature, *suffix);
       }
 
-      if (_case_markup && token.end_case_region())
-        tokens.emplace_back(CaseModifier::generate_case_markup_end(token.get_case_region_end()));
+      if (_case_markup && token.ends_case_region())
+        tokens.emplace_back(CaseModifier::generate_case_markup_end(token.end_case_region));
     }
   }
 

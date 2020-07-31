@@ -135,6 +135,7 @@ def test_bpe_case_insensitive_issue_147():
 def test_bpe_learner(tmpdir):
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
     learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=2, min_frequency=1)
+    assert isinstance(learner, pyonmttok.SubwordLearner)
     learner.ingest("hello world")
     model_path = str(tmpdir.join("bpe.model"))
     tokenizer = learner.learn(model_path)
@@ -147,7 +148,8 @@ def test_bpe_learner_tokens(tmpdir):
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
     learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=2, min_frequency=1)
     learner.ingest_token("ab￭")
-    learner.ingest_token("cd")
+    token = pyonmttok.Token("cd")
+    learner.ingest_token(token)
     model_path = str(tmpdir.join("bpe.model"))
     learner.learn(model_path)
     with open(model_path) as model:
@@ -157,6 +159,7 @@ def test_bpe_learner_tokens(tmpdir):
 def test_sp_learner(tmpdir, keep_vocab):
     learner = pyonmttok.SentencePieceLearner(
         keep_vocab=keep_vocab, vocab_size=17, character_coverage=0.98)
+    assert isinstance(learner, pyonmttok.SubwordLearner)
     learner.ingest("hello word! how are you?")
     model_path = str(tmpdir.join("sp"))
     tokenizer = learner.learn(model_path)
@@ -180,3 +183,39 @@ def test_learner_with_invalid_files(tmpdir, learner):
     directory.ensure(dir=True)
     with pytest.raises(Exception):
         learner.learn(str(directory))
+
+def test_token_api():
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, case_markup=True)
+
+    tokens = tokenizer.tokenize("Hello WORLD!", as_tokens=True)
+    assert len(tokens) == 3
+    for token in tokens:
+        assert isinstance(token, pyonmttok.Token)
+
+    assert tokens[0].surface == "hello"
+    assert tokens[0].casing == pyonmttok.Casing.CAPITALIZED
+    assert tokens[1].surface == "world"
+    assert tokens[1].casing == pyonmttok.Casing.UPPERCASE
+    assert tokens[1].begin_case_region == pyonmttok.Casing.UPPERCASE
+    assert tokens[1].end_case_region == pyonmttok.Casing.UPPERCASE
+    assert tokens[2].surface == "!"
+    assert tokens[2].join_left
+    assert tokenizer.detokenize(tokens) == "Hello WORLD!"
+    assert tokenizer.detokenize_with_ranges(tokens)[0] == "Hello WORLD!"
+
+    serialized_tokens, _ = tokenizer.serialize_tokens(tokens)
+    assert serialized_tokens == [
+        "｟mrk_case_modifier_C｠",
+        "hello",
+        "｟mrk_begin_case_region_U｠",
+        "world",
+        "｟mrk_end_case_region_U｠",
+        "￭!"
+    ]
+
+    assert all(a == b for a, b in zip(tokenizer.deserialize_tokens(serialized_tokens), tokens))
+
+    tokens[0].surface = "toto"
+    tokens[0].casing = pyonmttok.Casing.LOWERCASE
+    tokens[2].join_left = False
+    assert tokenizer.detokenize(tokens) == "toto WORLD !"

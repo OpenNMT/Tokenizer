@@ -58,6 +58,26 @@ T deepcopy(const T& v, const py::object& dict)
   return v;
 }
 
+
+static py::tuple
+build_tokenization_result(const std::vector<std::string>& words,
+                          const std::vector<std::vector<std::string>>& features)
+{
+  py::list words_list = to_py_list(words);
+
+  if (features.empty())
+    return py::make_tuple(words_list, py::none());
+  else
+  {
+    std::vector<py::list> features_tmp;
+    features_tmp.reserve(features.size());
+    for (const auto& feature : features)
+      features_tmp.emplace_back(to_py_list(feature));
+
+    return py::make_tuple(words_list, to_py_list(features_tmp));
+  }
+}
+
 class TokenizerWrapper
 {
 public:
@@ -155,33 +175,61 @@ public:
     _tokenizer.reset(tokenizer);
   }
 
-  py::tuple tokenize(const std::string& text) const
+  py::object tokenize(const std::string& text, const bool as_tokens) const
   {
+    if (as_tokens)
+    {
+      std::vector<onmt::Token> tokens;
+      _tokenizer->tokenize(text, tokens);
+      return to_py_list(tokens);
+    }
+
     std::vector<std::string> words;
     std::vector<std::vector<std::string> > features;
 
     _tokenizer->tokenize(text, words, features);
+    return build_tokenization_result(words, features);
+  }
 
-    py::list words_list = to_py_list(words);
+  py::tuple serialize_tokens(const py::list& tokens) const
+  {
+    std::vector<onmt::Token> tokens_vec = to_std_vector<onmt::Token>(tokens);
+    std::vector<std::string> words;
+    std::vector<std::vector<std::string>> features;
+    _tokenizer->finalize_tokens(tokens_vec, words, features);
+    return build_tokenization_result(words, features);
+  }
 
-    if (features.empty())
-      return py::make_tuple(words_list, py::none());
-    else
+  py::list deserialize_tokens(const py::list& words, const py::object& features) const
+  {
+    std::vector<std::string> words_vec = to_std_vector<std::string>(words);
+    std::vector<std::vector<std::string>> features_vec;
+
+    if (!features.is(py::none()))
     {
-      std::vector<py::list> features_tmp;
-      features_tmp.reserve(features.size());
-      for (const auto& feature : features)
-        features_tmp.emplace_back(to_py_list(feature));
-
-      return py::make_tuple(words_list, to_py_list(features_tmp));
+      for (const auto& list : features)
+        features_vec.emplace_back(to_std_vector<std::string>(list.cast<py::list>()));
     }
+
+    std::vector<onmt::Token> tokens;
+    _tokenizer->annotate_tokens(words_vec, features_vec, tokens);
+    return to_py_list(tokens);
   }
 
   py::tuple detokenize_with_ranges(const py::list& words, bool merge_ranges) const
   {
     onmt::Ranges ranges;
-    std::string text = _tokenizer->detokenize(to_std_vector<std::string>(words),
-                                              ranges, merge_ranges);
+    std::string text;
+    if (words.size() > 0)
+    {
+      if (py::isinstance<onmt::Token>(words[0]))
+        text = _tokenizer->detokenize(to_std_vector<onmt::Token>(words),
+                                      ranges, merge_ranges);
+      else
+        text = _tokenizer->detokenize(to_std_vector<std::string>(words),
+                                      ranges, merge_ranges);
+    }
+
     py::list ranges_py(ranges.size());
     size_t index = 0;
     for (const auto& pair : ranges)
@@ -195,6 +243,12 @@ public:
 
   STR_TYPE detokenize(const py::list& words, const py::object& features) const
   {
+    if (words.size() == 0)
+      return STR_TYPE("");
+
+    if (py::isinstance<onmt::Token>(words[0]))
+      return _tokenizer->detokenize(to_std_vector<onmt::Token>(words));
+
     std::vector<std::string> words_vec = to_std_vector<std::string>(words);
     std::vector<std::vector<std::string> > features_vec;
 
@@ -272,6 +326,11 @@ public:
   void ingest_token(const std::string& token)
   {
     _learner->ingest_token(token, _tokenizer.get());
+  }
+
+  void ingest_token(const onmt::Token& token)
+  {
+    _learner->ingest_token(token);
   }
 
   TokenizerWrapper learn(const std::string& model_path, bool verbose)
@@ -380,6 +439,29 @@ PYBIND11_MODULE(pyonmttok, m)
 {
   m.def("is_placeholder", &onmt::Tokenizer::is_placeholder, py::arg("token"));
 
+  py::enum_<onmt::CaseModifier::Type>(m, "Casing")
+    .value("LOWERCASE", onmt::CaseModifier::Type::Lowercase)
+    .value("UPPERCASE", onmt::CaseModifier::Type::Uppercase)
+    .value("MIXED", onmt::CaseModifier::Type::Mixed)
+    .value("CAPITALIZED", onmt::CaseModifier::Type::Capitalized)
+    .value("NONE", onmt::CaseModifier::Type::None)
+    .export_values();
+
+  py::class_<onmt::Token>(m, "Token")
+    .def(py::init<>())
+    .def(py::init<std::string>())
+    .def_readwrite("surface", &onmt::Token::surface)
+    .def_readwrite("join_left", &onmt::Token::join_left)
+    .def_readwrite("join_right", &onmt::Token::join_right)
+    .def_readwrite("spacer", &onmt::Token::spacer)
+    .def_readwrite("preserve", &onmt::Token::preserve)
+    .def_readwrite("features", &onmt::Token::features)
+    .def_readwrite("casing", &onmt::Token::case_type)
+    .def_readwrite("begin_case_region", &onmt::Token::begin_case_region)
+    .def_readwrite("end_case_region", &onmt::Token::end_case_region)
+    .def("__eq__", &onmt::Token::operator==)
+    ;
+
   py::class_<TokenizerWrapper>(m, "Tokenizer")
     .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
          py::arg("mode"),
@@ -407,7 +489,13 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("segment_alphabet_change")=false,
          py::arg("support_prior_joiners")=false,
          py::arg("segment_alphabet")=py::list())
-    .def("tokenize", &TokenizerWrapper::tokenize, py::arg("text"))
+    .def("tokenize", &TokenizerWrapper::tokenize,
+         py::arg("text"),
+         py::arg("as_tokens")=false)
+    .def("serialize_tokens", &TokenizerWrapper::serialize_tokens,
+         py::arg("tokens"))
+    .def("deserialize_tokens", &TokenizerWrapper::deserialize_tokens,
+         py::arg("tokens"), py::arg("features")=py::none())
     .def("tokenize_file", &TokenizerWrapper::tokenize_file,
          py::arg("input_path"),
          py::arg("output_path"),
@@ -423,27 +511,30 @@ PYBIND11_MODULE(pyonmttok, m)
     .def("__deepcopy__", deepcopy<TokenizerWrapper>)
     ;
 
-  py::class_<BPELearnerWrapper>(m, "BPELearner")
+  py::class_<SubwordLearnerWrapper>(m, "SubwordLearner")
+    .def("ingest", &SubwordLearnerWrapper::ingest, py::arg("text"))
+    .def("ingest_file", &SubwordLearnerWrapper::ingest_file, py::arg("path"))
+    .def("ingest_token",
+         (void (SubwordLearnerWrapper::*)(const std::string&)) &SubwordLearnerWrapper::ingest_token,
+         py::arg("token"))
+    .def("ingest_token",
+         (void (SubwordLearnerWrapper::*)(const onmt::Token&)) &SubwordLearnerWrapper::ingest_token,
+         py::arg("token"))
+    .def("learn", &SubwordLearnerWrapper::learn,
+         py::arg("model_path"), py::arg("verbose")=false)
+    ;
+
+  py::class_<BPELearnerWrapper, SubwordLearnerWrapper>(m, "BPELearner")
     .def(py::init<const TokenizerWrapper*, int, int, bool>(),
          py::arg("tokenizer")=py::none(),
          py::arg("symbols")=10000,
          py::arg("min_frequency")=2,
          py::arg("total_symbols")=false)
-    .def("ingest", &BPELearnerWrapper::ingest, py::arg("text"))
-    .def("ingest_file", &BPELearnerWrapper::ingest_file, py::arg("path"))
-    .def("ingest_token", &BPELearnerWrapper::ingest_token, py::arg("token"))
-    .def("learn", &BPELearnerWrapper::learn,
-         py::arg("model_path"), py::arg("verbose")=false)
     ;
 
-  py::class_<SentencePieceLearnerWrapper>(m, "SentencePieceLearner")
+  py::class_<SentencePieceLearnerWrapper, SubwordLearnerWrapper>(m, "SentencePieceLearner")
     .def(py::init<const TokenizerWrapper*, bool, py::kwargs>(),
          py::arg("tokenizer")=py::none(),
          py::arg("keep_vocab")=false)
-    .def("ingest", &SentencePieceLearnerWrapper::ingest, py::arg("text"))
-    .def("ingest_file", &SentencePieceLearnerWrapper::ingest_file, py::arg("path"))
-    .def("ingest_token", &SentencePieceLearnerWrapper::ingest_token, py::arg("token"))
-    .def("learn", &SentencePieceLearnerWrapper::learn,
-         py::arg("model_path"), py::arg("verbose")=false)
     ;
 }

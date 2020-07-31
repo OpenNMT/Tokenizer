@@ -42,36 +42,35 @@ namespace onmt
     return;
   }
 
-  std::vector<AnnotatedToken> SubwordEncoder::encode_and_annotate(const AnnotatedToken& token) const
+  std::vector<Token> SubwordEncoder::encode_and_annotate(const Token& token) const
   {
-    std::vector<std::string> encoded = encode(token.str());
-    std::vector<AnnotatedToken> tokens;
+    std::vector<std::string> encoded = encode(token.surface);
+    std::vector<Token> tokens;
 
     for (size_t j = 0; j < encoded.size(); ++j)
     {
       tokens.emplace_back(encoded[j]);
       if (j + 1 < encoded.size())
-        tokens.back().join_right();
+        tokens.back().join_right = true;
     }
 
     propagate_token_properties(token, tokens);
     return tokens;
   }
 
-  std::vector<AnnotatedToken>
-  SubwordEncoder::encode_and_annotate(const std::vector<AnnotatedToken>& tokens) const
+  std::vector<Token> SubwordEncoder::encode_and_annotate(const std::vector<Token>& tokens) const
   {
-    std::vector<AnnotatedToken> segments;
+    std::vector<Token> segments;
     segments.reserve(tokens.size() * 2);
 
     for (const auto& token : tokens)
     {
-      if (Tokenizer::is_placeholder(token.str())) {
+      if (Tokenizer::is_placeholder(token.surface)) {
         segments.push_back(token);
         continue;
       }
 
-      std::vector<AnnotatedToken> sub_segments = encode_and_annotate(token);
+      std::vector<Token> sub_segments = encode_and_annotate(token);
       segments.insert(segments.end(),
                       std::make_move_iterator(sub_segments.begin()),
                       std::make_move_iterator(sub_segments.end()));
@@ -80,45 +79,44 @@ namespace onmt
     return segments;
   }
 
-  void SubwordEncoder::propagate_token_properties(const AnnotatedToken& token,
-                                                  std::vector<AnnotatedToken>& tokens)
+  void SubwordEncoder::propagate_token_properties(const Token& token, std::vector<Token>& tokens)
   {
-    if (token.is_joined_left())
+    if (token.join_left)
     {
-      tokens.front().join_left();
-      if (token.should_preserve())
-        tokens.front().preserve();
+      tokens.front().join_left = true;
+      if (token.preserve)
+        tokens.front().preserve = true;
     }
-    if (token.is_joined_right())
+    if (token.join_right)
     {
-      tokens.back().join_right();
-      if (token.should_preserve())
-        tokens.back().preserve();
+      tokens.back().join_right = true;
+      if (token.preserve)
+        tokens.back().preserve = true;
     }
 
     if (token.has_case())
     {
       for (size_t i = 0; i < tokens.size(); ++i)
       {
-        auto case_type = token.get_case();
+        auto case_type = token.case_type;
         if (case_type == CaseModifier::Type::Capitalized && i > 0)
           case_type = CaseModifier::Type::Lowercase;
         else if (case_type == CaseModifier::Type::Mixed)
-          case_type = CaseModifier::extract_case_type(tokens[i].str()).second;
-        tokens[i].set_case(case_type);
+          case_type = CaseModifier::extract_case_type(tokens[i].surface).second;
+        tokens[i].case_type = case_type;
       }
 
-      if (token.begin_case_region())
+      if (token.begins_case_region())
       {
-        tokens.front().set_case_region_begin(token.get_case());
-        tokens.back().set_case_region_end(token.get_case());
+        tokens.front().begin_case_region = token.case_type;
+        tokens.back().end_case_region = token.case_type;
       }
     }
 
     if (token.has_features())
     {
       for (auto& sub_token : tokens)
-        sub_token.set_features(token.features());
+        sub_token.features = token.features;
     }
   }
 
