@@ -5,7 +5,7 @@
 #include <limits>
 
 #include "onmt/unicode/Unicode.h"
-#include "onmt/Casing.h"
+#include "Casing.h"
 
 namespace onmt
 {

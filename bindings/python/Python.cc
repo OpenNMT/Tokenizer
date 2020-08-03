@@ -9,7 +9,6 @@
 #include <onmt/SentencePiece.h>
 #include <onmt/BPELearner.h>
 #include <onmt/SPMLearner.h>
-#include <onmt/Utils.h>
 
 namespace py = pybind11;
 
@@ -438,7 +437,7 @@ private:
 
 PYBIND11_MODULE(pyonmttok, m)
 {
-  m.def("is_placeholder", &onmt::is_placeholder, py::arg("token"));
+  m.def("is_placeholder", &onmt::Tokenizer::is_placeholder, py::arg("token"));
 
   py::enum_<onmt::Casing>(m, "Casing")
     .value("NONE", onmt::Casing::None)

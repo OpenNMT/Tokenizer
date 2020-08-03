@@ -1,21 +1,9 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
-#include "onmt/opennmttokenizer_export.h"
+#include "onmt/Token.h"
 
 namespace onmt
 {
-
-  enum class Casing
-  {
-    None,
-    Lowercase,
-    Uppercase,
-    Mixed,
-    Capitalized,
-  };
 
   std::pair<std::string, Casing> lowercase_token(const std::string& token);
   std::string restore_token_casing(const std::string& token, Casing casing);
@@ -47,8 +35,6 @@ namespace onmt
     CaseMarkupType suffix;
     Casing casing;
   };
-
-  class Token;
 
   // In "soft" mode, this function tries to minimize the number of uppercase regions by possibly
   // including case invariant characters (numbers, symbols, etc.) in uppercase regions.

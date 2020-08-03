@@ -7,13 +7,13 @@
 #include <sstream>
 
 #include "onmt/Alphabet.h"
-#include "onmt/Casing.h"
 #include "onmt/BPE.h"
 #ifdef WITH_SP
 #  include "onmt/SentencePiece.h"
 #endif
-#include "onmt/Utils.h"
 #include "onmt/unicode/Unicode.h"
+#include "Casing.h"
+#include "Utils.h"
 
 namespace onmt
 {

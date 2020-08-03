@@ -4,12 +4,18 @@
 #include <vector>
 
 #include "onmt/opennmttokenizer_export.h"
-#include "onmt/unicode/Unicode.h"
-#include "onmt/Casing.h"
-#include "onmt/Utils.h"
 
 namespace onmt
 {
+
+  enum class Casing
+  {
+    None,
+    Lowercase,
+    Uppercase,
+    Mixed,
+    Capitalized,
+  };
 
   enum class TokenType
   {
@@ -45,13 +51,8 @@ namespace onmt
       return surface.empty();
     }
 
-    bool is_placeholder() const {
-      return ::onmt::is_placeholder(surface);
-    }
-
-    size_t unicode_length() const {
-      return unicode::utf8len(surface);
-    }
+    bool is_placeholder() const;
+    size_t unicode_length() const;
 
     void append_feature(std::string feature)
     {

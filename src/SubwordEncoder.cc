@@ -3,6 +3,8 @@
 #include <fstream>
 #include <stdexcept>
 
+#include "Casing.h"
+
 namespace onmt
 {
 

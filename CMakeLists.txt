@@ -35,13 +35,11 @@ set(PUBLIC_HEADERS
   include/onmt/Token.h
   include/onmt/BPE.h
   include/onmt/BPELearner.h
-  include/onmt/Casing.h
   include/onmt/ITokenizer.h
   include/onmt/SpaceTokenizer.h
   include/onmt/SubwordEncoder.h
   include/onmt/SubwordLearner.h
   include/onmt/Tokenizer.h
-  include/onmt/Utils.h
   )
 
 set(SOURCES
@@ -53,6 +51,7 @@ set(SOURCES
   src/SpaceTokenizer.cc
   src/SubwordEncoder.cc
   src/SubwordLearner.cc
+  src/Token.cc
   src/Tokenizer.cc
   src/Utils.cc
   src/unicode/Unicode.cc

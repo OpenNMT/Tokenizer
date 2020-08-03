@@ -1,10 +1,10 @@
-#include "onmt/Casing.h"
+#include "Casing.h"
 
 #include <algorithm>
 
 #include "onmt/Tokenizer.h"
-#include "onmt/Utils.h"
 #include "onmt/unicode/Unicode.h"
+#include "Utils.h"
 
 namespace onmt
 {
