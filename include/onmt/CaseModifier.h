@@ -16,11 +16,11 @@ namespace onmt
   public:
     enum class Type
     {
+      None,
       Lowercase,
       Uppercase,
       Mixed,
       Capitalized,
-      None
     };
 
     static std::pair<std::string, Type> extract_case_type(const std::string& token);
@@ -33,10 +33,10 @@ namespace onmt
 
     enum class Markup
     {
+      None,
       Modifier,
       RegionBegin,
       RegionEnd,
-      None
     };
 
     static Markup get_case_markup(const std::string& str);
