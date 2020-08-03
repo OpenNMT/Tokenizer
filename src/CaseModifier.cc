@@ -265,7 +265,7 @@ namespace onmt
         if (false
             || (!soft
                 && case_type == Type::Uppercase
-                && token.subword)
+                && token.type == TokenType::TrailingSubword)
             || (soft
                 && (case_type == Type::Uppercase
                     || (case_type == Type::Capitalized && token.unicode_length() == 1)

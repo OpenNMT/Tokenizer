@@ -149,13 +149,19 @@ The Token API allows to tokenize text into `pyonmttok.Token` objects. This API c
 The `pyonmttok.Token` class has the following attributes:
 
 * `surface`: a string, the token value
+* `type`: a `pyonmttok.TokenType` value, the type of the token
 * `join_left`: a boolean, whether the token should be joined to the token on the left or not
 * `join_right`: a boolean, whether the token should be joined to the token on the right or not
-* `spacer`: a boolean, whether the token is a spacer
 * `preserve`: a boolean, whether joiners and spacers can be attached to this token or not
 * `features`: a list of string, the features attached to the token
-* `casing`: a `pyonmttok.Casing` value, the casing of the token
-* `subword`: a boolean, whether the token is a subword
+* `spacer`: a boolean, whether the token is prefixed by a SentencePiece spacer or not (only set when using SentencePiece)
+* `casing`: a `pyonmttok.Casing` value, the casing of the token (only set when tokenizing with `case_feature` or `case_markup`)
+
+The `pyonmttok.TokenType` enumeration can take the following values:
+
+* `TokenType.WORD`
+* `TokenType.LEADING_SUBWORD`
+* `TokenType.TRAILING_SUBWORD`
 
 The `pyonmttok.Casing` enumeration can take the following values:
 

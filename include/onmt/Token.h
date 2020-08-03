@@ -10,15 +10,22 @@
 namespace onmt
 {
 
+  enum class TokenType
+  {
+    Word,
+    LeadingSubword,
+    TrailingSubword,
+  };
+
   struct OPENNMTTOKENIZER_EXPORT Token
   {
     std::string surface;
+    TokenType type;
     CaseModifier::Type case_type = CaseModifier::Type::None;
     bool join_left = false;
     bool join_right = false;
     bool spacer = false;
     bool preserve = false;
-    bool subword = false;
     std::vector<std::string> features;
 
     Token() = default;

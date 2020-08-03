@@ -232,11 +232,11 @@ def test_token_api_with_subword():
     text = "BONJOUR MONDE"
     def _check_subword(tokens):
         assert len(tokens) == 5
-        assert not tokens[0].subword  # bon
-        assert tokens[1].subword      # j
-        assert tokens[2].subword      # our
-        assert not tokens[3].subword  # mon
-        assert tokens[4].subword      # de
+        assert tokens[0].type == pyonmttok.TokenType.LEADING_SUBWORD   # bon
+        assert tokens[1].type == pyonmttok.TokenType.TRAILING_SUBWORD  # j
+        assert tokens[2].type == pyonmttok.TokenType.TRAILING_SUBWORD  # our
+        assert tokens[3].type == pyonmttok.TokenType.LEADING_SUBWORD   # mon
+        assert tokens[4].type == pyonmttok.TokenType.TRAILING_SUBWORD  # de
 
     tokens = tokenizer.tokenize(text, as_tokens=True)
     _check_subword(tokens)

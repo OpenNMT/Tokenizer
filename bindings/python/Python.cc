@@ -447,17 +447,23 @@ PYBIND11_MODULE(pyonmttok, m)
     .value("NONE", onmt::CaseModifier::Type::None)
     .export_values();
 
+  py::enum_<onmt::TokenType>(m, "TokenType")
+    .value("WORD", onmt::TokenType::Word)
+    .value("LEADING_SUBWORD", onmt::TokenType::LeadingSubword)
+    .value("TRAILING_SUBWORD", onmt::TokenType::TrailingSubword)
+    .export_values();
+
   py::class_<onmt::Token>(m, "Token")
     .def(py::init<>())
     .def(py::init<std::string>())
     .def_readwrite("surface", &onmt::Token::surface)
+    .def_readwrite("type", &onmt::Token::type)
     .def_readwrite("join_left", &onmt::Token::join_left)
     .def_readwrite("join_right", &onmt::Token::join_right)
     .def_readwrite("spacer", &onmt::Token::spacer)
     .def_readwrite("preserve", &onmt::Token::preserve)
     .def_readwrite("features", &onmt::Token::features)
     .def_readwrite("casing", &onmt::Token::case_type)
-    .def_readwrite("subword", &onmt::Token::subword)
     .def("__eq__", &onmt::Token::operator==)
     ;
 
