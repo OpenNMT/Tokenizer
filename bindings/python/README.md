@@ -18,9 +18,9 @@ pip install pyonmttok
 
 ### Interface
 
-```python
-import pyonmttok
+#### Constructor
 
+```python
 tokenizer = pyonmttok.Tokenizer(
     mode: str,
     bpe_model_path: str = "",
@@ -43,24 +43,44 @@ tokenizer = pyonmttok.Tokenizer(
     segment_numbers: bool = False,
     segment_alphabet_change: bool = False,
     support_prior_joiners: bool = False,
-    segment_alphabet: list = [])
-
-# See section "Token API" below for more information about the as_tokens argument.
-tokens, features = tokenizer.tokenize(text: str, as_tokens: bool = False)
-
-text = tokenizer.detokenize(tokens: list, features: list = None)
-
-# Function that also returns a dictionary mapping a token index to a range in
-# the detokenized text. Set merge_ranges=True to merge consecutive ranges, e.g.
-# subwords of the same token in case of subword tokenization.
-text, ranges = tokenizer.detokenize_with_ranges(tokens: list, merge_ranges: bool = True)
-
-# File-based APIs
-tokenizer.tokenize_file(input_path: str, output_path: str, num_threads: int = 1)
-tokenizer.detokenize_file(input_path: str, output_path: str)
+    segment_alphabet: List[str] = [])
 ```
 
-See the [documentation](../../docs/options.md) for a description of each option.
+See the [documentation](../../docs/options.md) for a description of each tokenization option.
+
+#### Tokenization
+
+```python
+# By default, tokenize returns the tokens and features.
+tokenizer.tokenize(text: str) -> Tuple[List[str], List[List[str]]
+
+# The as_token_objects flag can alternatively return Token objects (see below).
+tokenizer.tokenize(text: str, as_token_objects=True) -> List[pyonmttok.Token]
+
+# Tokenize a file.
+tokenizer.tokenize_file(input_path: str, output_path: str, num_threads: int = 1)
+```
+
+#### Detokenization
+
+```python
+# The detokenize method converts tokens back to a string.
+tokenizer.detokenize(
+    tokens: Union[List[str], List[pyonmttok.Token]],
+    features: List[List[str]] = None
+) -> str
+
+# The detokenize_with_ranges method also returns a dictionary mapping a token
+# index to a range in the detokenized text. Set merge_ranges=True to merge
+# consecutive ranges, e.g. subwords of the same token in case of subword tokenization.
+tokenizer.detokenize_with_ranges(
+    tokens: Union[List[str], List[pyonmttok.Token]],
+    merge_ranges: bool = True
+) -> Tuple[str, Dict[int, Pair[int, int]]]
+
+# Detokenize a file.
+tokenizer.detokenize_file(input_path: str, output_path: str)
+```
 
 ## Subword learning
 
@@ -121,7 +141,7 @@ learner.ingest(text: str)
 learner.ingest_file(path: str)
 learner.ingest_token(token: str)
 
-tokenizer = learner.learn(model_path: str, verbose: bool = False)
+learner.learn(model_path: str, verbose: bool = False) -> pyonmttok.Tokenizer
 ```
 
 ## Token API
@@ -132,7 +152,7 @@ The Token API allows to tokenize text into `pyonmttok.Token` objects. This API c
 
 ```python
 >>> tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
->>> tokens = tokenizer.tokenize("Hello World!", as_tokens=True)
+>>> tokens = tokenizer.tokenize("Hello World!", as_token_objects=True)
 >>> tokens[-1].surface
 '!'
 >>> tokenizer.serialize_tokens(tokens)[0]
@@ -157,13 +177,13 @@ The `pyonmttok.Token` class has the following attributes:
 * `spacer`: a boolean, whether the token is prefixed by a SentencePiece spacer or not (only set when using SentencePiece)
 * `casing`: a `pyonmttok.Casing` value, the casing of the token (only set when tokenizing with `case_feature` or `case_markup`)
 
-The `pyonmttok.TokenType` enumeration can take the following values:
+The `pyonmttok.TokenType` enumeration is used to identify tokens that were split by a subword tokenization. The enumeration has the following values:
 
 * `TokenType.WORD`
 * `TokenType.LEADING_SUBWORD`
 * `TokenType.TRAILING_SUBWORD`
 
-The `pyonmttok.Casing` enumeration can take the following values:
+The `pyonmttok.Casing` enumeration is used to identify the original casing of a token that was lowercased by the `case_feature` or `case_markup` tokenization options. The enumeration has the following values:
 
 * `Casing.LOWERCASE`
 * `Casing.UPPERCASE`
@@ -175,8 +195,8 @@ The `Tokenizer` instances provide methods to serialize or deserialize `Token` ob
 
 ```python
 # Serialize Token objects to strings that can be saved on disk.
-tokens, features = tokenizer.serialize_tokens(tokens: list)
+tokenizer.serialize_tokens(tokens: List[pyonmttok.Token]) -> Tuple[List[str], List[List[str]]
 
 # Deserialize strings into Token objects.
-tokens = tokenizer.deserialize_tokens(tokens: list, features: list = None)
+tokenizer.deserialize_tokens(tokens: list, features: list = None) -> List[pyonmttok.Token]
 ```

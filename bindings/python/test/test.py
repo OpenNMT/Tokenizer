@@ -188,7 +188,7 @@ def test_token_api():
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, case_markup=True)
 
     text = "Hello WORLD!"
-    tokens = tokenizer.tokenize(text, as_tokens=True)
+    tokens = tokenizer.tokenize(text, as_token_objects=True)
     assert len(tokens) == 3
     for token in tokens:
         assert isinstance(token, pyonmttok.Token)
@@ -238,7 +238,7 @@ def test_token_api_with_subword():
         assert tokens[3].type == pyonmttok.TokenType.LEADING_SUBWORD   # mon
         assert tokens[4].type == pyonmttok.TokenType.TRAILING_SUBWORD  # de
 
-    tokens = tokenizer.tokenize(text, as_tokens=True)
+    tokens = tokenizer.tokenize(text, as_token_objects=True)
     _check_subword(tokens)
     serialized_tokens, _ = tokenizer.serialize_tokens(tokens)
 
@@ -249,14 +249,24 @@ def test_token_api_with_subword():
 
 def test_token_api_features():
     tokenizer = pyonmttok.Tokenizer("space")
-    tokens = tokenizer.tokenize("a b", as_tokens=True)
+    tokens = tokenizer.tokenize("a b", as_token_objects=True)
     assert tokens[0].features == []
     assert tokens[1].features == []
 
-    tokens = tokenizer.tokenize("a￨1 b￨2", as_tokens=True)
+    tokens = tokenizer.tokenize("a￨1 b￨2", as_token_objects=True)
     assert tokens[0].features == ["1"]
     assert tokens[1].features == ["2"]
 
     tokens, features = tokenizer.serialize_tokens(tokens)
     assert tokens == ["a", "b"]
     assert features == [["1", "2"]]
+
+    # Case features should be deserialized into the casing attribute, not as features.
+    tokenizer = pyonmttok.Tokenizer("space", case_feature=True)
+    tokens = tokenizer.deserialize_tokens(["hello", "world"], features=[["C", "U"]])
+    assert tokens[0].surface == "hello"
+    assert tokens[0].casing == pyonmttok.Casing.CAPITALIZED
+    assert tokens[0].features == []
+    assert tokens[1].surface == "world"
+    assert tokens[1].casing == pyonmttok.Casing.UPPERCASE
+    assert tokens[1].features == []

@@ -176,9 +176,9 @@ public:
     _tokenizer.reset(tokenizer);
   }
 
-  py::object tokenize(const std::string& text, const bool as_tokens) const
+  py::object tokenize(const std::string& text, const bool as_token_objects) const
   {
-    if (as_tokens)
+    if (as_token_objects)
     {
       std::vector<onmt::Token> tokens;
       _tokenizer->tokenize(text, tokens);
@@ -497,7 +497,7 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("segment_alphabet")=py::list())
     .def("tokenize", &TokenizerWrapper::tokenize,
          py::arg("text"),
-         py::arg("as_tokens")=false)
+         py::arg("as_token_objects")=false)
     .def("serialize_tokens", &TokenizerWrapper::serialize_tokens,
          py::arg("tokens"))
     .def("deserialize_tokens", &TokenizerWrapper::deserialize_tokens,
