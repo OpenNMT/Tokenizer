@@ -246,3 +246,17 @@ def test_token_api_with_subword():
     tokens = tokenizer.deserialize_tokens(serialized_tokens)
     _check_subword(tokens)
     assert serialized_tokens == tokenizer.serialize_tokens(tokens)[0]
+
+def test_token_api_features():
+    tokenizer = pyonmttok.Tokenizer("space")
+    tokens = tokenizer.tokenize("a b", as_tokens=True)
+    assert tokens[0].features == []
+    assert tokens[1].features == []
+
+    tokens = tokenizer.tokenize("a￨1 b￨2", as_tokens=True)
+    assert tokens[0].features == ["1"]
+    assert tokens[1].features == ["2"]
+
+    tokens, features = tokenizer.serialize_tokens(tokens)
+    assert tokens == ["a", "b"]
+    assert features == [["1", "2"]]
