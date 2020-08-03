@@ -6,6 +6,7 @@
 #include "onmt/opennmttokenizer_export.h"
 #include "onmt/unicode/Unicode.h"
 #include "onmt/Casing.h"
+#include "onmt/Utils.h"
 
 namespace onmt
 {
@@ -42,6 +43,10 @@ namespace onmt
 
     bool empty() const {
       return surface.empty();
+    }
+
+    bool is_placeholder() const {
+      return ::onmt::is_placeholder(surface);
     }
 
     size_t unicode_length() const {

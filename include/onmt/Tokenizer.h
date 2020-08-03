@@ -181,12 +181,6 @@ namespace onmt
                       const std::vector<std::vector<std::string>>& features,
                       std::vector<Token>& tokens,
                       std::vector<size_t>* index_map = nullptr) const;
-
-    bool has_left_join(const std::string& word) const;
-    bool has_right_join(const std::string& word) const;
-
-    bool has_left_marker(const std::string& word, const std::string& marker) const;
-    bool has_right_marker(const std::string& word, const std::string& marker) const;
   };
 
 }

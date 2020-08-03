@@ -3,8 +3,6 @@
 #include <fstream>
 #include <stdexcept>
 
-#include "onmt/Tokenizer.h"
-
 namespace onmt
 {
 
@@ -65,7 +63,7 @@ namespace onmt
 
     for (const auto& token : tokens)
     {
-      if (Tokenizer::is_placeholder(token.surface)) {
+      if (token.is_placeholder()) {
         segments.push_back(token);
         continue;
       }

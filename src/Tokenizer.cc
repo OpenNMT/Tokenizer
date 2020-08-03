@@ -12,6 +12,7 @@
 #ifdef WITH_SP
 #  include "onmt/SentencePiece.h"
 #endif
+#include "onmt/Utils.h"
 #include "onmt/unicode/Unicode.h"
 
 namespace onmt
@@ -79,7 +80,7 @@ namespace onmt
   {
     for (auto& token : annotated_tokens)
     {
-      if (Tokenizer::is_placeholder(token.surface))
+      if (token.is_placeholder())
         continue;
       std::tie(token.surface, token.casing) = lowercase_token(token.surface);
     }
@@ -294,7 +295,7 @@ namespace onmt
 
       std::string prep_word = token.surface;
 
-      if (!is_placeholder(prep_word))
+      if (!token.is_placeholder())
       {
         if (token.casing != Casing::None)
           prep_word = restore_token_casing(prep_word, token.casing);
@@ -334,7 +335,7 @@ namespace onmt
 
     if (_spacer_annotate)
     {
-      if (has_left_marker(word, spacer_marker))
+      if (starts_with(word, spacer_marker))
       {
         subpos += spacer_marker.length();
         sublen -= spacer_marker.length();
@@ -344,12 +345,12 @@ namespace onmt
     }
     else
     {
-      if (has_right_marker(word, _joiner))
+      if (ends_with(word, _joiner))
       {
         token.join_right = true;
         sublen -= _joiner.length();
       }
-      if (has_left_marker(word, _joiner))
+      if (starts_with(word, _joiner))
       {
         token.join_left = true;
         subpos += _joiner.length();
@@ -1007,34 +1008,9 @@ namespace onmt
     return _segment_alphabet.count(alphabet) > 0;
   }
 
-  bool Tokenizer::has_left_join(const std::string& word) const
-  {
-    return has_left_marker(word, _joiner);
-  }
-
-  bool Tokenizer::has_right_join(const std::string& word) const
-  {
-    return has_right_marker(word, _joiner);
-  }
-
-  bool Tokenizer::has_left_marker(const std::string& word, const std::string& marker) const
-  {
-    return (word.length() >= marker.length() && word.compare(0, marker.length(), marker) == 0);
-  }
-
-  bool Tokenizer::has_right_marker(const std::string& word, const std::string& marker) const
-  {
-    return (word.length() >= marker.length()
-            && word.compare(word.length() - marker.length(), marker.length(), marker) == 0);
-  }
-
   bool Tokenizer::is_placeholder(const std::string& str)
   {
-    size_t ph_begin = str.find(ph_marker_open);
-    if (ph_begin == std::string::npos)
-      return false;
-    size_t min_ph_end = ph_begin + ph_marker_open.length() + 1;
-    return str.find(ph_marker_close, min_ph_end) != std::string::npos;
+    return ::onmt::is_placeholder(str);
   }
 
 }

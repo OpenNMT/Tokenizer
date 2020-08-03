@@ -17,9 +17,8 @@ namespace onmt
 
   void SubwordLearner::ingest_token(const Token& token)
   {
-    const std::string& surface = token.surface;
-    if (!surface.empty() && !Tokenizer::is_placeholder(surface))
-      ingest_token_impl(surface);
+    if (!token.empty() && !token.is_placeholder())
+      ingest_token_impl(token.surface);
   }
 
   void SubwordLearner::ingest_token(const std::string& token, const Tokenizer* tokenizer)

@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "onmt/Tokenizer.h"
+#include "onmt/Utils.h"
 #include "onmt/unicode/Unicode.h"
 
 namespace onmt
@@ -161,7 +162,7 @@ namespace onmt
 
   CaseMarkupType read_case_markup(const std::string& markup)
   {
-    if (!Tokenizer::is_placeholder(markup))
+    if (!is_placeholder(markup))
       return CaseMarkupType::None;
     if (placeholder_starts_with(markup, case_markup_prefix))
       return CaseMarkupType::Modifier;
@@ -258,7 +259,7 @@ namespace onmt
                 && (casing == Casing::Uppercase
                     || (casing == Casing::Capitalized && token.unicode_length() == 1)
                     || (casing == Casing::None
-                        && !Tokenizer::is_placeholder(token.surface)
+                        && !token.is_placeholder()
                         && (has_connected_uppercase(tokens, i)
                             || numbers_only(token.surface))))))
         {
