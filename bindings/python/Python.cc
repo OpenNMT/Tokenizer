@@ -440,12 +440,12 @@ PYBIND11_MODULE(pyonmttok, m)
 {
   m.def("is_placeholder", &onmt::Tokenizer::is_placeholder, py::arg("token"));
 
-  py::enum_<onmt::CaseModifier::Type>(m, "Casing")
-    .value("LOWERCASE", onmt::CaseModifier::Type::Lowercase)
-    .value("UPPERCASE", onmt::CaseModifier::Type::Uppercase)
-    .value("MIXED", onmt::CaseModifier::Type::Mixed)
-    .value("CAPITALIZED", onmt::CaseModifier::Type::Capitalized)
-    .value("NONE", onmt::CaseModifier::Type::None)
+  py::enum_<onmt::Casing>(m, "Casing")
+    .value("NONE", onmt::Casing::None)
+    .value("LOWERCASE", onmt::Casing::Lowercase)
+    .value("UPPERCASE", onmt::Casing::Uppercase)
+    .value("MIXED", onmt::Casing::Mixed)
+    .value("CAPITALIZED", onmt::Casing::Capitalized)
     .export_values();
 
   py::enum_<onmt::TokenType>(m, "TokenType")
@@ -464,7 +464,7 @@ PYBIND11_MODULE(pyonmttok, m)
     .def_readwrite("spacer", &onmt::Token::spacer)
     .def_readwrite("preserve", &onmt::Token::preserve)
     .def_readwrite("features", &onmt::Token::features)
-    .def_readwrite("casing", &onmt::Token::case_type)
+    .def_readwrite("casing", &onmt::Token::casing)
     .def("__eq__", &onmt::Token::operator==)
     ;
 

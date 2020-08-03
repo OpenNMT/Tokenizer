@@ -5,7 +5,7 @@
 #include <limits>
 
 #include "onmt/unicode/Unicode.h"
-#include "onmt/CaseModifier.h"
+#include "onmt/Casing.h"
 
 namespace onmt
 {
@@ -106,7 +106,7 @@ namespace onmt
     std::vector<std::string> chars;
 
     if (_case_insensitive)
-      unicode::explode_utf8_with_marks(CaseModifier::extract_case(str).first, chars);
+      unicode::explode_utf8_with_marks(lowercase_token(str).first, chars);
     else
       unicode::explode_utf8_with_marks(str, chars);
 

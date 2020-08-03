@@ -94,16 +94,16 @@ namespace onmt
         tokens.back().preserve = true;
     }
 
-    if (token.has_case())
+    if (token.casing != Casing::None)
     {
       for (size_t i = 0; i < tokens.size(); ++i)
       {
-        auto case_type = token.case_type;
-        if (case_type == CaseModifier::Type::Capitalized && i > 0)
-          case_type = CaseModifier::Type::Lowercase;
-        else if (case_type == CaseModifier::Type::Mixed)
-          case_type = CaseModifier::extract_case_type(tokens[i].surface).second;
-        tokens[i].case_type = case_type;
+        auto casing = token.casing;
+        if (casing == Casing::Capitalized && i > 0)
+          casing = Casing::Lowercase;
+        else if (casing == Casing::Mixed)
+          casing = lowercase_token(tokens[i].surface).second;
+        tokens[i].casing = casing;
       }
     }
 

@@ -7,7 +7,7 @@
 #include <sstream>
 
 #include "onmt/Alphabet.h"
-#include "onmt/CaseModifier.h"
+#include "onmt/Casing.h"
 #include "onmt/BPE.h"
 #ifdef WITH_SP
 #  include "onmt/SentencePiece.h"
@@ -81,9 +81,7 @@ namespace onmt
     {
       if (Tokenizer::is_placeholder(token.surface))
         continue;
-      auto pair = CaseModifier::extract_case_type(token.surface);
-      token.surface = std::move(pair.first);
-      token.case_type = pair.second;
+      std::tie(token.surface, token.casing) = lowercase_token(token.surface);
     }
   }
 
@@ -298,9 +296,8 @@ namespace onmt
 
       if (!is_placeholder(prep_word))
       {
-        auto case_modifier = token.case_type;
-        if (case_modifier != CaseModifier::Type::None)
-          prep_word = CaseModifier::apply_case(prep_word, case_modifier);
+        if (token.casing != Casing::None)
+          prep_word = restore_token_casing(prep_word, token.casing);
 
         size_t p = prep_word.find(protected_character, 0);
         while (p != std::string::npos && p+protected_character.size()+4 < prep_word.size()) {
@@ -382,8 +379,8 @@ namespace onmt
     tokens.reserve(words.size());
     if (index_map)
       index_map->reserve(words.size());
-    CaseModifier::Type case_region = CaseModifier::Type::None;
-    CaseModifier::Type case_modifier = CaseModifier::Type::None;
+    Casing case_region = Casing::None;
+    Casing case_modifier = Casing::None;
 
     for (size_t i = 0; i < words.size(); ++i)
     {
@@ -395,33 +392,33 @@ namespace onmt
       {
         if (features.empty())
           throw std::runtime_error("Missing case feature");
-        case_modifier = CaseModifier::char_to_type(features[0][i][0]);
+        case_modifier = char_to_casing(features[0][i][0]);
         features_offset = 1;
       }
       else
       {
-        auto case_markup = CaseModifier::get_case_markup(words[i]);
+        auto case_markup = read_case_markup(words[i]);
         switch (case_markup)
         {
-        case CaseModifier::Markup::RegionBegin:
-          case_region = CaseModifier::get_case_modifier_from_markup(words[i]);
-          case_modifier = CaseModifier::Type::None;
+        case CaseMarkupType::RegionBegin:
+          case_region = get_casing_from_markup(words[i]);
+          case_modifier = Casing::None;
           continue;
-        case CaseModifier::Markup::RegionEnd:
-          case_region = CaseModifier::Type::None;
-          case_modifier = CaseModifier::Type::None;
+        case CaseMarkupType::RegionEnd:
+          case_region = Casing::None;
+          case_modifier = Casing::None;
           continue;
-        case CaseModifier::Markup::Modifier:
-          case_modifier = CaseModifier::get_case_modifier_from_markup(words[i]);
+        case CaseMarkupType::Modifier:
+          case_modifier = get_casing_from_markup(words[i]);
           continue;
         default:
-          case_modifier = (case_modifier != CaseModifier::Type::None ? case_modifier : case_region);
+          case_modifier = (case_modifier != Casing::None ? case_modifier : case_region);
           break;
         }
       }
 
       Token token = annotate_token(words[i]);
-      token.case_type = case_modifier;
+      token.casing = case_modifier;
       if (!features.empty())
       {
         for (size_t j = features_offset; j < features.size(); ++j)
@@ -429,7 +426,7 @@ namespace onmt
       }
       // Forward the case modifier if the current token is a joiner or spacer.
       if (!token.empty())
-        case_modifier = CaseModifier::Type::None;
+        case_modifier = Casing::None;
 
       tokens.emplace_back(std::move(token));
       if (index_map)
@@ -852,13 +849,13 @@ namespace onmt
                               std::vector<std::vector<std::string>>& features,
                               bool case_feature,
                               std::string token,
-                              CaseModifier::Type case_type = CaseModifier::Type::None)
+                              Casing casing = Casing::None)
   {
     if (token.empty())
       return;
     tokens.emplace_back(std::move(token));
     if (case_feature)
-      features.back().emplace_back(1, CaseModifier::type_to_char(case_type));
+      features.back().emplace_back(1, casing_to_char(casing));
   }
 
   void Tokenizer::finalize_tokens(const std::vector<Token>& annotated_tokens,
@@ -878,15 +875,15 @@ namespace onmt
       features.back().reserve(annotated_tokens.size());
     }
 
-    std::vector<CaseModifier::TokenMarkup> case_markups;
+    std::vector<TokenCaseMarkup> case_markups;
     if (_case_markup)
-      case_markups = CaseModifier::get_case_markups(annotated_tokens, _soft_case_regions);
+      case_markups = get_case_markups(annotated_tokens, _soft_case_regions);
 
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
       const auto& token = annotated_tokens[i];
       const auto& str = token.surface;
-      const auto case_type = token.case_type;
+      const auto casing = token.casing;
 
       if (token.has_features())
       {
@@ -895,9 +892,8 @@ namespace onmt
           features[j].push_back(token_features[j]);
       }
 
-      if (_case_markup && case_markups[i].prefix != CaseModifier::Markup::None)
-        tokens.emplace_back(CaseModifier::generate_case_markup(case_markups[i].prefix,
-                                                               case_markups[i].type));
+      if (_case_markup && case_markups[i].prefix != CaseMarkupType::None)
+        tokens.emplace_back(write_case_markup(case_markups[i].prefix, case_markups[i].casing));
 
       const std::string* prefix = nullptr;
       const std::string* suffix = nullptr;
@@ -923,24 +919,23 @@ namespace onmt
       }
 
       if (!prefix && !suffix)
-        add_final_token(tokens, features, _case_feature, str, case_type);
+        add_final_token(tokens, features, _case_feature, str, casing);
       else if (attach)
       {
         std::string final_token = (prefix ? *prefix : "") + str + (suffix ? *suffix : "");
-        add_final_token(tokens, features, _case_feature, std::move(final_token), case_type);
+        add_final_token(tokens, features, _case_feature, std::move(final_token), casing);
       }
       else
       {
         if (prefix)
           add_final_token(tokens, features, _case_feature, *prefix);
-        add_final_token(tokens, features, _case_feature, str, case_type);
+        add_final_token(tokens, features, _case_feature, str, casing);
         if (suffix)
           add_final_token(tokens, features, _case_feature, *suffix);
       }
 
-      if (_case_markup && case_markups[i].suffix != CaseModifier::Markup::None)
-        tokens.emplace_back(CaseModifier::generate_case_markup(case_markups[i].suffix,
-                                                               case_markups[i].type));
+      if (_case_markup && case_markups[i].suffix != CaseMarkupType::None)
+        tokens.emplace_back(write_case_markup(case_markups[i].suffix, case_markups[i].casing));
     }
   }
 

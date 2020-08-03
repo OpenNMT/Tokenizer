@@ -5,7 +5,7 @@
 
 #include "onmt/opennmttokenizer_export.h"
 #include "onmt/unicode/Unicode.h"
-#include "onmt/CaseModifier.h"
+#include "onmt/Casing.h"
 
 namespace onmt
 {
@@ -22,7 +22,7 @@ namespace onmt
   public:
     std::string surface;
     TokenType type = TokenType::Word;
-    CaseModifier::Type case_type = CaseModifier::Type::None;
+    Casing casing = Casing::None;
     bool join_left = false;
     bool join_right = false;
     bool spacer = false;
@@ -48,11 +48,6 @@ namespace onmt
       return unicode::utf8len(surface);
     }
 
-    bool has_case() const
-    {
-      return case_type != CaseModifier::Type::None;
-    }
-
     void append_feature(std::string feature)
     {
       features.emplace_back(std::move(feature));
@@ -67,7 +62,7 @@ namespace onmt
     {
       return (surface == other.surface
               && type == other.type
-              && case_type == other.case_type
+              && casing == other.casing
               && join_left == other.join_left
               && join_right == other.join_right
               && spacer == other.spacer

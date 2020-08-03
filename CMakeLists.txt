@@ -35,7 +35,7 @@ set(PUBLIC_HEADERS
   include/onmt/Token.h
   include/onmt/BPE.h
   include/onmt/BPELearner.h
-  include/onmt/CaseModifier.h
+  include/onmt/Casing.h
   include/onmt/ITokenizer.h
   include/onmt/SpaceTokenizer.h
   include/onmt/SubwordEncoder.h
@@ -47,7 +47,7 @@ set(SOURCES
   src/Alphabet.cc
   src/BPE.cc
   src/BPELearner.cc
-  src/CaseModifier.cc
+  src/Casing.cc
   src/ITokenizer.cc
   src/SpaceTokenizer.cc
   src/SubwordEncoder.cc
