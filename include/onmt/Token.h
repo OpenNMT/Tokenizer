@@ -10,18 +10,24 @@
 namespace onmt
 {
 
-  struct OPENNMTTOKENIZER_EXPORT Token
+  enum class TokenType
   {
+    Word,
+    LeadingSubword,
+    TrailingSubword,
+  };
+
+  class OPENNMTTOKENIZER_EXPORT Token
+  {
+  public:
     std::string surface;
+    TokenType type = TokenType::Word;
     CaseModifier::Type case_type = CaseModifier::Type::None;
-    CaseModifier::Type begin_case_region = CaseModifier::Type::None;
-    CaseModifier::Type end_case_region = CaseModifier::Type::None;
     bool join_left = false;
     bool join_right = false;
     bool spacer = false;
     bool preserve = false;
     std::vector<std::string> features;
-    size_t index = 0;
 
     Token() = default;
     Token(std::string str)
@@ -32,14 +38,6 @@ namespace onmt
     void append(const std::string& str)
     {
       surface += str;
-    }
-
-    void clear()
-    {
-      surface.clear();
-      join_right = false;
-      join_left = false;
-      preserve = false;
     }
 
     bool empty() const {
@@ -55,16 +53,6 @@ namespace onmt
       return case_type != CaseModifier::Type::None;
     }
 
-    bool begins_case_region() const
-    {
-      return begin_case_region != CaseModifier::Type::None;
-    }
-
-    bool ends_case_region() const
-    {
-      return end_case_region != CaseModifier::Type::None;
-    }
-
     void append_feature(std::string feature)
     {
       features.emplace_back(std::move(feature));
@@ -78,14 +66,13 @@ namespace onmt
     bool operator==(const Token& other) const
     {
       return (surface == other.surface
+              && type == other.type
+              && case_type == other.case_type
               && join_left == other.join_left
               && join_right == other.join_right
               && spacer == other.spacer
               && preserve == other.preserve
-              && features == other.features
-              && case_type == other.case_type
-              && begin_case_region == other.begin_case_region
-              && end_case_region == other.end_case_region);
+              && features == other.features);
     }
 
   };

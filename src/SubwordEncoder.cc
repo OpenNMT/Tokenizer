@@ -105,12 +105,13 @@ namespace onmt
           case_type = CaseModifier::extract_case_type(tokens[i].surface).second;
         tokens[i].case_type = case_type;
       }
+    }
 
-      if (token.begins_case_region())
-      {
-        tokens.front().begin_case_region = token.case_type;
-        tokens.back().end_case_region = token.case_type;
-      }
+    if (tokens.size() > 1)
+    {
+      tokens.front().type = TokenType::LeadingSubword;
+      for (size_t i = 1; i < tokens.size(); ++i)
+        tokens[i].type = TokenType::TrailingSubword;
     }
 
     if (token.has_features())

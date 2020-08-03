@@ -2,6 +2,7 @@
 #include <memory>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPE.h>
@@ -175,9 +176,9 @@ public:
     _tokenizer.reset(tokenizer);
   }
 
-  py::object tokenize(const std::string& text, const bool as_tokens) const
+  py::object tokenize(const std::string& text, const bool as_token_objects) const
   {
-    if (as_tokens)
+    if (as_token_objects)
     {
       std::vector<onmt::Token> tokens;
       _tokenizer->tokenize(text, tokens);
@@ -447,18 +448,23 @@ PYBIND11_MODULE(pyonmttok, m)
     .value("NONE", onmt::CaseModifier::Type::None)
     .export_values();
 
+  py::enum_<onmt::TokenType>(m, "TokenType")
+    .value("WORD", onmt::TokenType::Word)
+    .value("LEADING_SUBWORD", onmt::TokenType::LeadingSubword)
+    .value("TRAILING_SUBWORD", onmt::TokenType::TrailingSubword)
+    .export_values();
+
   py::class_<onmt::Token>(m, "Token")
     .def(py::init<>())
     .def(py::init<std::string>())
     .def_readwrite("surface", &onmt::Token::surface)
+    .def_readwrite("type", &onmt::Token::type)
     .def_readwrite("join_left", &onmt::Token::join_left)
     .def_readwrite("join_right", &onmt::Token::join_right)
     .def_readwrite("spacer", &onmt::Token::spacer)
     .def_readwrite("preserve", &onmt::Token::preserve)
     .def_readwrite("features", &onmt::Token::features)
     .def_readwrite("casing", &onmt::Token::case_type)
-    .def_readwrite("begin_case_region", &onmt::Token::begin_case_region)
-    .def_readwrite("end_case_region", &onmt::Token::end_case_region)
     .def("__eq__", &onmt::Token::operator==)
     ;
 
@@ -491,7 +497,7 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("segment_alphabet")=py::list())
     .def("tokenize", &TokenizerWrapper::tokenize,
          py::arg("text"),
-         py::arg("as_tokens")=false)
+         py::arg("as_token_objects")=false)
     .def("serialize_tokens", &TokenizerWrapper::serialize_tokens,
          py::arg("tokens"))
     .def("deserialize_tokens", &TokenizerWrapper::deserialize_tokens,

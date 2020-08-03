@@ -1,5 +1,7 @@
 #include "onmt/CaseModifier.h"
 
+#include <algorithm>
+
 #include "onmt/Tokenizer.h"
 #include "onmt/unicode/Unicode.h"
 
@@ -192,19 +194,124 @@ namespace onmt
     return (Tokenizer::ph_marker_open + name + Tokenizer::ph_marker_close);
   }
 
-  std::string CaseModifier::generate_case_markup(CaseModifier::Type type)
+  std::string CaseModifier::generate_case_markup(Markup markup, Type type)
   {
-    return build_placeholder(case_markup_prefix + type_to_char(type));
+    const std::string* markup_prefix = nullptr;
+    switch (markup)
+    {
+    case Markup::Modifier:
+      markup_prefix = &case_markup_prefix;
+      break;
+    case Markup::RegionBegin:
+      markup_prefix = &case_markup_begin_prefix;
+      break;
+    case Markup::RegionEnd:
+      markup_prefix = &case_markup_end_prefix;
+      break;
+    default:
+      return "";
+    }
+
+    return build_placeholder(*markup_prefix + type_to_char(type));
   }
 
-  std::string CaseModifier::generate_case_markup_begin(CaseModifier::Type type)
+
+  // Returns true if the token at offset can be connected to an uppercase token or
+  // capital letter. This useful to avoid closing an uppercase region if intermediate
+  // tokens are case invariant.
+  static bool has_connected_uppercase(const std::vector<Token>& tokens, size_t offset)
   {
-    return build_placeholder(case_markup_begin_prefix + type_to_char(type));
+    for (size_t j = offset + 1; j < tokens.size(); ++j)
+    {
+      auto case_type = tokens[j].case_type;
+      if (case_type == CaseModifier::Type::Uppercase
+          || (case_type == CaseModifier::Type::Capitalized && tokens[j].unicode_length() == 1))
+        return true;
+      else if (case_type != CaseModifier::Type::None)
+        break;
+    }
+    return false;
   }
 
-  std::string CaseModifier::generate_case_markup_end(CaseModifier::Type type)
+  // Returns true if token only contains numbers.
+  static bool numbers_only(const std::string& token)
   {
-    return build_placeholder(case_markup_end_prefix + type_to_char(type));
+    std::vector<std::string> chars;
+    std::vector<unicode::code_point_t> code_points;
+    unicode::explode_utf8(token, chars, code_points);
+    return std::all_of(code_points.begin(), code_points.end(), unicode::is_number);
+  }
+
+  std::vector<CaseModifier::TokenMarkup>
+  CaseModifier::get_case_markups(const std::vector<Token>& tokens, const bool soft)
+  {
+    std::vector<TokenMarkup> markups;
+    markups.reserve(tokens.size());
+    bool in_uppercase_region = false;
+
+    for (size_t i = 0; i < tokens.size(); ++i)
+    {
+      const Token& token = tokens[i];
+      auto case_type = token.case_type;
+      auto markup_prefix = Markup::None;
+      auto markup_suffix = Markup::None;
+
+      if (in_uppercase_region)
+      {
+        // In legacy mode, we end the region if the token is not uppercase or does not belong
+        // to the same word before subtokenization.
+        // In soft mode, we end the region on lowercase tokens or case invariant tokens that
+        // are not numbers or not followed by another uppercase sequence.
+        if (false
+            || (!soft
+                && case_type == Type::Uppercase
+                && token.type == TokenType::TrailingSubword)
+            || (soft
+                && (case_type == Type::Uppercase
+                    || (case_type == Type::Capitalized && token.unicode_length() == 1)
+                    || (case_type == Type::None
+                        && !Tokenizer::is_placeholder(token.surface)
+                        && (has_connected_uppercase(tokens, i)
+                            || numbers_only(token.surface))))))
+        {
+          case_type = Type::Uppercase;
+        }
+        else
+        {
+          markups.back().suffix = Markup::RegionEnd;
+          in_uppercase_region = false;
+          // Rewind index to treat token in the other branch.
+          --i;
+          continue;
+        }
+      }
+      else
+      {
+        // In soft mode, we begin region on uppercase tokens or capital letter that are
+        // followed by another uppercase sequence.
+        if (case_type == Type::Uppercase
+            || (soft
+                && case_type == Type::Capitalized
+                && token.unicode_length() == 1
+                && has_connected_uppercase(tokens, i)))
+        {
+          case_type = Type::Uppercase;
+          markup_prefix = Markup::RegionBegin;
+          in_uppercase_region = true;
+        }
+        else if (case_type == Type::Capitalized)
+        {
+          markup_prefix = Markup::Modifier;
+        }
+      }
+
+      markups.emplace_back(markup_prefix, markup_suffix, case_type);
+    }
+
+    if (in_uppercase_region)
+      markups.back().suffix = Markup::RegionEnd;
+
+    return markups;
   }
 
 }
