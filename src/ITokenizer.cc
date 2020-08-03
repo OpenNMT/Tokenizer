@@ -13,9 +13,9 @@ namespace onmt
   const std::string ITokenizer::feature_marker("￨");
 
 
-  template <typename Function>
+  template <typename Output, typename Function>
   void work_loop(const Function& function,
-                 std::queue<std::pair<std::promise<std::string>, std::string>>& queue,
+                 std::queue<std::pair<std::promise<Output>, std::string>>& queue,
                  std::mutex& mutex,
                  std::condition_variable& cv,
                  const bool& end_requested)
@@ -43,8 +43,9 @@ namespace onmt
     }
   }
 
-  template <typename Function>
+  template <typename Output, typename Function, typename Writer>
   void process_stream(const Function& function,
+                      const Writer& writer,
                       std::istream& in,
                       std::ostream& out,
                       size_t num_threads,
@@ -54,12 +55,15 @@ namespace onmt
     if (num_threads <= 1) // Fast path for sequential processing.
     {
       while (std::getline(in, line))
-        out << function(line) << '\n';
+      {
+        writer(out, function(line));
+        out << '\n';
+      }
       out.flush();
       return;
     }
 
-    std::queue<std::pair<std::promise<std::string>, std::string>> queue;
+    std::queue<std::pair<std::promise<Output>, std::string>> queue;
     std::mutex mutex;
     std::condition_variable cv;
     bool request_end = false;
@@ -67,21 +71,22 @@ namespace onmt
     std::vector<std::thread> workers;
     workers.reserve(num_threads);
     for (size_t i = 0; i < num_threads; ++i)
-      workers.emplace_back(&work_loop<Function>,
+      workers.emplace_back(&work_loop<Output, Function>,
                            std::cref(function),
                            std::ref(queue),
                            std::ref(mutex),
                            std::ref(cv),
                            std::cref(request_end));
 
-    std::queue<std::future<std::string>> futures;
+    std::queue<std::future<Output>> futures;
 
-    auto pop_results = [&futures, &out](bool blocking) {
+    auto pop_results = [&writer, &futures, &out](bool blocking) {
       static const auto zero_sec = std::chrono::seconds(0);
       while (!futures.empty()
              && (blocking
                  || futures.front().wait_for(zero_sec) == std::future_status::ready)) {
-        out << futures.front().get() << '\n';
+        writer(out, futures.front().get());
+        out << '\n';
         futures.pop();
       }
     };
@@ -175,14 +180,39 @@ namespace onmt
                                    size_t num_threads,
                                    size_t buffer_size) const
   {
-    auto function = [this](const std::string& text) { return this->tokenize(text); };
-    process_stream(function, in, out, num_threads, buffer_size);
+    using Result = std::pair<std::vector<std::string>, std::vector<std::vector<std::string>>>;
+    auto function = [this](const std::string& text)
+                    {
+                      std::vector<std::string> words;
+                      std::vector<std::vector<std::string>> features;
+                      this->tokenize(text, words, features);
+                      return Result(std::move(words), std::move(features));
+                    };
+    auto writer = [](std::ostream& os, const Result& result)
+                  {
+                    const auto& words = result.first;
+                    const auto& features = result.second;
+                    for (size_t i = 0; i < words.size(); ++i)
+                    {
+                      if (i > 0)
+                        os << ' ';
+                      os << words[i];
+
+                      if (!features.empty())
+                      {
+                        for (size_t j = 0; j < features.size(); ++j)
+                          os << feature_marker << features[j][i];
+                      }
+                    }
+                  };
+    process_stream<Result>(function, writer, in, out, num_threads, buffer_size);
   }
 
   void ITokenizer::detokenize_stream(std::istream& in, std::ostream& out) const
   {
     auto function = [this](const std::string& text) { return this->detokenize(text); };
-    process_stream(function, in, out, /*num_threads=*/1, /*buffer_size=*/0);
+    auto writer = [](std::ostream& os, const std::string& text) { os << text; };
+    process_stream<std::string>(function, writer, in, out, /*num_threads=*/1, /*buffer_size=*/0);
   }
 
 }
