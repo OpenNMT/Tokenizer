@@ -40,14 +40,6 @@ namespace onmt
       surface += str;
     }
 
-    void clear()
-    {
-      surface.clear();
-      join_right = false;
-      join_left = false;
-      preserve = false;
-    }
-
     bool empty() const {
       return surface.empty();
     }

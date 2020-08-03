@@ -87,6 +87,14 @@ namespace onmt
     }
   }
 
+  static inline void clear_token(Token& token)
+  {
+    token.surface.clear();
+    token.join_right = false;
+    token.join_left = false;
+    token.preserve = false;
+  }
+
   template <typename T>
   std::string int_to_hex(T i, int width = 4)
   {
@@ -531,7 +539,7 @@ namespace onmt
             if (_preserve_segmented_tokens)
               token.preserve = true;
             tokens.emplace_back(std::move(token));
-            token.clear();
+            clear_token(token);
           }
 
           token.append(c);
@@ -556,7 +564,7 @@ namespace onmt
           if (_preserve_placeholders || _preserve_segmented_tokens)
             token.preserve = true;
           tokens.emplace_back(std::move(token));
-          token.clear();
+          clear_token(token);
           in_placeholder = false;
         }
       }
@@ -643,7 +651,7 @@ namespace onmt
           } else {
             token.join_right = true;
             annotated_tokens.emplace_back(std::move(token));
-            token.clear();
+            clear_token(token);
             state = State::Space;
             continue;
           }
@@ -687,7 +695,7 @@ namespace onmt
           if (!space)
           {
             annotated_tokens.emplace_back(std::move(token));
-            token.clear();
+            clear_token(token);
           }
 
           if (v == 0x200D) // Zero-Width joiner.
@@ -696,7 +704,7 @@ namespace onmt
               annotated_tokens.back().join_right = true;
             else
             {
-              token.clear();
+              clear_token(token);
               token.join_left = true;
             }
           }
@@ -706,7 +714,7 @@ namespace onmt
             if (!unicode::is_separator(next_v))
             {
               annotated_tokens.emplace_back(std::move(token));
-              token.clear();
+              clear_token(token);
             }
           }
 
@@ -764,7 +772,7 @@ namespace onmt
                     && (segment_case || segment_alphabet || segment_alphabet_change))
                   token.preserve = true;
                 annotated_tokens.emplace_back(std::move(token));
-                token.clear();
+                clear_token(token);
                 uppercase = (type_letter == unicode::_letter_upper);
                 uppercase_sequence = false;
               }
@@ -811,12 +819,12 @@ namespace onmt
               if (!space)
               {
                 annotated_tokens.emplace_back(std::move(token));
-                token.clear();
+                clear_token(token);
                 token.join_left = true;
               }
               else if (other)
               {
-                token.clear();
+                clear_token(token);
                 token.join_left = true;
               }
 
@@ -826,7 +834,7 @@ namespace onmt
                 token.append(sub_c);
 
               annotated_tokens.emplace_back(std::move(token));
-              token.clear();
+              clear_token(token);
               uppercase = false;
               uppercase_sequence = false;
               state = State::Other | State::Space;
