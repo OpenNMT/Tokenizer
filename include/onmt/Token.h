@@ -21,7 +21,7 @@ namespace onmt
   {
   public:
     std::string surface;
-    TokenType type;
+    TokenType type = TokenType::Word;
     CaseModifier::Type case_type = CaseModifier::Type::None;
     bool join_left = false;
     bool join_right = false;
