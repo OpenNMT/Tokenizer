@@ -17,8 +17,9 @@ namespace onmt
     TrailingSubword,
   };
 
-  struct OPENNMTTOKENIZER_EXPORT Token
+  class OPENNMTTOKENIZER_EXPORT Token
   {
+  public:
     std::string surface;
     TokenType type;
     CaseModifier::Type case_type = CaseModifier::Type::None;
