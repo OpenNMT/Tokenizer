@@ -66,12 +66,13 @@ namespace onmt
     bool operator==(const Token& other) const
     {
       return (surface == other.surface
+              && type == other.type
+              && case_type == other.case_type
               && join_left == other.join_left
               && join_right == other.join_right
               && spacer == other.spacer
               && preserve == other.preserve
-              && features == other.features
-              && case_type == other.case_type);
+              && features == other.features);
     }
 
   };
