@@ -52,7 +52,7 @@ See the [documentation](../../docs/options.md) for a description of each tokeniz
 
 ```python
 # By default, tokenize returns the tokens and features.
-tokenizer.tokenize(text: str) -> Tuple[List[str], List[List[str]]
+tokenizer.tokenize(text: str) -> Tuple[List[str], List[List[str]]]
 
 # The as_token_objects flag can alternatively return Token objects (see below).
 tokenizer.tokenize(text: str, as_token_objects=True) -> List[pyonmttok.Token]
@@ -195,8 +195,11 @@ The `Tokenizer` instances provide methods to serialize or deserialize `Token` ob
 
 ```python
 # Serialize Token objects to strings that can be saved on disk.
-tokenizer.serialize_tokens(tokens: List[pyonmttok.Token]) -> Tuple[List[str], List[List[str]]
+tokenizer.serialize_tokens(tokens: List[pyonmttok.Token]) -> Tuple[List[str], List[List[str]]]
 
 # Deserialize strings into Token objects.
-tokenizer.deserialize_tokens(tokens: list, features: list = None) -> List[pyonmttok.Token]
+tokenizer.deserialize_tokens(
+    tokens: List[str],
+    features: List[List[str]] = None
+) -> List[pyonmttok.Token]
 ```
