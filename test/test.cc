@@ -597,6 +597,12 @@ TEST(TokenizerTest, ArabicAlphabet) {
   test_tok_alphabet(tokenizer, "مرحبا", "مرحبا", alphabets);
 }
 
+TEST(TokenizerTest, HalfWidthKanaAlphabet) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative);
+  std::unordered_map<std::string, size_t> alphabets = {{"Katakana", 1}};
+  test_tok_alphabet(tokenizer, "ﾃ", "ﾃ", alphabets);
+}
+
 TEST(TokenizerTest, NonbreakableSpace) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative);
   test_tok(tokenizer, "a b", "a b");
