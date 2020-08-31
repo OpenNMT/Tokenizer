@@ -217,6 +217,8 @@ namespace onmt
     {{0xF900, 0xFAFF}, Alphabet::Han},
     {{0xFB50, 0xFDFF}, Alphabet::Arabic},
     {{0xFE30, 0xFE4F}, Alphabet::Han},
-    {{0xFE70, 0xFEFF}, Alphabet::Arabic}};
+    {{0xFE70, 0xFEFF}, Alphabet::Arabic},
+    {{0xFF61, 0xFF9F}, Alphabet::Katakana},
+  };
 
 }
