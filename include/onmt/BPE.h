@@ -14,8 +14,8 @@ namespace onmt
   class OPENNMTTOKENIZER_EXPORT BPE: public SubwordEncoder
   {
   public:
-    BPE(const std::string& model_path);
-    BPE(const std::string& model_path, const std::string& joiner);
+    BPE(const std::string& model_path, const float dropout = 0);
+    BPE(const std::string& model_path, const std::string& joiner, const float dropout = 0);
 
     std::vector<std::string> encode(const std::string& str) const override;
 
@@ -37,6 +37,7 @@ namespace onmt
     std::pair<int, int> _version;
 
     std::string _joiner;
+    float _dropout;
 
     std::unordered_map<std::string, int> _codes;
     std::unordered_map<std::string, std::pair<std::string, std::string> > _codes_reverse;

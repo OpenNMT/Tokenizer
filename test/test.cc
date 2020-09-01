@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <onmt/BPE.h>
 #include <onmt/Tokenizer.h>
 #include <onmt/SpaceTokenizer.h>
 #include <onmt/Alphabet.h>
@@ -559,6 +560,12 @@ TEST(TokenizerTest, BPECaseInsensitive) {
   test_tok(tokenizer,
            "Seulement seulement il vais nonseulement seulementnon à Verdun",
            "Seulement seulement il va is n on seulement seu l em ent n on à Ver d un");
+}
+
+TEST(TokenizerTest, BPEDropout) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      new BPE(get_data("bpe-models/codes_suffix_case_insensitive.fr"), 1.0));
+  test_tok(tokenizer, "seulement", "s e u l e m e n t");
 }
 
 TEST(TokenizerTest, SpacerAnnotate) {
