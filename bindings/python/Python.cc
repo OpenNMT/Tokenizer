@@ -95,6 +95,7 @@ public:
                    const std::string& bpe_model_path,
                    const std::string& bpe_vocab_path,
                    int bpe_vocab_threshold,
+                   float bpe_dropout,
                    std::string vocabulary_path,
                    int vocabulary_threshold,
                    const std::string& sp_model_path,
@@ -122,7 +123,7 @@ public:
     if (!sp_model_path.empty())
       subword_encoder = new onmt::SentencePiece(sp_model_path, sp_nbest_size, sp_alpha);
     else if (!bpe_model_path.empty())
-      subword_encoder = new onmt::BPE(bpe_model_path, joiner);
+      subword_encoder = new onmt::BPE(bpe_model_path, joiner, bpe_dropout);
 
     if (vocabulary_path.empty())
     {
@@ -469,11 +470,12 @@ PYBIND11_MODULE(pyonmttok, m)
     ;
 
   py::class_<TokenizerWrapper>(m, "Tokenizer")
-    .def(py::init<std::string, std::string, std::string, int, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
+    .def(py::init<std::string, std::string, std::string, int, float, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, py::list>(),
          py::arg("mode"),
          py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
          py::arg("bpe_vocab_threshold")=50,  // Keep for backward compatibility.
+         py::arg("bpe_dropout")=0,
          py::arg("vocabulary_path")="",
          py::arg("vocabulary_threshold")=0,
          py::arg("sp_model_path")="",

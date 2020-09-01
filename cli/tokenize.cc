@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
     ("segment_alphabet_change", po::bool_switch()->default_value(false), "Segment if the alphabet changes between 2 letters.")
     ("support_prior_joiners", po::bool_switch()->default_value(false), "if text has existing joiner marks, keep them")
     ("bpe_model_path", po::value<std::string>(), "Path to the BPE model")
+    ("bpe_dropout", po::value<float>()->default_value(0), "Dropout BPE merge operations with this probability.")
     ("bpe_model,b", po::value<std::string>()->default_value(""), "Aliases for --bpe_model_path")
     ("bpe_vocab", po::value<std::string>()->default_value(""), "Deprecated, see --vocabulary.")
     ("bpe_vocab_threshold", po::value<int>()->default_value(50), "Depracted, see --vocabulary_threshold.")
@@ -107,7 +108,9 @@ int main(int argc, char* argv[])
                            ? vm["bpe_model_path"].as<std::string>()
                            : vm["bpe_model"].as<std::string>());
   if (!bpe_model.empty())
-    subword_encoder = new onmt::BPE(bpe_model, vm["joiner"].as<std::string>());
+    subword_encoder = new onmt::BPE(bpe_model,
+                                    vm["joiner"].as<std::string>(),
+                                    vm["bpe_dropout"].as<float>());
 #ifdef WITH_SP
   else
   {

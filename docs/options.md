@@ -135,6 +135,10 @@ $ echo "A-BC/D" | cli/tokenize --case_markup --soft_case_regions
 
 Path to the BPE model.
 
+### `bpe_dropout` (float, default: `0`)
+
+Dropout BPE merge operations with this probability, as described in [Provilkov et al. 2019](https://www.aclweb.org/anthology/2020.acl-main.170/). To be used on training data only.
+
 ### `sp_model_path` (string, default: `""`)
 
 Path to the SentencePiece model.

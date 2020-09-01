@@ -1,8 +1,10 @@
 #include "onmt/BPE.h"
 
 #include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <limits>
+#include <random>
 
 #include "onmt/unicode/Unicode.h"
 #include "Casing.h"
@@ -10,7 +12,22 @@
 namespace onmt
 {
 
-  BPE::BPE(const std::string& model_path)
+  static std::mt19937& get_random_generator()
+  {
+    static thread_local std::mt19937 generator(
+      std::chrono::system_clock::now().time_since_epoch().count());
+    return generator;
+  }
+
+  static inline float check_dropout(const float dropout)
+  {
+    if (dropout < 0 || dropout > 1)
+      throw std::invalid_argument("bpe_dropout should be between 0 and 1");
+    return dropout;
+  }
+
+
+  BPE::BPE(const std::string& model_path, const float dropout)
     : _end_of_word("</w>")
     , _begin_of_word("<w>")
     , _prefix(false)
@@ -18,11 +35,12 @@ namespace onmt
     , _case_insensitive(false)
     , _version(0, 0)
     , _joiner("")
+    , _dropout(check_dropout(dropout))
   {
     load_model(model_path);
   }
 
-  BPE::BPE(const std::string& model_path, const std::string& joiner)
+  BPE::BPE(const std::string& model_path, const std::string& joiner, const float dropout)
     : _end_of_word("</w>")
     , _begin_of_word("<w>")
     , _prefix(false)
@@ -30,6 +48,7 @@ namespace onmt
     , _case_insensitive(false)
     , _version(0, 0)
     , _joiner(joiner)
+    , _dropout(check_dropout(dropout))
   {
     load_model(model_path);
   }
@@ -213,11 +232,29 @@ namespace onmt
     while (true)
     {
       // Get best score.
-      auto min_it = std::min_element(scores.begin(), scores.end());
-      if (*min_it == std::numeric_limits<int>::max())
-        break;
+      int best_score = std::numeric_limits<int>::max();
+      size_t index = 0;
 
-      size_t index = std::distance(scores.begin(), min_it);
+      for (size_t i = 0; i < scores.size(); ++i)
+      {
+        if (_dropout != 0)
+        {
+          std::uniform_real_distribution<float> dist;
+          const float sample = dist(get_random_generator());
+          if (sample < _dropout)
+            continue;
+        }
+
+        const int score = scores[i];
+        if (score < best_score)
+        {
+          best_score = score;
+          index = i;
+        }
+      }
+
+      if (best_score == std::numeric_limits<int>::max())
+        break;
 
       // Merge pair.
       chars[index] += chars[index + 1];

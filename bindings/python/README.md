@@ -24,6 +24,7 @@ pip install pyonmttok
 tokenizer = pyonmttok.Tokenizer(
     mode: str,
     bpe_model_path: str = "",
+    bpe_dropout: float = 0,
     vocabulary_path: str = "",
     vocabulary_threshold: int = 0,
     sp_model_path: str = "",
