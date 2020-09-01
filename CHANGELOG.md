@@ -21,7 +21,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### New features
 
+* Introduce the "Token API": a set of methods that manipulate `Token` objects instead of serialized strings
+* Add BPE dropout ([Provilkov et al. 2019](https://www.aclweb.org/anthology/2020.acl-main.170/))
+
 ### Fixes and improvements
+
+* Include "Half-width kana" in Katakana script detection
 
 ## [v1.18.5](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.18.5) (2020-07-07)
 
