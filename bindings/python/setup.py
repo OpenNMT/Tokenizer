@@ -40,7 +40,7 @@ tokenizer_module = Extension(
 
 setup(
     name="pyonmttok",
-    version="1.18.5",
+    version="1.19.0",
     license="MIT",
     description="OpenNMT tokenization library",
     long_description=_get_long_description(),

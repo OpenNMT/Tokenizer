@@ -21,8 +21,15 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### New features
 
-* Introduce the "Token API": a set of methods that manipulate `Token` objects instead of serialized strings
+### Fixes and improvements
+
+## [v1.19.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.19.0) (2020-09-02)
+
+### New features
+
 * Add BPE dropout ([Provilkov et al. 2019](https://www.aclweb.org/anthology/2020.acl-main.170/))
+* [Python] Introduce the "Token API": a set of methods that manipulate `Token` objects instead of serialized strings
+* [Python] Add `unicode_ranges` argument to the `detokenize_with_ranges` method to return ranges over Unicode characters instead of bytes
 
 ### Fixes and improvements
 
