@@ -39,7 +39,7 @@ install:
 script:
   - build/test/onmt_tokenizer_test test/data
 
-matrix:
+jobs:
   include:
     - {}
     - env:
