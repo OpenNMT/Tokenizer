@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "onmt/unicode/Unicode.h"
+#include "Utils.h"
 
 namespace onmt
 {
@@ -38,7 +38,7 @@ namespace onmt
     {
       for (auto& word : words)
       {
-        std::vector<std::string> fields = unicode::split_utf8(word, ITokenizer::feature_marker);
+        std::vector<std::string> fields = split_string(word, ITokenizer::feature_marker);
         word = fields[0];
         for (size_t i = 1; i < fields.size(); ++i)
         {

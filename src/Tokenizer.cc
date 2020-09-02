@@ -6,7 +6,6 @@
 #include <mutex>
 #include <sstream>
 
-#include "onmt/Alphabet.h"
 #include "onmt/BPE.h"
 #ifdef WITH_SP
 #  include "onmt/SentencePiece.h"
@@ -577,13 +576,13 @@ namespace onmt
                                      std::vector<Token>& annotated_tokens) const
   {
     {
-      std::vector<std::string> chunks = unicode::split_utf8(text, " ");
+      std::vector<std::string> chunks = split_string(text, " ");
       for (auto& chunk: chunks)
       {
         if (chunk.empty())
           continue;
 
-        std::vector<std::string> fields = unicode::split_utf8(chunk, ITokenizer::feature_marker);
+        std::vector<std::string> fields = split_string(chunk, ITokenizer::feature_marker);
         auto& token = fields[0];
 
         std::vector<Token> sub_tokens;
@@ -728,12 +727,12 @@ namespace onmt
             const std::string& sub_c(_no_substitution ? c : normalize_character(c));
             bool cur_letter = unicode::is_letter(v);
             bool cur_number = !cur_letter && unicode::is_number(v);
+            int alphabet = unicode::get_script(v);
 
-            int alphabet = is_alphabet(v, prev_alphabet) ? prev_alphabet : get_alphabet_id(v);
             if (alphabets != nullptr)
             {
               if (alphabet >= 0 && cur_letter)
-                (*alphabets)[id_to_alphabet(static_cast<Alphabet>(alphabet))]++;
+                (*alphabets)[unicode::get_script_name(alphabet)]++;
               else
                 (*alphabets)[cur_number ? "Numeric" : "Other"]++;
             }
@@ -752,7 +751,7 @@ namespace onmt
 
             if (cur_letter && _mode != Mode::Char)
             {
-              unicode::_type_letter type_letter = unicode::get_case(v);
+              const unicode::CaseType case_type = unicode::get_case_v2(v);
               bool segment_case = false;
               bool segment_alphabet = false;
               bool segment_alphabet_change = false;
@@ -762,8 +761,8 @@ namespace onmt
                        || (segment_alphabet_change = (prev_alphabet != alphabet && _segment_alphabet_change))
                        || (prev_alphabet == placeholder_alphabet
                            || (_segment_case && (segment_case = (letter
-                               && ((type_letter == unicode::_letter_upper && !uppercase)
-                                   || (type_letter == unicode::_letter_lower && uppercase_sequence)))))))))
+                               && ((case_type == unicode::CaseType::Upper && !uppercase)
+                                   || (case_type == unicode::CaseType::Lower && uppercase_sequence)))))))))
               {
                 token.join_right = true;
                 if (_preserve_segmented_tokens
@@ -771,17 +770,17 @@ namespace onmt
                   token.preserve = true;
                 annotated_tokens.emplace_back(std::move(token));
                 clear_token(token);
-                uppercase = (type_letter == unicode::_letter_upper);
+                uppercase = (case_type == unicode::CaseType::Upper);
                 uppercase_sequence = false;
               }
               else if (other && token.empty())
               {
                 annotated_tokens.back().join_right = true;
-                uppercase = (type_letter == unicode::_letter_upper);
+                uppercase = (case_type == unicode::CaseType::Upper);
                 uppercase_sequence = false;
               } else {
-                uppercase_sequence = (type_letter == unicode::_letter_upper) & uppercase;
-                uppercase = (type_letter == unicode::_letter_upper);
+                uppercase_sequence = (case_type == unicode::CaseType::Upper) & uppercase;
+                uppercase = (case_type == unicode::CaseType::Upper);
               }
 
               token.append(sub_c);
@@ -992,20 +991,22 @@ namespace onmt
 
   bool Tokenizer::add_alphabet_to_segment(const std::string& alphabet)
   {
-    if (!onmt::alphabet_is_supported(alphabet))
+    const int script_code = unicode::get_script_code(alphabet.c_str());
+    if (script_code < 0)
       return false;
-    _segment_alphabet.insert(static_cast<int>(alphabet_to_id(alphabet)));
+    _segment_alphabet.insert(script_code);
     return true;
   }
 
   bool Tokenizer::is_alphabet_to_segment(const std::string& alphabet) const
   {
-    return _segment_alphabet.count(static_cast<int>(alphabet_to_id(alphabet))) > 0;
+    return _segment_alphabet.count(unicode::get_script_code(alphabet.c_str())) > 0;
   }
 
   bool Tokenizer::is_alphabet_to_segment(int alphabet) const
   {
-    return _segment_alphabet.count(alphabet) > 0;
+    auto it = _segment_alphabet.find(alphabet);
+    return it != _segment_alphabet.end();
   }
 
   bool Tokenizer::is_placeholder(const std::string& str)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-#include <set>
+#include <unordered_set>
 
 #include "onmt/opennmttokenizer_export.h"
 #include "onmt/ITokenizer.h"
@@ -150,7 +150,7 @@ namespace onmt
     const SubwordEncoder* _subword_encoder;
     std::string _joiner;
 
-    std::set<int> _segment_alphabet;
+    std::unordered_set<int> _segment_alphabet;
 
     void read_flags(int flags);
 

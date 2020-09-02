@@ -7,7 +7,6 @@ endif()
 
 project(OpenNMTTokenizer)
 
-option(WITH_ICU "Compile with ICU" OFF)
 option(BUILD_TESTS "Compile unit tests" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
@@ -30,13 +29,15 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
 
+find_package(ICU REQUIRED)
+
 set(INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${PROJECT_BINARY_DIR}
+  ${ICU_INCLUDE_DIRS}
   )
 
 set(PUBLIC_HEADERS
-  include/onmt/Alphabet.h
   include/onmt/Token.h
   include/onmt/BPE.h
   include/onmt/BPELearner.h
@@ -48,7 +49,6 @@ set(PUBLIC_HEADERS
   )
 
 set(SOURCES
-  src/Alphabet.cc
   src/BPE.cc
   src/BPELearner.cc
   src/Casing.cc
@@ -62,16 +62,9 @@ set(SOURCES
   src/unicode/Unicode.cc
   )
 
-list(APPEND LINK_LIBRARIES "")
-
-if (WITH_ICU)
-  find_package(ICU REQUIRED)
-  add_definitions(-DWITH_ICU)
-  list(APPEND INCLUDE_DIRECTORIES ${ICU_INCLUDE_DIRS})
-  list(APPEND LINK_LIBRARIES ${ICU_LIBRARIES})
-else()
-  list(APPEND SOURCES src/unicode/Data.cc)
-endif()
+list(APPEND LINK_LIBRARIES
+  ${ICU_LIBRARIES}
+  )
 
 find_library(SP_LIBRARY NAMES sentencepiece)
 find_path(SP_INCLUDE_DIR NAMES sentencepiece_processor.h)

@@ -307,7 +307,7 @@ $ echo "1234" | cli/tokenize --mode aggressive --segment_numbers
 
 ### `segment_alphabet` (list of strings, default: `[]`)
 
-List of alphabets for which to split all letters. A complete list of supported alphabets is available in the source file [`Alphabet.h`](../include/onmt/Alphabet.h).
+List of alphabets for which to split all letters (can be any [Unicode script alias](https://en.wikipedia.org/wiki/Script_(Unicode))).
 
 ```bash
 $ echo "測試 abc" | cli/tokenize --segment_alphabet Han
