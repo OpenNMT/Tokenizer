@@ -126,6 +126,18 @@ def test_detok_with_ranges():
     assert ranges[0] == (0, 0)
     assert ranges[1] == (2, 2)
 
+    _, ranges = tokenizer.detokenize_with_ranges(
+        ["测", "试"], unicode_ranges=True)
+    assert len(ranges) == 2
+    assert ranges[0] == (0, 0)
+    assert ranges[1] == (2, 2)
+
+    _, ranges = tokenizer.detokenize_with_ranges(
+        ["测", "￭试"], unicode_ranges=True, merge_ranges=True)
+    assert len(ranges) == 2
+    assert ranges[0] == (0, 1)
+    assert ranges[1] == (0, 1)
+
 def test_bpe_case_insensitive_issue_147():
     tokenizer = pyonmttok.Tokenizer(
         "conservative",

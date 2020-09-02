@@ -72,11 +72,14 @@ tokenizer.detokenize(
 ) -> str
 
 # The detokenize_with_ranges method also returns a dictionary mapping a token
-# index to a range in the detokenized text. Set merge_ranges=True to merge
-# consecutive ranges, e.g. subwords of the same token in case of subword tokenization.
+# index to a range in the detokenized text.
+# Set merge_ranges=True to merge consecutive ranges, e.g. subwords of the same
+# token in case of subword tokenization.
+# Set unicode_ranges=True to return ranges over Unicode characters instead of bytes.
 tokenizer.detokenize_with_ranges(
     tokens: Union[List[str], List[pyonmttok.Token]],
-    merge_ranges: bool = True
+    merge_ranges: bool = True,
+    unicode_ranges: bool = True
 ) -> Tuple[str, Dict[int, Pair[int, int]]]
 
 # Detokenize a file.

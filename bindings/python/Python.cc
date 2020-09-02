@@ -4,6 +4,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <unicode/unistr.h>
+
 #include <onmt/Tokenizer.h>
 #include <onmt/BPE.h>
 #include <onmt/SentencePiece.h>
@@ -217,7 +219,9 @@ public:
     return to_py_list(tokens);
   }
 
-  py::tuple detokenize_with_ranges(const py::list& words, bool merge_ranges) const
+  py::tuple detokenize_with_ranges(const py::list& words,
+                                   bool merge_ranges,
+                                   bool with_unicode_ranges) const
   {
     onmt::Ranges ranges;
     std::string text;
@@ -229,6 +233,21 @@ public:
       else
         text = _tokenizer->detokenize(to_std_vector<std::string>(words),
                                       ranges, merge_ranges);
+    }
+
+    if (with_unicode_ranges)
+    {
+      onmt::Ranges unicode_ranges;
+      for (const auto& pair : ranges)
+      {
+        const size_t word_index = pair.first;
+        const onmt::Range& range = pair.second;
+        const icu::UnicodeString prefix(text.c_str(), range.first);
+        const icu::UnicodeString piece(text.c_str() + range.first, range.second - range.first + 1);
+        unicode_ranges.emplace(word_index,
+                               onmt::Range(prefix.length(), prefix.length() + piece.length() - 1));
+      }
+      ranges = std::move(unicode_ranges);
     }
 
     py::list ranges_py(ranges.size());
@@ -511,7 +530,9 @@ PYBIND11_MODULE(pyonmttok, m)
     .def("detokenize", &TokenizerWrapper::detokenize,
          py::arg("tokens"), py::arg("features")=py::none())
     .def("detokenize_with_ranges", &TokenizerWrapper::detokenize_with_ranges,
-         py::arg("tokens"), py::arg("merge_ranges")=false)
+         py::arg("tokens"),
+         py::arg("merge_ranges")=false,
+         py::arg("unicode_ranges")=false)
     .def("detokenize_file", &TokenizerWrapper::detokenize_file,
          py::arg("input_path"),
          py::arg("output_path"))
