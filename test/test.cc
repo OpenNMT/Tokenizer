@@ -3,7 +3,6 @@
 #include <onmt/BPE.h>
 #include <onmt/Tokenizer.h>
 #include <onmt/SpaceTokenizer.h>
-#include <onmt/Alphabet.h>
 
 using namespace onmt;
 
@@ -454,16 +453,6 @@ TEST(TokenizerTest, SegmentNumbers) {
   test_tok_and_detok(tokenizer,
                      "1984 mille neuf cent quatrevingt-quatre",
                      "1￭ 9￭ 8￭ 4 mille neuf cent quatrevingt ￭-￭ quatre");
-}
-
-TEST(TokenizerTest, GetAlphabet) {
-  for (const auto& a : onmt::alphabet_ranges) {
-    const auto& range = a.first;
-    const auto& id = a.second;
-
-    EXPECT_EQ(static_cast<int>(id), onmt::get_alphabet_id(range.first));
-    EXPECT_EQ(static_cast<int>(id), onmt::get_alphabet_id(range.second));
-  }
 }
 
 TEST(TokenizerTest, SegmentAlphabet) {

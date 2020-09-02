@@ -14,37 +14,37 @@ namespace onmt
   static const std::string case_markup_end_prefix = "mrk_end_case_region_";
 
   static inline Casing update_casing(Casing current_casing,
-                                     unicode::_type_letter letter_case,
+                                     unicode::CaseType letter_case,
                                      size_t letter_index)
   {
     switch (current_casing)
     {
     case Casing::None:
-      if (letter_case == unicode::_letter_lower)
+      if (letter_case == unicode::CaseType::Lower)
         return Casing::Lowercase;
-      if (letter_case == unicode::_letter_upper)
+      if (letter_case == unicode::CaseType::Upper)
         return Casing::Capitalized;
       break;
     case Casing::Lowercase:
-      if (letter_case == unicode::_letter_upper)
+      if (letter_case == unicode::CaseType::Upper)
         return Casing::Mixed;
       break;
     case Casing::Capitalized:
       if (letter_index == 1)
       {
-        if (letter_case == unicode::_letter_lower)
+        if (letter_case == unicode::CaseType::Lower)
           return Casing::Capitalized;
-        if (letter_case == unicode::_letter_upper)
+        if (letter_case == unicode::CaseType::Upper)
           return Casing::Uppercase;
       }
       else
       {
-        if (letter_case == unicode::_letter_upper)
+        if (letter_case == unicode::CaseType::Upper)
           return Casing::Mixed;
       }
       break;
     case Casing::Uppercase:
-      if (letter_case == unicode::_letter_lower)
+      if (letter_case == unicode::CaseType::Lower)
         return Casing::Mixed;
       break;
     default:
@@ -70,12 +70,12 @@ namespace onmt
     {
       const auto& c = chars[i];
       const auto v = code_points[i];
-      unicode::_type_letter type_letter;
 
-      if (is_letter(v, type_letter))
+      if (unicode::is_letter(v))
       {
-        current_casing = update_casing(current_casing, type_letter, letter_index++);
-        if (type_letter == unicode::_letter_upper)
+        const unicode::CaseType letter_case = unicode::get_case_v2(v);
+        current_casing = update_casing(current_casing, letter_case, letter_index++);
+        if (letter_case == unicode::CaseType::Upper)
           new_token += unicode::cp_to_utf8(unicode::get_lower(v));
         else
           new_token += c;

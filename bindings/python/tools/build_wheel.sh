@@ -35,7 +35,7 @@ cd $ROOT_DIR
 # Build Tokenizer.
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DLIB_ONLY=ON -DWITH_ICU=ON ..
+cmake -DCMAKE_BUILD_TYPE=Release -DLIB_ONLY=ON ..
 make -j2 install
 cd $ROOT_DIR
 

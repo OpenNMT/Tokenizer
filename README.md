@@ -69,8 +69,8 @@ See the `-h` flag to list the available options.
 
 ### Dependencies
 
+* [ICU](http://site.icu-project.org/)
 * (optional) [SentencePiece](https://github.com/google/sentencepiece)
-* (optional) [ICU](http://site.icu-project.org/)
 * (required by clients) [Boost](https://www.boost.org/) (`program_options`)
 
 ### Compiling
@@ -87,7 +87,6 @@ make
 It will produce the dynamic library `libOpenNMTTokenizer` and tokenization clients in `cli/`.
 
 * To compile only the library, use the `-DLIB_ONLY=ON` flag.
-* To compile with the ICU unicode backend, use the `-DWITH_ICU=ON` flag.
 
 ### Testing
 
