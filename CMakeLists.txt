@@ -8,6 +8,7 @@ endif()
 project(OpenNMTTokenizer)
 
 option(WITH_ICU "Compile with ICU" OFF)
+option(BUILD_TESTS "Compile unit tests" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -120,6 +121,9 @@ target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 
 if (NOT LIB_ONLY)
   add_subdirectory(cli)
+endif()
+
+if (BUILD_TESTS)
   add_subdirectory(test)
 endif()
 
