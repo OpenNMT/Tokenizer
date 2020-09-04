@@ -80,7 +80,7 @@ See the `-h` flag to list the available options.
 ```
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=<Release or Debug> ..
+cmake ..
 make
 ```
 
