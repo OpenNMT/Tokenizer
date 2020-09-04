@@ -94,5 +94,10 @@ It will produce the dynamic library `libOpenNMTTokenizer` and tokenization clien
 The tests are using [Google Test](https://github.com/google/googletest) which is included as a Git submodule. Run the tests with:
 
 ```
+git submodule update --init
+mkdir build
+cd build
+cmake -DBUILD_TESTS=ON ..
+make
 test/onmt_tokenizer_test ../test/data
 ```
