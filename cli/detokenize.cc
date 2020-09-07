@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
   if (vm.count("help"))
   {
-    std::cerr << cmd_options.help() << std::endl;
+    std::cout << cmd_options.help() << std::endl;
     return 0;
   }
 
