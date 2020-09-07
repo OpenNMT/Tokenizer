@@ -1,36 +1,33 @@
-find_package(Boost REQUIRED COMPONENTS program_options)
-
-include_directories(
-  ${Boost_INCLUDE_DIRS}
-  )
-
-if (WIN32 AND NOT CYGWIN AND NOT Boost_USE_STATIC_LIBS)
-  add_definitions(-DBOOST_ALL_NO_LIB) #Boost: Tells the config system not to automatically select which libraries to link against
-  add_definitions(-DBOOST_ALL_DYN_LINK) #Boost: Forces all libraries that have separate source, to be linked as dll's rather than static libraries on Microsoft Windows
-endif()
+set(CXXOPTS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/cxxopts/include)
 
 add_executable(tokenize
   tokenize.cc
   )
+target_include_directories(tokenize
+  PRIVATE ${CXXOPTS_INCLUDE_DIR}
+  )
 target_link_libraries(tokenize
   ${PROJECT_NAME}
-  ${Boost_LIBRARIES}
   )
 
 add_executable(subword_learn
   learn.cc
   )
+target_include_directories(subword_learn
+  PRIVATE ${CXXOPTS_INCLUDE_DIR}
+  )
 target_link_libraries(subword_learn
   ${PROJECT_NAME}
-  ${Boost_LIBRARIES}
   )
 
 add_executable(detokenize
   detokenize.cc
   )
+target_include_directories(detokenize
+  PRIVATE ${CXXOPTS_INCLUDE_DIR}
+  )
 target_link_libraries(detokenize
   ${PROJECT_NAME}
-  ${Boost_LIBRARIES}
   )
 
 install(

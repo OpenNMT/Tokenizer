@@ -71,13 +71,13 @@ See the `-h` flag to list the available options.
 
 * (optional) [SentencePiece](https://github.com/google/sentencepiece)
 * (optional) [ICU](http://site.icu-project.org/)
-* (required by clients) [Boost](https://www.boost.org/) (`program_options`)
 
 ### Compiling
 
 *CMake and a compiler that supports the C++11 standard are required to compile the project.*
 
 ```
+git submodule update --init
 mkdir build
 cd build
 cmake ..
@@ -94,7 +94,6 @@ It will produce the dynamic library `libOpenNMTTokenizer` and tokenization clien
 The tests are using [Google Test](https://github.com/google/googletest) which is included as a Git submodule. Run the tests with:
 
 ```
-git submodule update --init
 mkdir build
 cd build
 cmake -DBUILD_TESTS=ON ..
