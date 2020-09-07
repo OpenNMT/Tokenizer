@@ -16,7 +16,6 @@ addons:
     packages:
       - build-essential
       - cmake
-      - libboost-program-options-dev
       - libicu-dev
 before_install:
   - export ROOT_TRAVIS_DIR=$(pwd)
