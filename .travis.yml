@@ -1,19 +1,14 @@
-dist: xenial
+dist: bionic
 language: cpp
 compiler:
   - gcc
+  - clang
 env:
   global:
     - SENTENCEPIECE_VERSION="0.1.8"
 cache:
   directories:
     - $HOME/sentencepiece-$SENTENCEPIECE_VERSION/
-addons:
-  apt:
-    packages:
-      - build-essential
-      - cmake
-      - libicu-dev
 before_install:
   - export ROOT_TRAVIS_DIR=$(pwd)
   - |
@@ -40,8 +35,10 @@ script:
 
 matrix:
   include:
-    - name: C++ tests
     - name: Python tests
+      language: python
+      python:
+        - "3.6"
       env:
         - TWINE_REPOSITORY_URL="https://upload.pypi.org/legacy/"
       services:
@@ -52,7 +49,7 @@ matrix:
         - pip install --user pytest twine
         - pip install --user torch==1.2.0+cpu torchvision==0.4.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
       install:
-        - pip install --user wheelhouse/*27mu*.whl
+        - pip install --user wheelhouse/*36*.whl
       script:
         - pytest bindings/python/test/test.py
       after_success:
