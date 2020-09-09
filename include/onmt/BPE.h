@@ -28,6 +28,11 @@ namespace onmt
       _joiner = joiner;
     }
 
+    void set_dropout(const float dropout)
+    {
+      _dropout = dropout;
+    }
+
   private:
     std::string _end_of_word;
     std::string _begin_of_word;
