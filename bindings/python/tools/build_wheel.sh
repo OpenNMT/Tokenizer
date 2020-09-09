@@ -6,7 +6,6 @@ set -e
 set -x
 
 ROOT_DIR=$PWD
-SENTENCEPIECE_VERSION=${SENTENCEPIECE_VERSION:-0.1.8}
 PYBIND11_VERSION=${PYBIND11_VERSION:-2.4.3}
 ICU_VERSION=${ICU_VERSION:-64.2}
 PATH=/opt/python/cp37-cp37m/bin:$PATH
@@ -21,16 +20,6 @@ cd $ROOT_DIR
 
 # Install cmake.
 pip install "cmake==3.13.*"
-
-# Build SentencePiece.
-curl -L -o sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz -O https://github.com/google/sentencepiece/archive/v${SENTENCEPIECE_VERSION}.tar.gz
-tar zxf sentencepiece-${SENTENCEPIECE_VERSION}.tar.gz
-cd sentencepiece-${SENTENCEPIECE_VERSION}
-mkdir build
-cd build
-cmake ..
-make -j2 install
-cd $ROOT_DIR
 
 # Build Tokenizer.
 mkdir build

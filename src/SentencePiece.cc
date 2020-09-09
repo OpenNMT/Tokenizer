@@ -43,24 +43,14 @@ namespace onmt
 
   void SentencePiece::set_vocabulary(const std::vector<std::string>& vocabulary)
   {
-#ifdef SP_HAS_VOCAB_RESTRICTION
     auto status = _processor->SetVocabulary(vocabulary);
     if (!status.ok())
       throw std::invalid_argument(status.ToString());
-#else
-    throw std::runtime_error("The project was built against a SentencePiece version "
-                             "that does not support vocabulary restriction");
-#endif
   }
 
   void SentencePiece::reset_vocabulary()
   {
-#ifdef SP_HAS_VOCAB_RESTRICTION
     _processor->ResetVocabulary();
-#else
-    throw std::runtime_error("The project was built against a SentencePiece version "
-                             "that does not support vocabulary restriction");
-#endif
   }
 
   void SentencePiece::enable_regularization(int nbest_size, float alpha)
@@ -73,14 +63,10 @@ namespace onmt
   {
     std::vector<std::string> pieces;
 
-#ifdef SP_HAS_SAMPLE_ENCODE
     if (_nbest_size != 0)
       _processor->SampleEncode(str, _nbest_size, _alpha, &pieces);
     else
-#endif
-    {
       _processor->Encode(str, &pieces);
-    }
 
     return pieces;
   }

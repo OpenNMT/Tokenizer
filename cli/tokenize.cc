@@ -4,9 +4,7 @@
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPE.h>
-#ifdef WITH_SP
-#  include <onmt/SentencePiece.h>
-#endif
+#include <onmt/SentencePiece.h>
 
 #include "tokenization_args.h"
 
@@ -33,7 +31,6 @@ int main(int argc, char* argv[])
     ("bpe_vocab_threshold", "Deprecated, see --vocabulary_threshold",
      cxxopts::value<int>()->default_value("50"))
 
-#ifdef WITH_SP
     ("sp_model_path", "Path to the SentencePiece model",
      cxxopts::value<std::string>()->default_value(""))
     ("s,sp_model", "Aliases for --sp_model_path",
@@ -42,7 +39,6 @@ int main(int argc, char* argv[])
      cxxopts::value<int>()->default_value("0"))
     ("sp_alpha", "Smoothing parameter for the SentencePiece sampling API",
      cxxopts::value<float>()->default_value("0.1"))
-#endif
 
     ("vocabulary", "If provided, sentences are encoded to subword present in this vocabulary",
      cxxopts::value<std::string>()->default_value(""))
@@ -76,7 +72,6 @@ int main(int argc, char* argv[])
     subword_encoder = new onmt::BPE(bpe_model,
                                     vm["joiner"].as<std::string>(),
                                     vm["bpe_dropout"].as<float>());
-#ifdef WITH_SP
   else
   {
     std::string sp_model = (vm.count("sp_model_path")
@@ -87,7 +82,6 @@ int main(int argc, char* argv[])
                                                 vm["sp_nbest_size"].as<int>(),
                                                 vm["sp_alpha"].as<float>());
   }
-#endif
 
   if (subword_encoder && !vocabulary.empty())
     subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);

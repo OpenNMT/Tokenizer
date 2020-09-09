@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <onmt/BPE.h>
+#include <onmt/SentencePiece.h>
 #include <onmt/Tokenizer.h>
 #include <onmt/SpaceTokenizer.h>
 
@@ -640,10 +641,6 @@ TEST(TokenizerTest, CharModeSpacerNew) {
   test_tok(tokenizer, "  Hello   World 123.", "H e l l o ▁ W o r l d ▁ 1 2 3 .");
 }
 
-#ifdef WITH_SP
-
-#  include <onmt/SentencePiece.h>
-
 TEST(TokenizerTest, SentencePiece) {
   Tokenizer tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
                       get_data("sp-models/sp.model"));
@@ -682,14 +679,12 @@ TEST(TokenizerTest, SentencePieceWithJoinersAndPh_preserve) {
                      "The two shows ￭, called￭ ｟Desire｠ ￭ and S ￭e ￭c ￭re ￭t ￭s ￭, will be one ￭- ￭hour prime ￭- ￭time shows ￭.");
 }
 
-#ifdef SP_HAS_SAMPLE_ENCODE
 TEST(TokenizerTest, SentencePieceSubwordRegularization) {
   Tokenizer tokenizer(get_data("sp-models/sp_regularization.model"), 1, 0.1);
   test_tok_and_detok(tokenizer,
                      "The two shows, called Desire and Secrets, will be one-hour prime-time shows.",
                      "▁The ▁ two ▁show s , ▁call ed ▁De si re ▁ and ▁Sec re t s , ▁w ill ▁be ▁one - h our ▁ pri me - t im e ▁show s .");
 }
-#endif
 
 TEST(TokenizerTest, SentencePieceAlt) {
   Tokenizer tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
@@ -761,16 +756,6 @@ TEST(TokenizerTest, AggressiveWithSentencePieceIsolatedSpacerAndJoinerAnnotate) 
                       get_data("sp-models/wmtende.model"));
   test_tok(tokenizer, "depending on its temperature.", "depending on its temperature ￭.");
 }
-
-#else
-
-TEST(TokenizerTest, NoSentencePieceSupport) {
-  ASSERT_THROW(Tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
-                         get_data("sp-models/sp.model")),
-               std::runtime_error);
-}
-
-#endif
 
 TEST(TokenizerTest, WithoutVocabulary) {
   Tokenizer tokenizer(Tokenizer::Mode::Space,

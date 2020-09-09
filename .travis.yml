@@ -3,33 +3,12 @@ language: cpp
 compiler:
   - gcc
   - clang
-env:
-  global:
-    - SENTENCEPIECE_VERSION="0.1.8"
-cache:
-  directories:
-    - $HOME/sentencepiece-$SENTENCEPIECE_VERSION/
-before_install:
-  - export ROOT_TRAVIS_DIR=$(pwd)
-  - |
-    if [ ! -d $HOME/sentencepiece-$SENTENCEPIECE_VERSION/lib ]; then
-      wget https://github.com/google/sentencepiece/archive/v$SENTENCEPIECE_VERSION.tar.gz
-      tar xf v$SENTENCEPIECE_VERSION.tar.gz
-      cd sentencepiece-$SENTENCEPIECE_VERSION
-      mkdir build
-      cd build
-      cmake -DCMAKE_INSTALL_PREFIX=$HOME/sentencepiece-$SENTENCEPIECE_VERSION ..
-      make
-      make install
-      cd $ROOT_TRAVIS_DIR
-    fi
 install:
   - export TOKENIZER_ROOT=$HOME/Tokenizer
-  - export SENTENCEPIECE_ROOT=$HOME/sentencepiece-$SENTENCEPIECE_VERSION
   - mkdir build && cd build
-  - cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT -DCMAKE_PREFIX_PATH=$SENTENCEPIECE_ROOT ..
+  - cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$TOKENIZER_ROOT ..
   - make install
-  - cd $ROOT_TRAVIS_DIR
+  - cd ..
 script:
   - build/test/onmt_tokenizer_test test/data
 

@@ -6,9 +6,7 @@
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPELearner.h>
-#ifdef WITH_SP_TRAIN
-#  include <onmt/SPMLearner.h>
-#endif
+#include <onmt/SPMLearner.h>
 
 #include "tokenization_args.h"
 
@@ -95,15 +93,11 @@ int main(int argc, char* argv[])
 
   }
   else if (subword == "sentencepiece") {
-#ifdef WITH_SP_TRAIN
     learner = new onmt::SPMLearner(vm["verbose"].as<bool>(),
                                    std::vector<std::string>(subword_args.begin() + 1,
                                                             subword_args.end()),
                                    vm["tmpfile"].as<std::string>());
-#else
-    std::cerr << "ERROR: this Tokenizer was not built with SentencePiece training support" << std::endl;
     return 1;
-#endif
   }
   else {
     std::cerr << "ERROR: invalid subword type: " << subword << " (accepted: bpe, sentencepiece)" << std::endl;

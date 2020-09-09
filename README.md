@@ -70,7 +70,6 @@ See the `-h` flag to list the available options.
 ### Dependencies
 
 * [ICU](http://site.icu-project.org/)
-* (optional) [SentencePiece](https://github.com/google/sentencepiece)
 
 ### Compiling
 
