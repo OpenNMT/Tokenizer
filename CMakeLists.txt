@@ -80,7 +80,12 @@ list(APPEND LINK_LIBRARIES
   sentencepiece_train-static
   )
 
-add_library(${PROJECT_NAME} ${SOURCES})
+if(COMMAND create_library)
+  create_library(${PROJECT_NAME} SHARED ${SOURCES})
+else()
+  add_library(${PROJECT_NAME} SHARED ${SOURCES})
+endif()
+
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
