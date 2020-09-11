@@ -17,6 +17,10 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif(NOT CMAKE_BUILD_TYPE)
 
+option(SPM_ENABLE_SHARED "" OFF)
+option(SPM_ENABLE_TCMALLOC "" OFF)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/sentencepiece EXCLUDE_FROM_ALL)
+
 if(MSVC)
   if(NOT BUILD_SHARED_LIBS)
     if(CMAKE_VERSION VERSION_LESS "3.15.0")
@@ -32,9 +36,13 @@ endif()
 find_package(ICU REQUIRED)
 
 set(INCLUDE_DIRECTORIES
+  PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${PROJECT_BINARY_DIR}
+
+  PRIVATE
   ${ICU_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sentencepiece/src
   )
 
 set(PUBLIC_HEADERS
@@ -42,6 +50,8 @@ set(PUBLIC_HEADERS
   include/onmt/BPE.h
   include/onmt/BPELearner.h
   include/onmt/ITokenizer.h
+  include/onmt/SPMLearner.h
+  include/onmt/SentencePiece.h
   include/onmt/SpaceTokenizer.h
   include/onmt/SubwordEncoder.h
   include/onmt/SubwordLearner.h
@@ -53,6 +63,8 @@ set(SOURCES
   src/BPELearner.cc
   src/Casing.cc
   src/ITokenizer.cc
+  src/SPMLearner.cc
+  src/SentencePiece.cc
   src/SpaceTokenizer.cc
   src/SubwordEncoder.cc
   src/SubwordLearner.cc
@@ -64,45 +76,9 @@ set(SOURCES
 
 list(APPEND LINK_LIBRARIES
   ${ICU_LIBRARIES}
+  sentencepiece-static
+  sentencepiece_train-static
   )
-
-find_library(SP_LIBRARY NAMES sentencepiece)
-find_path(SP_INCLUDE_DIR NAMES sentencepiece_processor.h)
-
-if(NOT SP_LIBRARY OR NOT SP_INCLUDE_DIR)
-  message(WARNING "sentencepiece not found; will not be supported")
-else()
-  message(STATUS "Found sentencepiece: ${SP_LIBRARY}")
-  add_definitions(-DWITH_SP)
-  list(APPEND PUBLIC_HEADERS include/onmt/SentencePiece.h)
-  list(APPEND SOURCES src/SentencePiece.cc)
-  list(APPEND INCLUDE_DIRECTORIES ${SP_INCLUDE_DIR})
-  list(APPEND LINK_LIBRARIES ${SP_LIBRARY})
-
-  find_library(SP_TRAIN_LIBRARY NAMES sentencepiece_train)
-  if(SP_TRAIN_LIBRARY)
-    find_package(Threads)
-    add_definitions(-DWITH_SP_TRAIN)
-    message(STATUS "Found sentencepiece_train: ${SP_TRAIN_LIBRARY}")
-    list(APPEND PUBLIC_HEADERS include/onmt/SPMLearner.h)
-    list(APPEND SOURCES src/SPMLearner.cc)
-    list(APPEND LINK_LIBRARIES
-      ${SP_TRAIN_LIBRARY}
-      ${CMAKE_THREAD_LIBS_INIT})
-  else()
-    message(WARNING "sentencepiece_train not found: training SentencePiece models will not be supported")
-  endif()
-
-  file(STRINGS ${SP_INCLUDE_DIR}/sentencepiece_processor.h HAS_SAMPLE_ENCODE REGEX "SampleEncode")
-  if(HAS_SAMPLE_ENCODE)
-    add_definitions(-DSP_HAS_SAMPLE_ENCODE)
-  endif()
-
-  file(STRINGS ${SP_INCLUDE_DIR}/sentencepiece_processor.h HAS_VOCAB_RESTRICTION REGEX "SetVocabulary")
-  if(HAS_VOCAB_RESTRICTION)
-    add_definitions(-DSP_HAS_VOCAB_RESTRICTION)
-  endif()
-endif()
 
 add_library(${PROJECT_NAME} ${SOURCES})
 include(GNUInstallDirs)
