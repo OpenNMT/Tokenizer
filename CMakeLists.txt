@@ -33,7 +33,9 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
 
-find_package(ICU REQUIRED)
+if(NOT DEFINED ICU_INCLUDE_DIRS OR NOT DEFINED ICU_LIBRARIES)
+  find_package(ICU REQUIRED)
+endif()
 
 set(INCLUDE_DIRECTORIES
   PUBLIC
@@ -90,7 +92,7 @@ include(GNUInstallDirs)
 include(GenerateExportHeader)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/onmt/${PROJECT_NAME_LOWER}_export.h)
-target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRECTORIES})
+target_include_directories(${PROJECT_NAME} ${INCLUDE_DIRECTORIES})
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 
 if (NOT LIB_ONLY)
