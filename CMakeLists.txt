@@ -20,6 +20,11 @@ endif(NOT CMAKE_BUILD_TYPE)
 option(SPM_ENABLE_SHARED "" OFF)
 option(SPM_ENABLE_TCMALLOC "" OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/sentencepiece EXCLUDE_FROM_ALL)
+set_target_properties(
+  sentencepiece-static
+  sentencepiece_train-static
+  PROPERTIES COMPILE_FLAGS "-Wno-all -Wno-extra"
+  )
 
 if(MSVC)
   if(NOT BUILD_SHARED_LIBS)
