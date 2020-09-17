@@ -23,7 +23,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/sentencepiece EXCLUDE_F
 set_target_properties(
   sentencepiece-static
   sentencepiece_train-static
-  PROPERTIES COMPILE_FLAGS "-Wno-all -Wno-extra"
+  PROPERTIES COMPILE_FLAGS "-Wno-all -Wno-extra -Wno-error"
   )
 
 if(MSVC)
