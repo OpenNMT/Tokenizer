@@ -59,6 +59,7 @@ set(PUBLIC_HEADERS
   include/onmt/ITokenizer.h
   include/onmt/SPMLearner.h
   include/onmt/SentencePiece.h
+  include/onmt/SentencePieceLearner.h
   include/onmt/SpaceTokenizer.h
   include/onmt/SubwordEncoder.h
   include/onmt/SubwordLearner.h
@@ -70,8 +71,8 @@ set(SOURCES
   src/BPELearner.cc
   src/Casing.cc
   src/ITokenizer.cc
-  src/SPMLearner.cc
   src/SentencePiece.cc
+  src/SentencePieceLearner.cc
   src/SpaceTokenizer.cc
   src/SubwordEncoder.cc
   src/SubwordLearner.cc

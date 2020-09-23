@@ -10,7 +10,7 @@
 #include <onmt/BPE.h>
 #include <onmt/SentencePiece.h>
 #include <onmt/BPELearner.h>
-#include <onmt/SPMLearner.h>
+#include <onmt/SentencePieceLearner.h>
 
 namespace py = pybind11;
 
@@ -430,10 +430,10 @@ public:
                               bool keep_vocab,
                               py::kwargs kwargs)
     : SubwordLearnerWrapper(tokenizer,
-                            new onmt::SPMLearner(false,
-                                                 parse_kwargs(kwargs),
-                                                 create_temp_file(),
-                                                 keep_vocab))
+                            new onmt::SentencePieceLearner(false,
+                                                           parse_kwargs(kwargs),
+                                                           create_temp_file(),
+                                                           keep_vocab))
     , _keep_vocab(keep_vocab)
   {
   }
