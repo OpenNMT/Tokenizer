@@ -292,15 +292,20 @@ def test_token_copy():
     assert a.surface == "a"
 
 def test_token_repr():
+    token = pyonmttok.Token()
+    assert repr(token) == "Token()"
+
     token = pyonmttok.Token("Hello")
     assert repr(token) == "Token('Hello')"
 
-    token.type = pyonmttok.TokenType.LEADING_SUBWORD
-    token.casing = pyonmttok.Casing.MIXED
-    token.join_right = True
-    token.join_left = True
-    token.preserve = True
-    token.features = ["X", "Y"]
+    token = pyonmttok.Token(
+        "Hello",
+        type=pyonmttok.TokenType.LEADING_SUBWORD,
+        casing=pyonmttok.Casing.MIXED,
+        join_right=True,
+        join_left=True,
+        preserve=True,
+        features=["X", "Y"])
     assert repr(token) == ("Token('Hello', "
         "type=TokenType.LEADING_SUBWORD, "
         "join_left=True, "

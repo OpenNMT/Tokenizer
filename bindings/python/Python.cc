@@ -455,8 +455,30 @@ private:
   bool _keep_vocab;
 };
 
+static onmt::Token create_token(std::string surface,
+                                const onmt::TokenType type,
+                                const onmt::Casing casing,
+                                const bool join_left,
+                                const bool join_right,
+                                const bool spacer,
+                                const bool preserve,
+                                const py::object& features) {
+  onmt::Token token(std::move(surface));
+  token.type = type;
+  token.casing = casing;
+  token.join_left = join_left;
+  token.join_right = join_right;
+  token.spacer = spacer;
+  token.preserve = preserve;
+  if (!features.is(py::none()))
+    token.features = to_std_vector<std::string>(features.cast<py::list>());
+  return token;
+}
+
 static std::string repr_token(const onmt::Token& token) {
-  std::string repr = "Token('" + token.surface + "'";
+  std::string repr = "Token(";
+  if (!token.empty())
+    repr += "'" + token.surface + "'";
   if (token.type != onmt::TokenType::Word)
     repr += ", type=" + std::string(py::repr(py::cast(token.type)));
   if (token.join_left)
@@ -495,8 +517,17 @@ PYBIND11_MODULE(pyonmttok, m)
 
   py::class_<onmt::Token>(m, "Token")
     .def(py::init<>())
-    .def(py::init<std::string>())
-    .def(py::init<onmt::Token>())
+    .def(py::init<std::string>(), py::arg("surface"))
+    .def(py::init<onmt::Token>(), py::arg("token"))
+    .def(py::init(&create_token),
+         py::arg("surface"),
+         py::arg("type")=onmt::TokenType::Word,
+         py::arg("casing")=onmt::Casing::None,
+         py::arg("join_left")=false,
+         py::arg("join_right")=false,
+         py::arg("join_spacer")=false,
+         py::arg("preserve")=false,
+         py::arg("features")=py::none())
     .def_readwrite("surface", &onmt::Token::surface)
     .def_readwrite("type", &onmt::Token::type)
     .def_readwrite("join_left", &onmt::Token::join_left)
