@@ -1,14 +1,14 @@
-#include "onmt/SPMLearner.h"
+#include "onmt/SentencePieceLearner.h"
 
 #include <sentencepiece_trainer.h>
 
 namespace onmt
 {
 
-  SPMLearner::SPMLearner(bool verbose,
-                         const std::string& opts,
-                         const std::string& input_filename,
-                         bool keep_vocab)
+  SentencePieceLearner::SentencePieceLearner(bool verbose,
+                                             const std::string& opts,
+                                             const std::string& input_filename,
+                                             bool keep_vocab)
     : SubwordLearner(verbose)
     , _args(opts)
     , _input_filename(input_filename)
@@ -16,10 +16,10 @@ namespace onmt
   {
   }
 
-  SPMLearner::SPMLearner(bool verbose,
-                         const std::vector<std::string>& opts,
-                         const std::string& input_filename,
-                         bool keep_vocab)
+  SentencePieceLearner::SentencePieceLearner(bool verbose,
+                                             const std::vector<std::string>& opts,
+                                             const std::string& input_filename,
+                                             bool keep_vocab)
     : SubwordLearner(verbose)
     , _input_filename(input_filename)
     , _keep_vocab(keep_vocab)
@@ -28,10 +28,10 @@ namespace onmt
       _args += opts[i] + "=" + opts[i + 1] + " ";
   }
 
-  SPMLearner::SPMLearner(bool verbose,
-                         const std::unordered_map<std::string, std::string>& opts,
-                         const std::string& input_filename,
-                         bool keep_vocab)
+  SentencePieceLearner::SentencePieceLearner(bool verbose,
+                                             const std::unordered_map<std::string, std::string>& opts,
+                                             const std::string& input_filename,
+                                             bool keep_vocab)
     : SubwordLearner(verbose)
     , _input_filename(input_filename)
     , _keep_vocab(keep_vocab)
@@ -40,26 +40,26 @@ namespace onmt
       _args += " --" + pair.first + "=" + pair.second;
   }
 
-  SPMLearner::~SPMLearner()
+  SentencePieceLearner::~SentencePieceLearner()
   {
     remove(_input_filename.c_str());
   }
 
-  void SPMLearner::set_input_filename(const std::string& filename)
+  void SentencePieceLearner::set_input_filename(const std::string& filename)
   {
     if (_input_stream)
       _input_stream.reset();
     _input_filename = filename;
   }
 
-  void SPMLearner::ingest_token_impl(const std::string& token)
+  void SentencePieceLearner::ingest_token_impl(const std::string& token)
   {
     if (!_input_stream)
       _input_stream.reset(new std::ofstream(_input_filename));
     *_input_stream << token << '\n';
   }
 
-  void SPMLearner::learn(std::ostream& os, const char* description, bool verbose)
+  void SentencePieceLearner::learn(std::ostream& os, const char* description, bool verbose)
   {
     if (_keep_vocab)
       throw std::invalid_argument("stream API does not support keeping the SentencePiece vocabulary");
@@ -71,7 +71,7 @@ namespace onmt
     remove(model_path.c_str());
   }
 
-  void SPMLearner::learn(const std::string& model_path, const char*, bool verbose)
+  void SentencePieceLearner::learn(const std::string& model_path, const char*, bool verbose)
   {
     verbose = verbose || _verbose;
     _input_stream->flush();

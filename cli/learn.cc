@@ -6,7 +6,7 @@
 
 #include <onmt/Tokenizer.h>
 #include <onmt/BPELearner.h>
-#include <onmt/SPMLearner.h>
+#include <onmt/SentencePieceLearner.h>
 
 #include "tokenization_args.h"
 
@@ -93,10 +93,10 @@ int main(int argc, char* argv[])
 
   }
   else if (subword == "sentencepiece") {
-    learner = new onmt::SPMLearner(vm["verbose"].as<bool>(),
-                                   std::vector<std::string>(subword_args.begin() + 1,
-                                                            subword_args.end()),
-                                   vm["tmpfile"].as<std::string>());
+    learner = new onmt::SentencePieceLearner(vm["verbose"].as<bool>(),
+                                             std::vector<std::string>(subword_args.begin() + 1,
+                                                                      subword_args.end()),
+                                             vm["tmpfile"].as<std::string>());
     return 1;
   }
   else {
