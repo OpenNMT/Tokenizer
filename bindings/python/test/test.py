@@ -282,3 +282,21 @@ def test_token_api_features():
     assert tokens[1].surface == "world"
     assert tokens[1].casing == pyonmttok.Casing.UPPERCASE
     assert tokens[1].features == []
+
+def test_token_repr():
+    token = pyonmttok.Token("Hello")
+    assert repr(token) == "Token('Hello')"
+
+    token.type = pyonmttok.TokenType.LEADING_SUBWORD
+    token.casing = pyonmttok.Casing.MIXED
+    token.join_right = True
+    token.join_left = True
+    token.preserve = True
+    token.features = ["X", "Y"]
+    assert repr(token) == ("Token('Hello', "
+        "type=TokenType.LEADING_SUBWORD, "
+        "join_left=True, "
+        "join_right=True, "
+        "preserve=True, "
+        "features=['X', 'Y'], "
+        "casing=Casing.MIXED)")

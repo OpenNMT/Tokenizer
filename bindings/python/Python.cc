@@ -455,6 +455,26 @@ private:
   bool _keep_vocab;
 };
 
+static std::string repr_token(const onmt::Token& token) {
+  std::string repr = "Token('" + token.surface + "'";
+  if (token.type != onmt::TokenType::Word)
+    repr += ", type=" + std::string(py::repr(py::cast(token.type)));
+  if (token.join_left)
+    repr += ", join_left=True";
+  if (token.join_right)
+    repr += ", join_right=True";
+  if (token.spacer)
+    repr += ", spacer=True";
+  if (token.preserve)
+    repr += ", preserve=True";
+  if (token.has_features())
+    repr += ", features=" + std::string(py::repr(to_py_list(token.features)));
+  if (token.casing != onmt::Casing::None)
+    repr += ", casing=" + std::string(py::repr(py::cast(token.casing)));
+  repr += ")";
+  return repr;
+}
+
 PYBIND11_MODULE(pyonmttok, m)
 {
   m.def("is_placeholder", &onmt::Tokenizer::is_placeholder, py::arg("token"));
@@ -486,6 +506,7 @@ PYBIND11_MODULE(pyonmttok, m)
     .def_readwrite("casing", &onmt::Token::casing)
     .def("is_placeholder", &onmt::Token::is_placeholder)
     .def("__eq__", &onmt::Token::operator==)
+    .def("__repr__", &repr_token)
     ;
 
   py::class_<TokenizerWrapper>(m, "Tokenizer")
