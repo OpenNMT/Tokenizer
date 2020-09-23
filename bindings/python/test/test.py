@@ -283,6 +283,14 @@ def test_token_api_features():
     assert tokens[1].casing == pyonmttok.Casing.UPPERCASE
     assert tokens[1].features == []
 
+def test_token_copy():
+    a = pyonmttok.Token("a")
+    b = pyonmttok.Token(a)
+    assert b.surface == "a"
+    b.surface = "b"
+    assert b.surface == "b"
+    assert a.surface == "a"
+
 def test_token_repr():
     token = pyonmttok.Token("Hello")
     assert repr(token) == "Token('Hello')"
