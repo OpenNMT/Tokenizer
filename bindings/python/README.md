@@ -52,6 +52,9 @@ tokenizer = pyonmttok.Tokenizer(
     segment_alphabet_change: bool = False,
     support_prior_joiners: bool = False,
     segment_alphabet: Optional[List[str]] = None)
+
+# Copy constructor.
+tokenizer = pyonmttok.Tokenizer(tokenizer: pyonmttok.Tokenizer)
 ```
 
 See the [documentation](../../docs/options.md) for a description of each tokenization option.

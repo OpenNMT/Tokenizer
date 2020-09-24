@@ -521,7 +521,7 @@ PYBIND11_MODULE(pyonmttok, m)
   py::class_<onmt::Token>(m, "Token")
     .def(py::init<>())
     .def(py::init<std::string>(), py::arg("surface"))
-    .def(py::init<onmt::Token>(), py::arg("token"))
+    .def(py::init<const onmt::Token&>(), py::arg("token"))
     .def(py::init(&create_token),
          py::arg("surface"),
          py::arg("type")=onmt::TokenType::Word,
@@ -545,7 +545,8 @@ PYBIND11_MODULE(pyonmttok, m)
     ;
 
   py::class_<TokenizerWrapper>(m, "Tokenizer")
-    .def(py::init<std::string, std::string, std::string, int, float, std::string, int, std::string, int, float, std::string, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, const py::object&>(),
+    .def(py::init<const TokenizerWrapper&>(), py::arg("tokenizer"))
+    .def(py::init<const std::string&, const std::string&, const std::string&, int, float, std::string, int, const std::string&, int, float, const std::string&, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, const py::object&>(),
          py::arg("mode"),
          py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
