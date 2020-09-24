@@ -111,11 +111,15 @@ def test_named_arguments():
     assert tokens == ["Hello", "World", "￭!"]
     assert text == tokenizer.detokenize(tokens=tokens)
 
-def test_deepcopy():
+@pytest.mark.parametrize("use_constructor", [False, True])
+def test_deepcopy(use_constructor):
     text = "Hello World!"
-    tok1 = pyonmttok.Tokenizer("aggressive")
+    tok1 = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
     tokens1, _ = tok1.tokenize(text)
-    tok2 = copy.deepcopy(tok1)
+    if use_constructor:
+        tok2 = pyonmttok.Tokenizer(tok1)
+    else:
+        tok2 = copy.deepcopy(tok1)
     tokens2, _ = tok2.tokenize(text)
     assert tokens1 == tokens2
     del tok1
