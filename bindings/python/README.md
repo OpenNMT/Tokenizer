@@ -40,6 +40,7 @@ tokenizer = pyonmttok.Tokenizer(
     joiner: str = "￭",
     joiner_annotate: bool = False,
     joiner_new: bool = False,
+    support_prior_joiners: bool = False,
     spacer_annotate: bool = False,
     spacer_new: bool = False,
     case_feature: bool = False,
@@ -50,7 +51,6 @@ tokenizer = pyonmttok.Tokenizer(
     segment_case: bool = False,
     segment_numbers: bool = False,
     segment_alphabet_change: bool = False,
-    support_prior_joiners: bool = False,
     segment_alphabet: Optional[List[str]] = None)
 
 # Copy constructor.
