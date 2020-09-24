@@ -36,8 +36,11 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
   * Implement the `__repr__` method
   * Allow setting all attributes in the constructor
   * Add a copy constructor
+* [Python] Add a copy constructor for the `Tokenizer` class
 
 ### Fixes and improvements
+
+* [Python] Accept `None` value for `segment_alphabet` argument
 
 ## [v1.19.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.19.0) (2020-09-02)
 
