@@ -51,7 +51,7 @@ tokenizer = pyonmttok.Tokenizer(
     segment_numbers: bool = False,
     segment_alphabet_change: bool = False,
     support_prior_joiners: bool = False,
-    segment_alphabet: List[str] = [])
+    segment_alphabet: Optional[List[str]] = None)
 ```
 
 See the [documentation](../../docs/options.md) for a description of each tokenization option.
@@ -75,7 +75,7 @@ tokenizer.tokenize_file(input_path: str, output_path: str, num_threads: int = 1)
 # The detokenize method converts tokens back to a string.
 tokenizer.detokenize(
     tokens: Union[List[str], List[pyonmttok.Token]],
-    features: List[List[str]] = None
+    features: Optional[List[List[str]]] = None
 ) -> str
 
 # The detokenize_with_ranges method also returns a dictionary mapping a token
@@ -136,7 +136,7 @@ The returned `tokenizer` instance can be used to apply subword tokenization on n
 # See https://github.com/rsennrich/subword-nmt/blob/master/subword_nmt/learn_bpe.py
 # for argument documentation.
 learner = pyonmttok.BPELearner(
-    tokenizer: pyonmttok.Tokenizer = None,  # Defaults to tokenization mode "space".
+    tokenizer: Optional[pyonmttok.Tokenizer] = None,  # Defaults to tokenization mode "space".
     symbols: int = 10000,
     min_frequency: int = 2,
     total_symbols: bool = False)
@@ -144,7 +144,7 @@ learner = pyonmttok.BPELearner(
 # See https://github.com/google/sentencepiece/blob/master/src/spm_train_main.cc
 # for available training options.
 learner = pyonmttok.SentencePieceLearner(
-    tokenizer: pyonmttok.Tokenizer = None,  # Defaults to tokenization mode "none".
+    tokenizer: Optional[pyonmttok.Tokenizer] = None,  # Defaults to tokenization mode "none".
     keep_vocab: bool = False,  # Keep the generated vocabulary (model_path will act like model_prefix in spm_train)
     **training_options)
 
@@ -211,7 +211,7 @@ tokenizer.serialize_tokens(tokens: List[pyonmttok.Token]) -> Tuple[List[str], Li
 # Deserialize strings into Token objects.
 tokenizer.deserialize_tokens(
     tokens: List[str],
-    features: List[List[str]] = None
+    features: Optional[List[List[str]]] = None
 ) -> List[pyonmttok.Token]
 ```
 
