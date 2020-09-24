@@ -100,6 +100,10 @@ def test_segment_alphabet():
     tokens, _ = tokenizer.tokenize("測試 abc")
     assert tokens == ["測", "試", "abc"]
 
+    tokenizer = pyonmttok.Tokenizer(mode="aggressive", segment_alphabet=None)
+    tokens, _ = tokenizer.tokenize("測試 abc")
+    assert tokens == ["測試", "abc"]
+
 def test_named_arguments():
     tokenizer = pyonmttok.Tokenizer(mode="aggressive", joiner_annotate=True)
     text = "Hello World!"
