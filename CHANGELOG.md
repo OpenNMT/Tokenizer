@@ -19,6 +19,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ## [Unreleased]
 
+### New features
+
+### Fixes and improvements
+
+## [v1.20.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.20.0) (2020-09-24)
+
 ### Changes
 
 * The following changes affect users compiling the project from the source. They ensure users get the best performance and all features by default:
