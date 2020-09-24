@@ -167,6 +167,8 @@ The Token API allows to tokenize text into `pyonmttok.Token` objects. This API c
 ```python
 >>> tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
 >>> tokens = tokenizer.tokenize("Hello World!", as_token_objects=True)
+>>> tokens
+[Token('Hello'), Token('World'), Token('!', join_left=True)]
 >>> tokens[-1].surface
 '!'
 >>> tokenizer.serialize_tokens(tokens)[0]
