@@ -143,7 +143,7 @@ learner = pyonmttok.SentencePieceLearner(
 
 learner.ingest(text: str)
 learner.ingest_file(path: str)
-learner.ingest_token(token: str)
+learner.ingest_token(token: Union[str, pyonmttok.Token])
 
 learner.learn(model_path: str, verbose: bool = False) -> pyonmttok.Tokenizer
 ```
