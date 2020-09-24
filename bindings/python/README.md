@@ -1,8 +1,15 @@
-# Python bindings
+# Python API
 
 ```bash
 pip install pyonmttok
 ```
+
+**Table of contents**
+
+1. [Tokenization](#tokenization)
+1. [Subword learning](#subword-learning)
+1. [Token API](#token-api)
+1. [Utilities](#utilities)
 
 ## Tokenization
 
@@ -206,4 +213,13 @@ tokenizer.deserialize_tokens(
     tokens: List[str],
     features: List[List[str]] = None
 ) -> List[pyonmttok.Token]
+```
+
+## Utilities
+
+### Interface
+
+```python
+# Returns True if the string has the placeholder format.
+pyonmttok.is_placeholder(token: str)
 ```
