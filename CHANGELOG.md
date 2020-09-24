@@ -19,7 +19,23 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ## [Unreleased]
 
+### Changes
+
+* The following changes affect users compiling the project from the source. They ensure users get the best performance and all features by default:
+  * ICU is now required to improve performance and Unicode support
+  * SentencePiece is now integrated as a Git submodule and linked statically to the project
+  * Boost is no longer required, the project now uses [cxxopts](https://github.com/jarro2783/cxxopts) which is integrated as a Git submodule
+  * The project is compiled in `Release` mode by default
+  * Tests are no longer compiled by default (use `-DBUILD_TESTS=ON` to compile the tests)
+
 ### New features
+
+* Accept any [Unicode script aliases](https://en.wikipedia.org/wiki/Script_(Unicode)#List_of_scripts_in_Unicode) in the `segment_alphabet` option
+* Update SentencePiece to 0.1.92
+* [Python] Improve the capabilities of the `Token` class:
+  * Implement the `__repr__` method
+  * Allow setting all attributes in the constructor
+  * Add a copy constructor
 
 ### Fixes and improvements
 
