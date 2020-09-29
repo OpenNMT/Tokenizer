@@ -16,17 +16,27 @@ namespace onmt
 
     std::vector<std::string> vocab;
     std::string line;
+    std::string token;
+    int frequency;
     while (std::getline(in, line))
     {
       size_t sep = line.find(' ');
-      if (sep == std::string::npos && frequency_threshold <= 1)
-        vocab.emplace_back(std::move(line));
-      else if (sep != std::string::npos)
+      if (sep == std::string::npos)
+        sep = line.find('\t');
+
+      if (sep == std::string::npos)
       {
-        int frequency = std::stoi(line.substr(sep + 1));
-        if (frequency >= frequency_threshold)
-          vocab.emplace_back(line.substr(0, sep));
+        token = std::move(line);
+        frequency = 1;
       }
+      else
+      {
+        token = line.substr(0, sep);
+        frequency = std::stoi(line.substr(sep + 1));
+      }
+
+      if (frequency >= frequency_threshold)
+        vocab.emplace_back(std::move(token));
     }
 
     set_vocabulary(vocab);

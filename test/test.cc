@@ -779,6 +779,18 @@ TEST(TokenizerTest, WithVocabulary) {
            "Oliver Gr@@ ü@@ n , wel@@ le");
 }
 
+TEST(TokenizerTest, WithVocabularyTabSeparated) {
+  Tokenizer tokenizer(Tokenizer::Mode::Space,
+                      Tokenizer::Flags::JoinerAnnotate,
+                      get_data("bpe-models/bpe_code.v0.2"),
+                      "@@",
+                      get_data("bpe-models/vocab.en.tab"),
+                      50);
+  test_tok(tokenizer,
+           "Oliver Grün , welle",
+           "Oliver Gr@@ ü@@ n , wel@@ le");
+}
+
 TEST(TokenizerTest, TokenInterface)
 {
   Tokenizer tokenizer(Tokenizer::Mode::Aggressive,
