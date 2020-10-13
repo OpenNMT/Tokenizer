@@ -717,31 +717,31 @@ namespace onmt
           if (v >= 32 && v != 0xFEFF)
           {
             const std::string& sub_c(_no_substitution ? c : normalize_character(c));
-            bool cur_letter = unicode::is_letter(v);
-            bool cur_number = !cur_letter && unicode::is_number(v);
+            bool is_letter = unicode::is_letter(v);
+            bool is_number = !is_letter && unicode::is_number(v);
             int alphabet = unicode::get_script(v);
 
             if (alphabets != nullptr)
             {
-              if (alphabet >= 0 && cur_letter)
+              if (alphabet >= 0 && is_letter)
                 (*alphabets)[unicode::get_script_name(alphabet)]++;
               else
-                (*alphabets)[cur_number ? "Numeric" : "Other"]++;
+                (*alphabets)[is_number ? "Numeric" : "Other"]++;
             }
 
             if (_mode == Mode::Conservative)
             {
-              if (cur_number
+              if (is_number
                   || (sub_c == "-" && letter)
                   || (sub_c == "_")
                   || (letter && (sub_c == "." || sub_c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v))))
                 {
-                  cur_letter = true;
+                  is_letter = true;
                   alphabet = number_alphabet;
                 }
             }
 
-            if (cur_letter && _mode != Mode::Char)
+            if (is_letter && _mode != Mode::Char)
             {
               const unicode::CaseType case_type = unicode::get_case_v2(v);
               bool segment_case = false;
@@ -779,7 +779,7 @@ namespace onmt
               state = State::Letter;
               prev_alphabet = alphabet;
             }
-            else if (cur_number && _mode != Mode::Char)
+            else if (is_number && _mode != Mode::Char)
             {
               if (letter || (number && _segment_numbers) || (!number && !space))
               {
