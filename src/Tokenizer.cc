@@ -903,9 +903,8 @@ namespace onmt
       }
       else if (_spacer_annotate)
       {
-        bool joined_left = (token.join_left
-                            || (i > 0 && annotated_tokens[i - 1].join_right));
-        if (!joined_left && (i != 0 || token.spacer))
+        if ((i == 0 && token.spacer)
+            || (i > 0 && !token.join_left && !annotated_tokens[i - 1].join_right))
           prefix = &spacer_marker;
         attach = attach && !_spacer_new;
       }
