@@ -3,11 +3,12 @@
 #include <sentencepiece_processor.h>
 #include <stdexcept>
 
+#include "Utils.h"
+
 namespace onmt
 {
 
   static const std::string sp_marker("▁");
-  static const auto sp_marker_length = sp_marker.length();
 
   class SentencePieceProcessor : public sentencepiece::SentencePieceProcessor
   {
@@ -86,12 +87,10 @@ namespace onmt
 
     for (auto& piece : pieces)
     {
-      const auto piece_length = piece.length();
-
       // Prefixed by the spacer.
-      if (piece_length >= sp_marker_length && piece.compare(0, sp_marker_length, sp_marker) == 0)
+      if (starts_with(piece, sp_marker))
       {
-        if (piece_length == sp_marker_length)  // Piece is just the spacer.
+        if (piece.length() == sp_marker.length())  // Piece is just the spacer.
         {
           // Skip this isolated spacer and mark the next piece with the spacer flag.
           apply_spacer_on_next = true;
@@ -99,7 +98,7 @@ namespace onmt
         }
         else
         {
-          Token sub_token(piece.substr(sp_marker_length));
+          Token sub_token(piece.substr(sp_marker.length()));
           sub_token.spacer = true;
           tokens.emplace_back(std::move(sub_token));
         }

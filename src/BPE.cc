@@ -8,6 +8,7 @@
 
 #include "onmt/unicode/Unicode.h"
 #include "Casing.h"
+#include "Utils.h"
 
 namespace onmt
 {
@@ -66,7 +67,7 @@ namespace onmt
 
     std::getline(in, line);
 
-    if (line.compare(0, 9, "#version:") == 0)  // Model from learn_bpe.py
+    if (starts_with(line, "#version:"))  // Model from learn_bpe.py
     {
       int major_version = line[line.size() - 3] - '0';
       int minor_version = line[line.size() - 1] - '0';
@@ -154,21 +155,21 @@ namespace onmt
 
     apply_merges(chars);
 
-    if (_prefix)
+    if (_prefix && starts_with(chars.front(), _begin_of_word))
     {
-      if (chars.front() == _begin_of_word)
+      if (chars.front().size() == _begin_of_word.size())
         chars.erase(chars.begin());
-      else if (chars.front().compare(0, _begin_of_word.size(), _begin_of_word) == 0)
+      else
         chars.front().erase(0, _begin_of_word.size());
     }
 
-    if (chars.back() == _end_of_word)
-      chars.pop_back();
-    else if (chars.back().size() > _end_of_word.size()
-             && chars.back().compare(chars.back().size() - _end_of_word.size(),
-                                     std::string::npos,
-                                     _end_of_word) == 0)
-      chars.back().erase(chars.back().size() - _end_of_word.size(), _end_of_word.size());
+    if (_suffix && ends_with(chars.back(), _end_of_word))
+    {
+      if (chars.back().size() == _end_of_word.size())
+        chars.pop_back();
+      else
+        chars.back().erase(chars.back().size() - _end_of_word.size());
+    }
 
     if (_case_insensitive)
     {
