@@ -171,11 +171,24 @@ Smoothing parameter for the SentencePiece sampling API.
 
 ### `vocabulary_path` (string, default: `""`)
 
-Path to the vocabulary file. If set, subword encoders will only generate tokens that exist in the vocabulary. Format is: `<token> <space> <frequency>`. A missing frequency is equivalent to 1.
+Path to the vocabulary file.
+
+If set, subword encoders will recursively split OOV tokens into smaller units until all units are either in the vocabulary, or can not be split further.
+
+The following line formats are accepted:
+
+* `<token><space><frequency>`
+* `<token><tab><frequency>`
+* `<token>` (the token frequency is set to 1)
+
+This feature currently requires subword encoders to be used with their "natural" tokenization settings, that is:
+
+* SentencePiece: `--mode none --spacer_annotate`
+* BPE: `--joiner_annotate`
 
 ### `vocabulary_threshold` (int, default: `0`)
 
-When using `vocabulary`, any words with a frequency lower than `vocabulary_threshold` will be treated as OOV.
+When using `vocabulary_path`, any words with a frequency lower than `vocabulary_threshold` will be treated as OOV.
 
 ## Reversible tokenization
 

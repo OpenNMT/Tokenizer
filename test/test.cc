@@ -558,6 +558,27 @@ TEST(TokenizerTest, BPEDropout) {
   test_tok(tokenizer, "seulement", "s e u l e m e n t");
 }
 
+TEST(TokenizerTest, BPEVocabularyWithTrailingJoiner) {
+  BPE* bpe = new BPE(get_data("bpe-models/bpe_code.v0.2"));
+  bpe->set_vocabulary(std::vector<std::string>{"wel￭"});
+  Tokenizer tokenizer(Tokenizer::Mode::Space,
+                      bpe,
+                      Tokenizer::Flags::JoinerAnnotate
+                      | Tokenizer::Flags::SupportPriorJoiners);
+  test_tok(tokenizer, "wel￭ le", "wel￭ l￭ e");
+  test_tok(tokenizer, "wel le", "w￭ e￭ l l￭ e");
+}
+
+TEST(TokenizerTest, BPEVocabularyWithLeadingJoiner) {
+  BPE* bpe = new BPE(get_data("bpe-models/bpe_code.v0.2"));
+  bpe->set_vocabulary(std::vector<std::string>{"￭10"});
+  Tokenizer tokenizer(Tokenizer::Mode::Aggressive,
+                      bpe,
+                      Tokenizer::Flags::JoinerAnnotate);
+  test_tok(tokenizer, "A10", "A ￭10");
+  test_tok(tokenizer, "A100", "A ￭1￭ 0￭ 0");
+}
+
 TEST(TokenizerTest, SpacerAnnotate) {
   Tokenizer tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SpacerAnnotate);
   test_tok_and_detok(tokenizer,
