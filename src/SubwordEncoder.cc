@@ -52,22 +52,6 @@ namespace onmt
     return;
   }
 
-  std::vector<Token> SubwordEncoder::encode_and_annotate(const Token& token) const
-  {
-    std::vector<std::string> encoded = encode(token.surface);
-    std::vector<Token> tokens;
-
-    for (size_t j = 0; j < encoded.size(); ++j)
-    {
-      tokens.emplace_back(encoded[j]);
-      if (j + 1 < encoded.size())
-        tokens.back().join_right = true;
-    }
-
-    propagate_token_properties(token, tokens);
-    return tokens;
-  }
-
   std::vector<Token> SubwordEncoder::encode_and_annotate(const std::vector<Token>& tokens) const
   {
     std::vector<Token> segments;
@@ -91,18 +75,11 @@ namespace onmt
 
   void SubwordEncoder::propagate_token_properties(const Token& token, std::vector<Token>& tokens)
   {
-    if (token.join_left)
-    {
-      tokens.front().join_left = true;
-      if (token.preserve)
-        tokens.front().preserve = true;
-    }
-    if (token.join_right)
-    {
-      tokens.back().join_right = true;
-      if (token.preserve)
-        tokens.back().preserve = true;
-    }
+    tokens.front().join_left = token.join_left;
+    tokens.back().join_right = token.join_right;
+
+    tokens.front().preserve = token.preserve;
+    tokens.back().preserve = token.preserve;
 
     if (token.casing != Casing::None)
     {
