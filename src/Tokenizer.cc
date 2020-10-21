@@ -183,6 +183,8 @@ namespace onmt
       throw std::invalid_argument("spacer_new requires spacer_annotate");
     if (_joiner_new && !_joiner_annotate)
       throw std::invalid_argument("joiner_new requires joiner_annotate");
+    if (_support_prior_joiners && unicode::utf8len(_joiner) != 1)
+      throw std::invalid_argument("support_prior_joiners does not support multi-character joiners");
   }
 
   Tokenizer::~Tokenizer()
