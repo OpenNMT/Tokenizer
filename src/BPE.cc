@@ -73,6 +73,9 @@ namespace onmt
       int major_version = line[line.size() - 3] - '0';
       int minor_version = line[line.size() - 1] - '0';
       _version = std::make_pair(major_version, minor_version);
+      if (_version != std::make_pair(0, 1)
+          && _version != std::make_pair(0, 2))
+        throw std::runtime_error("unsupported BPE version");
     }
     else  // Model possibly from learn_bpe.lua
     {
@@ -144,8 +147,6 @@ namespace onmt
         chars.push_back(_end_of_word);
       else if (_version.first == 0 && _version.second == 2)
         chars.back() += _end_of_word;
-      else
-        throw std::runtime_error("unsupported BPE version");
     }
     else
     {
