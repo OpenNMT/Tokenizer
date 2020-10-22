@@ -23,7 +23,7 @@ namespace onmt
     void set_vocabulary(const std::vector<std::string>& vocabulary) override;
     void reset_vocabulary() override;
 
-    void set_joiner(std::string joiner)
+    void set_joiner(const std::string& joiner)
     {
       _joiner = joiner;
     }

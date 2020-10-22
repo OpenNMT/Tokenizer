@@ -77,25 +77,25 @@ namespace onmt
     else  // Model possibly from learn_bpe.lua
     {
       std::vector<std::string> options;
-      std::string option;
+      options.reserve(6);
 
       size_t sep = line.find(';');
       size_t bidx = 0;
       while (sep != std::string::npos && sep + 1 < line.size())
       {
-        options.push_back(line.substr(bidx, sep - bidx));
+        options.emplace_back(line.substr(bidx, sep - bidx));
         bidx = sep + 1;
         sep = line.find(';', bidx);
       }
-      options.push_back(line.substr(bidx));
+      options.emplace_back(line.substr(bidx));
 
       if (options.size() == 6 && options[0] == "v3")
       {
         _prefix = options[1] == "true";
         _suffix = options[2] == "true";
         _case_insensitive = options[3] == "true";
-        _begin_of_word = options[4];
-        _end_of_word = options[5];
+        _begin_of_word = std::move(options[4]);
+        _end_of_word = std::move(options[5]);
       }
       else  // Model from learn_bpe.py v0.1
         in.seekg(0);
@@ -105,7 +105,7 @@ namespace onmt
     while (std::getline(in, line))
     {
       /* line starting with '#' at the beginning of the file is a header */
-      if (header && line.length() && line[0] == '#')
+      if (header && !line.empty() && line[0] == '#')
         continue;
       header = false;
       size_t sep = line.find(' ');
@@ -117,7 +117,8 @@ namespace onmt
         if (_codes.count(pair) == 0)
           _codes.emplace(pair, i++);
 
-        _codes_reverse.emplace(pair, std::pair<std::string, std::string>(first_token, second_token));
+        _codes_reverse.emplace(std::move(pair),
+                               std::make_pair(std::move(first_token), std::move(second_token)));
       }
     }
   }
