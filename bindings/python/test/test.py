@@ -299,6 +299,19 @@ def test_token_copy():
     assert b.surface == "b"
     assert a.surface == "a"
 
+def test_token_dict():
+    a = pyonmttok.Token("a")
+    b = pyonmttok.Token("b", join_left=True)
+    c = pyonmttok.Token("c", features=["X"])
+    d = pyonmttok.Token("d")
+
+    collection = {a: 0, b: 1, c: 2}
+
+    assert d not in collection
+    for i, token in enumerate((a, b, c)):
+        assert collection[token] == i
+        assert collection[pyonmttok.Token(token)] == i  # Hashing is based on token equivalence.
+
 def test_token_repr():
     token = pyonmttok.Token()
     assert repr(token) == "Token()"

@@ -483,7 +483,7 @@ static std::string repr_token(const onmt::Token& token) {
   if (!token.empty())
     repr += "'" + token.surface + "'";
   if (token.type != onmt::TokenType::Word)
-    repr += ", type=" + std::string(py::repr(py::cast(token.type)));
+    repr += ", type=" + std::string(py::str(py::cast(token.type)));
   if (token.join_left)
     repr += ", join_left=True";
   if (token.join_right)
@@ -495,9 +495,27 @@ static std::string repr_token(const onmt::Token& token) {
   if (token.has_features())
     repr += ", features=" + std::string(py::repr(to_py_list(token.features)));
   if (token.casing != onmt::Casing::None)
-    repr += ", casing=" + std::string(py::repr(py::cast(token.casing)));
+    repr += ", casing=" + std::string(py::str(py::cast(token.casing)));
   repr += ")";
   return repr;
+}
+
+static inline py::tuple list_to_tuple(py::list list) {
+  py::tuple tuple(list.size());
+  for (size_t i = 0; i < list.size(); ++i)
+    tuple[i] = list[i];
+  return tuple;
+}
+
+static ssize_t hash_token(const onmt::Token& token) {
+  return py::hash(py::make_tuple(token.surface,
+                                 token.type,
+                                 token.casing,
+                                 token.join_left,
+                                 token.join_right,
+                                 token.spacer,
+                                 token.preserve,
+                                 list_to_tuple(py::cast(token.features))));
 }
 
 PYBIND11_MODULE(pyonmttok, m)
@@ -541,6 +559,7 @@ PYBIND11_MODULE(pyonmttok, m)
     .def_readwrite("casing", &onmt::Token::casing)
     .def("is_placeholder", &onmt::Token::is_placeholder)
     .def("__eq__", &onmt::Token::operator==)
+    .def("__hash__", &hash_token)
     .def("__repr__", &repr_token)
     ;
 
@@ -548,6 +567,7 @@ PYBIND11_MODULE(pyonmttok, m)
     .def(py::init<const TokenizerWrapper&>(), py::arg("tokenizer"))
     .def(py::init<const std::string&, const std::string&, const std::string&, int, float, std::string, int, const std::string&, int, float, const std::string&, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, const py::object&>(),
          py::arg("mode"),
+         py::kw_only(),
          py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
          py::arg("bpe_vocab_threshold")=50,  // Keep for backward compatibility.
