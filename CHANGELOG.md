@@ -21,13 +21,19 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### New features
 
+### Fixes and improvements
+
+## [v1.21.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.21.0) (2020-10-22)
+
+### New features
+
 * Accept vocabularies with tab-separated frequencies (format produced by SentencePiece)
 
 ### Fixes and improvements
 
 * Fix BPE vocabulary restriction when words have a leading or trailing joiner
 * Raise an error when using a multi-character joiner and `support_prior_joiner`
-* [Python] Implement `__hash__` method of `pyonmttok.Token` objects to be consistent with the `__eq__` implementation  
+* [Python] Implement `__hash__` method of `pyonmttok.Token` objects to be consistent with the `__eq__` implementation
 * [Python] Declare `pyonmttok.Tokenizer` arguments (except `mode`) as keyword-only
 * [Python] Improve compatibility with Python 3.9
 
