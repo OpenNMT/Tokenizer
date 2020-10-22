@@ -17,11 +17,12 @@ static void test_tok(ITokenizer& tokenizer,
                      const std::string& in,
                      const std::string& expected,
                      bool detokenize = false) {
-  auto joined_tokens = tokenizer.tokenize(in);
-  EXPECT_EQ(joined_tokens, expected);
+  std::vector<std::string> tokens;
+  std::vector<std::vector<std::string>> features;
+  tokenizer.tokenize(in, tokens, features);
+  EXPECT_EQ(SpaceTokenizer::get_instance().detokenize(tokens, features), expected);
   if (detokenize) {
-    auto detok = tokenizer.detokenize(joined_tokens);
-    EXPECT_EQ(detok, in);
+    EXPECT_EQ(tokenizer.detokenize(tokens, features), in);
   }
 }
 
