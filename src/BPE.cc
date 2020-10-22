@@ -232,7 +232,7 @@ namespace onmt
     }
 
     if (!_bpe_vocab.empty())
-      tokens = check_vocab_and_split(tokens);
+      tokens = check_vocab_and_split(std::move(tokens));
 
     propagate_token_properties(token, tokens);
     return tokens;
@@ -331,7 +331,7 @@ namespace onmt
                          + (token.join_right ? _joiner : ""));
   }
 
-  std::vector<Token> BPE::check_vocab_and_split(const std::vector<Token>& pieces) const
+  std::vector<Token> BPE::check_vocab_and_split(std::vector<Token> pieces) const
   {
     // Check for each segment in word if it is in-vocabulary,
     // and segment OOV segments into smaller units by reversing the BPE merge operations
@@ -340,22 +340,22 @@ namespace onmt
 
     for (size_t i = 0; i < pieces.size(); ++i)
     {
-      const Token& piece = pieces[i];
+      Token& piece = pieces[i];
 
       if (in_vocabulary(piece))
-        pieces_in_vocab.push_back(piece);
+        pieces_in_vocab.emplace_back(std::move(piece));
       else
       {
         const bool first = (i == 0);
         const bool last = (i + 1 == pieces.size());
-        recursive_split(piece, pieces_in_vocab, first, last);
+        recursive_split(std::move(piece), pieces_in_vocab, first, last);
       }
     }
 
     return pieces_in_vocab;
   }
 
-  void BPE::recursive_split(const Token& piece,
+  void BPE::recursive_split(Token piece,
                             std::vector<Token>& pieces_in_vocab,
                             const bool first,
                             const bool last) const
@@ -379,38 +379,34 @@ namespace onmt
     auto it = _codes_reverse.find(bpe_surface);
     if (it == _codes_reverse.end())
     {
-      pieces_in_vocab.push_back(piece);
+      pieces_in_vocab.emplace_back(std::move(piece));
       return;
     }
 
     const auto& pair = it->second;
 
     {
-      Token left_piece(piece);
+      Token left_piece(pair.first.substr(left_offset));
+      left_piece.join_left = first && piece.join_left;
       left_piece.join_right = true;
-      if (left_offset > 0)
-        left_piece.surface = pair.first.substr(left_offset);
-      else
-        left_piece.surface = pair.first;
+      left_piece.preserve = first && piece.preserve;
 
       if (in_vocabulary(left_piece))
         pieces_in_vocab.emplace_back(std::move(left_piece));
       else
-        recursive_split(left_piece, pieces_in_vocab, first, false);
+        recursive_split(std::move(left_piece), pieces_in_vocab, first, false);
     }
 
     {
-      Token right_piece(piece);
+      Token right_piece(pair.second.substr(0, pair.second.size() - right_offset));
       right_piece.join_left = false;
-      if (right_offset > 0)
-        right_piece.surface = pair.second.substr(0, pair.second.size() - right_offset);
-      else
-        right_piece.surface = pair.second;
+      right_piece.join_right = !last || piece.join_right;
+      right_piece.preserve = last && piece.preserve;
 
       if (in_vocabulary(right_piece))
         pieces_in_vocab.emplace_back(std::move(right_piece));
       else
-        recursive_split(right_piece, pieces_in_vocab, false, last);
+        recursive_split(std::move(right_piece), pieces_in_vocab, false, last);
     }
   }
 

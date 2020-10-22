@@ -56,8 +56,8 @@ namespace onmt
 
     bool in_vocabulary(const std::string& token) const;
     bool in_vocabulary(const onmt::Token& token) const;
-    std::vector<Token> check_vocab_and_split(const std::vector<Token>& pieces) const;
-    void recursive_split(const Token& piece,
+    std::vector<Token> check_vocab_and_split(std::vector<Token> pieces) const;
+    void recursive_split(Token piece,
                          std::vector<Token>& pieces_in_vocab,
                          const bool first,
                          const bool last) const;
