@@ -141,26 +141,6 @@ namespace onmt
     return detokenize(words, features);
   }
 
-  std::string ITokenizer::tokenize(const std::string& text) const
-  {
-    std::vector<std::string> words;
-    std::vector<std::vector<std::string> > features;
-
-    tokenize(text, words, features);
-
-    return SpaceTokenizer::get_instance().detokenize(words, features);
-  }
-
-  std::string ITokenizer::detokenize(const std::string& text) const
-  {
-    std::vector<std::string> words;
-    std::vector<std::vector<std::string> > features;
-
-    SpaceTokenizer::get_instance().tokenize(text, words, features);
-
-    return detokenize(words, features);
-  }
-
   std::string ITokenizer::detokenize(const std::vector<std::string>& words,
                                      Ranges& ranges, bool merge_ranges) const
   {
@@ -210,7 +190,12 @@ namespace onmt
 
   void ITokenizer::detokenize_stream(std::istream& in, std::ostream& out) const
   {
-    auto function = [this](const std::string& text) { return this->detokenize(text); };
+    auto function = [this](const std::string& line) {
+      std::vector<std::string> tokens;
+      std::vector<std::vector<std::string>> features;
+      SpaceTokenizer::get_instance().tokenize(line, tokens, features);
+      return this->detokenize(tokens, features);
+    };
     auto writer = [](std::ostream& os, const std::string& text) { os << text; };
     process_stream<std::string>(function, writer, in, out, /*num_threads=*/1, /*buffer_size=*/0);
   }

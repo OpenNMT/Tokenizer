@@ -39,12 +39,6 @@ namespace onmt
     virtual std::string detokenize(const std::vector<std::string>& words,
                                    Ranges& ranges, bool merge_ranges = false) const;
 
-    // Tokenize and use spaces as token separators.
-    virtual std::string tokenize(const std::string& text) const;
-
-    // Split the text on spaces and detokenize.
-    virtual std::string detokenize(const std::string& text) const;
-
     virtual void tokenize_stream(std::istream& is,
                                  std::ostream& os,
                                  size_t num_threads = 1,
