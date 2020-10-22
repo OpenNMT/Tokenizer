@@ -117,7 +117,7 @@ namespace onmt
       set_bpe_model(model_path, _cache_model);
       if (_subword_encoder != nullptr && !bpe_vocab_path.empty())
       {
-        ((BPE *)_subword_encoder)->init_bpe_vocab(bpe_vocab_path, bpe_vocab_threshold);
+        ((BPE *)_subword_encoder)->load_vocabulary(bpe_vocab_path, bpe_vocab_threshold);
         ((BPE *)_subword_encoder)->set_joiner(joiner);
       }
     }

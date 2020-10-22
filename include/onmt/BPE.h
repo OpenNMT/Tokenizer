@@ -23,7 +23,6 @@ namespace onmt
     void set_vocabulary(const std::vector<std::string>& vocabulary) override;
     void reset_vocabulary() override;
 
-    void init_bpe_vocab(const std::string& vocab_path, int bpe_vocab_threshold);
     void set_joiner(std::string joiner)
     {
       _joiner = joiner;

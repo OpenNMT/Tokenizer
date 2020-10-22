@@ -297,14 +297,6 @@ namespace onmt
     }
   }
 
-  void BPE::init_bpe_vocab(const std::string& vocab_path, int bpe_vocab_threshold)
-  {
-    if (!_bpe_vocab.empty())
-      return;
-
-    load_vocabulary(vocab_path, bpe_vocab_threshold);
-  }
-
   void BPE::set_vocabulary(const std::vector<std::string>& vocabulary)
   {
     _bpe_vocab.clear();
