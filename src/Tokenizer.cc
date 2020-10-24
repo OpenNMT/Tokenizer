@@ -15,6 +15,11 @@
 namespace onmt
 {
 
+  void set_random_seed(const unsigned int seed)
+  {
+    set_random_generator_seed(seed);
+  }
+
   const std::string Tokenizer::joiner_marker("￭");
   const std::string Tokenizer::spacer_marker("▁");
   const std::string Tokenizer::ph_marker_open = "｟";

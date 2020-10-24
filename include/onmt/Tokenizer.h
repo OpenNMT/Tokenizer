@@ -10,6 +10,8 @@
 namespace onmt
 {
 
+  void set_random_seed(const unsigned int seed);
+
   // This Tokenizer implements the behaviour of OpenNMT's tools/tokenize.lua.
   class OPENNMTTOKENIZER_EXPORT Tokenizer: public ITokenizer
   {

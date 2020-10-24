@@ -228,4 +228,7 @@ tokenizer.deserialize_tokens(
 ```python
 # Returns True if the string has the placeholder format.
 pyonmttok.is_placeholder(token: str)
+
+# Sets the random seed for reproducible tokenzation.
+pyonmttok.set_random_seed(seed: int)
 ```

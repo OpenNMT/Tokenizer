@@ -1,5 +1,8 @@
 #include "Utils.h"
 
+#include <random>
+#include <sentencepiece_processor.h>
+
 #include "onmt/Tokenizer.h"
 
 namespace onmt
@@ -49,6 +52,20 @@ namespace onmt
       return false;
     size_t min_ph_end = ph_begin + Tokenizer::ph_marker_open.length() + 1;
     return str.find(Tokenizer::ph_marker_close, min_ph_end) != std::string::npos;
+  }
+
+  constexpr unsigned int default_seed = static_cast<unsigned int>(-1);
+  static unsigned int g_seed = default_seed;
+
+  void set_random_generator_seed(const unsigned int seed)
+  {
+    g_seed = seed;
+    sentencepiece::SetRandomGeneratorSeed(seed);
+  }
+
+  unsigned int get_random_generator_seed()
+  {
+    return g_seed == default_seed ? std::random_device{}() : g_seed;
   }
 
 }
