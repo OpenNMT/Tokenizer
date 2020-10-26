@@ -29,6 +29,7 @@ namespace onmt
 
     static Mode str_to_mode(const std::string& mode);
 
+    // See https://github.com/OpenNMT/Tokenizer/blob/master/docs/options.md for more details.
     struct Options
     {
       Mode mode = Mode::Conservative;
