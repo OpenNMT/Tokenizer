@@ -55,16 +55,73 @@ namespace onmt
     return c;
   }
 
+  Tokenizer::Options::Options(Mode mode_, int flags, const std::string& joiner_)
+  {
+    mode = mode_;
+    joiner = joiner_;
+    case_feature = flags & Flags::CaseFeature;
+    case_markup = flags & Flags::CaseMarkup;
+    soft_case_regions = flags & Flags::SoftCaseRegions;
+    joiner_annotate = flags & Flags::JoinerAnnotate;
+    joiner_new = flags & Flags::JoinerNew;
+    with_separators = flags & Flags::WithSeparators;
+    segment_case = flags & Flags::SegmentCase;
+    segment_numbers = flags & Flags::SegmentNumbers;
+    segment_alphabet_change = flags & Flags::SegmentAlphabetChange;
+    no_substitution = flags & Flags::NoSubstitution;
+    spacer_annotate = flags & Flags::SpacerAnnotate;
+    spacer_new = flags & Flags::SpacerNew;
+    preserve_placeholders = flags & Flags::PreservePlaceholders;
+    preserve_segmented_tokens = flags & Flags::PreserveSegmentedTokens;
+    support_prior_joiners = flags & Flags::SupportPriorJoiners;
+
+    if ((flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel))
+      throw std::invalid_argument("Subword model caching is deprecated and should be handled in the client side");
+  }
+
+  void Tokenizer::Options::validate()
+  {
+    // Set default options.
+    if (joiner.empty())
+      joiner = joiner_marker;
+    if (case_markup)
+      segment_case = true;
+
+    // Check options consistency.
+    if (case_feature && case_markup)
+      throw std::invalid_argument("case_feature and case_markup can't be set at the same time");
+    if (joiner_annotate && spacer_annotate)
+      throw std::invalid_argument("joiner_annotate and spacer_annotate can't be set at the same time");
+    if (spacer_new && !spacer_annotate)
+      throw std::invalid_argument("spacer_new requires spacer_annotate");
+    if (joiner_new && !joiner_annotate)
+      throw std::invalid_argument("joiner_new requires joiner_annotate");
+    if (support_prior_joiners && unicode::utf8len(joiner) != 1)
+      throw std::invalid_argument("support_prior_joiners does not support multi-character joiners");
+
+    for (const std::string& alphabet : segment_alphabet)
+    {
+      if (unicode::get_script_code(alphabet.c_str()) < 0)
+        throw std::invalid_argument("invalid Unicode script: " + alphabet);
+    }
+  }
+
+  Tokenizer::Tokenizer(Options options, const std::shared_ptr<SubwordEncoder>& subword_encoder)
+    : _options(std::move(options))
+  {
+    _options.validate();
+    set_subword_encoder(subword_encoder);
+  }
+
   Tokenizer::Tokenizer(Mode mode,
                        int flags,
                        const std::string& model_path,
                        const std::string& joiner,
                        const std::string& vocab_path,
                        int vocab_threshold)
-    : _mode(mode)
-    , _joiner(joiner)
+    : _options(mode, flags, joiner)
   {
-    read_flags(flags);
+    _options.validate();
     if (!model_path.empty())
     {
       if (flags & Flags::SentencePieceModel)
@@ -81,10 +138,9 @@ namespace onmt
                        SubwordEncoder* subword_encoder,
                        int flags,
                        const std::string& joiner)
-    : _mode(mode)
-    , _joiner(joiner)
+    : _options(mode, flags, joiner)
   {
-    read_flags(flags);
+    _options.validate();
     set_subword_encoder(std::shared_ptr<SubwordEncoder>(subword_encoder));
   }
 
@@ -94,43 +150,10 @@ namespace onmt
                        Mode mode,
                        int flags,
                        const std::string& joiner)
-    : _mode(mode)
-    , _joiner(joiner)
+    : _options(mode, flags, joiner)
   {
-    read_flags(flags);
+    _options.validate();
     set_subword_encoder(std::make_shared<SentencePiece>(sp_model_path, sp_nbest_size, sp_alpha));
-  }
-
-  void Tokenizer::read_flags(int flags)
-  {
-    _case_feature = flags & Flags::CaseFeature;
-    _case_markup = flags & Flags::CaseMarkup;
-    _soft_case_regions = flags & Flags::SoftCaseRegions;
-    _joiner_annotate = flags & Flags::JoinerAnnotate;
-    _joiner_new = flags & Flags::JoinerNew;
-    _with_separators = flags & Flags::WithSeparators;
-    _segment_case = (flags & Flags::SegmentCase) | (flags & Flags::CaseMarkup);
-    _segment_numbers = flags & Flags::SegmentNumbers;
-    _segment_alphabet_change = flags & Flags::SegmentAlphabetChange;
-    _no_substitution = flags & Flags::NoSubstitution;
-    _spacer_annotate = flags & Flags::SpacerAnnotate;
-    _spacer_new = flags & Flags::SpacerNew;
-    _preserve_placeholders = flags & Flags::PreservePlaceholders;
-    _preserve_segmented_tokens = flags & Flags::PreserveSegmentedTokens;
-    _support_prior_joiners = flags & Flags::SupportPriorJoiners;
-
-    if ((flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel))
-      throw std::invalid_argument("Subword model caching is deprecated and should be handled in the client side");
-    if (_case_feature && _case_markup)
-      throw std::invalid_argument("case_feature and case_markup can't be set at the same time");
-    if (_joiner_annotate && _spacer_annotate)
-      throw std::invalid_argument("joiner_annotate and spacer_annotate can't be set at the same time");
-    if (_spacer_new && !_spacer_annotate)
-      throw std::invalid_argument("spacer_new requires spacer_annotate");
-    if (_joiner_new && !_joiner_annotate)
-      throw std::invalid_argument("joiner_new requires joiner_annotate");
-    if (_support_prior_joiners && unicode::utf8len(_joiner) != 1)
-      throw std::invalid_argument("support_prior_joiners does not support multi-character joiners");
   }
 
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,
@@ -266,7 +289,7 @@ namespace onmt
     size_t subpos = 0;
     size_t sublen = word.size();
 
-    if (_spacer_annotate)
+    if (_options.spacer_annotate)
     {
       if (starts_with(word, spacer_marker))
       {
@@ -278,16 +301,16 @@ namespace onmt
     }
     else
     {
-      if (ends_with(word, _joiner))
+      if (ends_with(word, _options.joiner))
       {
         token.join_right = true;
-        sublen -= _joiner.length();
+        sublen -= _options.joiner.length();
       }
-      if (starts_with(word, _joiner))
+      if (starts_with(word, _options.joiner))
       {
         token.join_left = true;
-        subpos += _joiner.length();
-        sublen -= _joiner.length();
+        subpos += _options.joiner.length();
+        sublen -= _options.joiner.length();
       }
     }
 
@@ -322,7 +345,7 @@ namespace onmt
         continue;
 
       size_t features_offset = 0;
-      if (_case_feature)
+      if (_options.case_feature)
       {
         if (features.empty())
           throw std::runtime_error("Missing case feature");
@@ -415,7 +438,7 @@ namespace onmt
 
     annotated_tokens.reserve(text.size());
 
-    switch (_mode)
+    switch (_options.mode)
     {
     case Mode::None:
       tokenize_on_placeholders(text, annotated_tokens);
@@ -428,7 +451,7 @@ namespace onmt
       break;
     }
 
-    if (_case_markup || _case_feature)
+    if (_options.case_markup || _options.case_feature)
     {
       for (auto& token : annotated_tokens)
         token.lowercase();
@@ -456,7 +479,7 @@ namespace onmt
 
       if (!in_placeholder)
       {
-        if (_support_prior_joiners && c == _joiner)
+        if (_options.support_prior_joiners && c == _options.joiner)
         {
           // Mark joint but discard character.
           if (token.empty())
@@ -471,7 +494,7 @@ namespace onmt
             // Flush accumulated token and mark joint if it did not finish by a separator.
             if (i > 0 && !unicode::is_separator(code_points_main[i - 1]))
               token.join_right = true;
-            if (_preserve_segmented_tokens)
+            if (_options.preserve_segmented_tokens)
               token.preserve = true;
             tokens.emplace_back(std::move(token));
             token = Token();
@@ -483,7 +506,7 @@ namespace onmt
         else
         {
           // Normalize character for consistency with other tokenization modes.
-          token.append(_no_substitution ? c : normalize_character(c));
+          token.append(_options.no_substitution ? c : normalize_character(c));
         }
       }
       else  // In a placeholder.
@@ -496,7 +519,7 @@ namespace onmt
           // character was accumulated.
           if (i + 1 < chars.size() && !unicode::is_separator(code_points_main[i + 1]))
             token.join_right = true;
-          if (_preserve_placeholders || _preserve_segmented_tokens)
+          if (_options.preserve_placeholders || _options.preserve_segmented_tokens)
             token.preserve = true;
           tokens.emplace_back(std::move(token));
           token = Token();
@@ -563,6 +586,10 @@ namespace onmt
       int state = State::Space;
       int prev_alphabet = -1;
 
+      std::unordered_set<int> alphabet_to_segment;
+      for (const std::string& alphabet : _options.segment_alphabet)
+        alphabet_to_segment.insert(unicode::get_script_code(alphabet.c_str()));
+
       for (size_t i = 0; i < chars.size(); ++i)
       {
         const bool letter = state & State::Letter;
@@ -572,7 +599,7 @@ namespace onmt
         const bool placeholder = state & State::Placeholder;
 
         const std::string& c = chars[i];
-        if (_support_prior_joiners && c == _joiner) {
+        if (_options.support_prior_joiners && c == _options.joiner) {
           /* it is either after a space, in that case it annotates the following word,
              or a closed token (other & space), or a unclosed token - in that case it is a right joiner.
             */
@@ -598,12 +625,12 @@ namespace onmt
         if (placeholder) {
           if (c == Tokenizer::ph_marker_close) {
             token.append(c);
-            if (_preserve_placeholders)
+            if (_options.preserve_placeholders)
               token.preserve = true;
             prev_alphabet = placeholder_alphabet;
             state = State::Letter;
           } else {
-            if (is_separator && !_no_substitution) {
+            if (is_separator && !_options.no_substitution) {
               token.append(protected_character + int_to_hex(v));
             } else {
               token.append(c);
@@ -643,7 +670,7 @@ namespace onmt
               token.join_left = true;
             }
           }
-          else if (_with_separators)
+          else if (_options.with_separators)
           {
             token.append(c);
             if (!unicode::is_separator(next_v))
@@ -662,7 +689,7 @@ namespace onmt
           // skip special characters and BOM
           if (v >= 32 && v != 0xFEFF)
           {
-            const std::string& sub_c(_no_substitution ? c : normalize_character(c));
+            const std::string& sub_c(_options.no_substitution ? c : normalize_character(c));
             bool is_letter = unicode::is_letter(v);
             bool is_number = !is_letter && unicode::is_number(v);
             int alphabet = unicode::get_script(v);
@@ -675,7 +702,7 @@ namespace onmt
                 (*alphabets)[is_number ? "Numeric" : "Other"]++;
             }
 
-            if (_mode == Mode::Conservative)
+            if (_options.mode == Mode::Conservative)
             {
               if (is_number
                   || (sub_c == "-" && letter)
@@ -687,7 +714,7 @@ namespace onmt
                 }
             }
 
-            if (is_letter && _mode != Mode::Char)
+            if (is_letter && _options.mode != Mode::Char)
             {
               const unicode::CaseType case_type = unicode::get_case_v2(v);
               bool segment_case = false;
@@ -695,15 +722,19 @@ namespace onmt
               bool segment_alphabet_change = false;
               if ((!letter && !space)
                   || (letter &&
-                      ((segment_alphabet = (prev_alphabet == alphabet && is_alphabet_to_segment(alphabet)))
-                       || (segment_alphabet_change = (prev_alphabet != alphabet && _segment_alphabet_change))
+                      ((segment_alphabet = (prev_alphabet == alphabet
+                                            && alphabet >= 0
+                                            && (alphabet_to_segment.find(alphabet)
+                                                != alphabet_to_segment.end())))
+                       || (segment_alphabet_change = (prev_alphabet != alphabet
+                                                      && _options.segment_alphabet_change))
                        || (prev_alphabet == placeholder_alphabet
-                           || (_segment_case && (segment_case = (letter
+                           || (_options.segment_case && (segment_case = (letter
                                && ((case_type == unicode::CaseType::Upper && !uppercase)
                                    || (case_type == unicode::CaseType::Lower && uppercase_sequence)))))))))
               {
                 token.join_right = true;
-                if (_preserve_segmented_tokens
+                if (_options.preserve_segmented_tokens
                     && (segment_case || segment_alphabet || segment_alphabet_change))
                   token.preserve = true;
                 annotated_tokens.emplace_back(std::move(token));
@@ -725,16 +756,16 @@ namespace onmt
               state = State::Letter;
               prev_alphabet = alphabet;
             }
-            else if (is_number && _mode != Mode::Char)
+            else if (is_number && _options.mode != Mode::Char)
             {
-              if (letter || (number && _segment_numbers) || (!number && !space))
+              if (letter || (number && _options.segment_numbers) || (!number && !space))
               {
                 Token next_token;
                 if (!letter || prev_alphabet == placeholder_alphabet)
                   token.join_right = true;
                 else
                   next_token.join_left = true;
-                if (_preserve_segmented_tokens && number && _segment_numbers)
+                if (_options.preserve_segmented_tokens && number && _options.segment_numbers)
                   token.preserve = true;
                 annotated_tokens.emplace_back(std::move(token));
                 std::swap(token, next_token);
@@ -763,7 +794,7 @@ namespace onmt
                 token.join_left = true;
               }
 
-              if (sub_c[0] == ' ' && !_no_substitution)
+              if (sub_c[0] == ' ' && !_options.no_substitution)
                 token.append(protected_character + int_to_hex(sub_c[0]) + sub_c.substr(1));
               else
                 token.append(sub_c);
@@ -804,7 +835,7 @@ namespace onmt
     size_t num_features = 0;
     if (annotated_tokens.size() > 0 && annotated_tokens[0].has_features())
       num_features = annotated_tokens[0].features.size();
-    if (_case_feature)
+    if (_options.case_feature)
       num_features += 1;
 
     for (size_t i = 0; i < num_features; ++i)
@@ -814,8 +845,8 @@ namespace onmt
     }
 
     std::vector<TokenCaseMarkup> case_markups;
-    if (_case_markup)
-      case_markups = get_case_markups(annotated_tokens, _soft_case_regions);
+    if (_options.case_markup)
+      case_markups = get_case_markups(annotated_tokens, _options.soft_case_regions);
 
     for (size_t i = 0; i < annotated_tokens.size(); ++i)
     {
@@ -830,60 +861,60 @@ namespace onmt
           features[j].push_back(token_features[j]);
       }
 
-      if (_case_markup && case_markups[i].prefix != CaseMarkupType::None)
+      if (_options.case_markup && case_markups[i].prefix != CaseMarkupType::None)
         tokens.emplace_back(write_case_markup(case_markups[i].prefix, case_markups[i].casing));
 
       const std::string* prefix = nullptr;
       const std::string* suffix = nullptr;
       bool attach = !token.preserve;
 
-      if (_joiner_annotate)
+      if (_options.joiner_annotate)
       {
         if (token.join_left && i > 0)
-          prefix = &_joiner;
+          prefix = &_options.joiner;
         if (token.join_right && i + 1 < annotated_tokens.size())
-          suffix = &_joiner;
+          suffix = &_options.joiner;
         if (token.spacer)
           attach = true;  // Ignore preserve flag for spacers in joiner mode.
-        attach = attach && !_joiner_new;
+        attach = attach && !_options.joiner_new;
       }
-      else if (_spacer_annotate)
+      else if (_options.spacer_annotate)
       {
         if ((i == 0 && token.spacer)
             || (i > 0 && !token.join_left && !annotated_tokens[i - 1].join_right))
           prefix = &spacer_marker;
-        attach = attach && !_spacer_new;
+        attach = attach && !_options.spacer_new;
       }
 
       if (!prefix && !suffix)
-        add_final_token(tokens, features, _case_feature, str, casing);
+        add_final_token(tokens, features, _options.case_feature, str, casing);
       else if (attach)
       {
         std::string final_token = (prefix ? *prefix : "") + str + (suffix ? *suffix : "");
-        add_final_token(tokens, features, _case_feature, std::move(final_token), casing);
+        add_final_token(tokens, features, _options.case_feature, std::move(final_token), casing);
       }
       else
       {
         if (prefix)
-          add_final_token(tokens, features, _case_feature, *prefix);
-        add_final_token(tokens, features, _case_feature, str, casing);
+          add_final_token(tokens, features, _options.case_feature, *prefix);
+        add_final_token(tokens, features, _options.case_feature, str, casing);
         if (suffix)
-          add_final_token(tokens, features, _case_feature, *suffix);
+          add_final_token(tokens, features, _options.case_feature, *suffix);
       }
 
-      if (_case_markup && case_markups[i].suffix != CaseMarkupType::None)
+      if (_options.case_markup && case_markups[i].suffix != CaseMarkupType::None)
         tokens.emplace_back(write_case_markup(case_markups[i].suffix, case_markups[i].casing));
     }
   }
 
   Tokenizer& Tokenizer::set_joiner(const std::string& joiner)
   {
-    _joiner = joiner;
+    _options.joiner = joiner;
     return *this;
   }
 
   void Tokenizer::unset_annotate() {
-    _joiner_annotate = _spacer_annotate = false;
+    _options.joiner_annotate = _options.spacer_annotate = false;
   }
 
   void Tokenizer::set_subword_encoder(const std::shared_ptr<SubwordEncoder>& subword_encoder)
@@ -898,38 +929,26 @@ namespace onmt
     if (sp)
     {
       // Maybe enable SentencePiece compatibility mode.
-      if (_mode == Mode::None
-          && !_joiner_annotate
-          && !_spacer_annotate)
+      if (_options.mode == Mode::None
+          && !_options.joiner_annotate
+          && !_options.spacer_annotate)
       {
-        _spacer_annotate = true;
-        _no_substitution = true;
+        _options.spacer_annotate = true;
+        _options.no_substitution = true;
       }
     }
     else if (bpe)
     {
-      bpe->set_joiner(_joiner);
+      bpe->set_joiner(_options.joiner);
     }
   }
 
   bool Tokenizer::add_alphabet_to_segment(const std::string& alphabet)
   {
-    const int script_code = unicode::get_script_code(alphabet.c_str());
-    if (script_code < 0)
+    if (unicode::get_script_code(alphabet.c_str()) < 0)
       return false;
-    _segment_alphabet.insert(script_code);
+    _options.segment_alphabet.push_back(alphabet);
     return true;
-  }
-
-  bool Tokenizer::is_alphabet_to_segment(const std::string& alphabet) const
-  {
-    return _segment_alphabet.count(unicode::get_script_code(alphabet.c_str())) > 0;
-  }
-
-  bool Tokenizer::is_alphabet_to_segment(int alphabet) const
-  {
-    auto it = _segment_alphabet.find(alphabet);
-    return it != _segment_alphabet.end();
   }
 
   bool Tokenizer::is_placeholder(const std::string& str)

@@ -25,16 +25,11 @@ int main(int argc, char* argv[])
     return 0;
   }
 
-  int flags = 0;
-  if (vm["case_feature"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::CaseFeature;
-  if (vm["spacer_annotate"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SpacerAnnotate;
-
-  onmt::Tokenizer tokenizer(onmt::Tokenizer::Mode::Conservative,
-                            flags,
-                            "",
-                            vm["joiner"].as<std::string>());
+  onmt::Tokenizer::Options options;
+  options.case_feature = vm["case_feature"].as<bool>();
+  options.spacer_annotate = vm["spacer_annotate"].as<bool>();
+  options.joiner = vm["joiner"].as<std::string>();
+  onmt::Tokenizer tokenizer(std::move(options));
 
   tokenizer.detokenize_stream(std::cin, std::cout);
   return 0;

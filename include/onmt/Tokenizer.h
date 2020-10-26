@@ -28,27 +28,31 @@ namespace onmt
 
     static Mode str_to_mode(const std::string& mode);
 
-    enum Flags
+    struct Options
     {
-      None = 0,
-      CaseFeature = 1 << 0,
-      JoinerAnnotate = 1 << 1,
-      JoinerNew = 1 << 2,
-      WithSeparators = 1 << 3,
-      SegmentCase = 1 << 4,
-      SegmentNumbers = 1 << 5,
-      SegmentAlphabetChange = 1 << 6,
-      CacheBPEModel = 1 << 7,  // Deprecated.
-      NoSubstitution = 1 << 8,  // Do not replace special characters.
-      SpacerAnnotate = 1 << 9,
-      CacheModel = 1 << 10,  // Deprecated.
-      SentencePieceModel = 1 << 11,
-      PreservePlaceholders = 1 << 12,
-      SpacerNew = 1 << 13,
-      PreserveSegmentedTokens = 1 << 14,
-      CaseMarkup = 1 << 15,
-      SupportPriorJoiners = 1 << 16,
-      SoftCaseRegions = 1 << 17,
+      Mode mode = Mode::Conservative;
+      bool no_substitution = false;
+      bool case_feature = false;
+      bool case_markup = false;
+      bool soft_case_regions = false;
+      bool with_separators = false;
+      bool joiner_annotate = false;
+      bool joiner_new = false;
+      std::string joiner;
+      bool spacer_annotate = false;
+      bool spacer_new = false;
+      bool preserve_placeholders = false;
+      bool preserve_segmented_tokens = false;
+      bool support_prior_joiners = false;
+      bool segment_case = false;
+      bool segment_numbers = false;
+      bool segment_alphabet_change = false;
+      std::vector<std::string> segment_alphabet;
+
+      Options() = default;
+      Options(Mode mode, int legacy_flags, const std::string& joiner = joiner_marker);
+
+      void validate();
     };
 
     static const std::string joiner_marker;
@@ -56,27 +60,8 @@ namespace onmt
     static const std::string ph_marker_open;
     static const std::string ph_marker_close;
 
-    Tokenizer(Mode mode,
-              int flags = Flags::None,
-              const std::string& model_path = "",
-              const std::string& joiner = joiner_marker,
-              const std::string& vocab_path = "",
-              int vocab_threshold = 50);
-
-    // External subword encoder constructor.
-    // Note: the tokenizer takes ownership of the subword_encoder pointer.
-    Tokenizer(Mode mode,
-              SubwordEncoder* subword_encoder,
-              int flags = Flags::None,
-              const std::string& joiner = joiner_marker);
-
-    // SentencePiece-specific constructor.
-    Tokenizer(const std::string& sp_model_path,
-              int sp_nbest_size = 0,
-              float sp_alpha = 0.1,
-              Mode mode = Mode::None,
-              int flags = Flags::None,
-              const std::string& joiner = joiner_marker);
+    Tokenizer(Options options,
+              const std::shared_ptr<SubwordEncoder>& subword_encoder = nullptr);
 
     using ITokenizer::tokenize;
     using ITokenizer::detokenize;
@@ -109,46 +94,19 @@ namespace onmt
                            const std::vector<std::vector<std::string> >& features,
                            Ranges& ranges, bool merge_ranges = false) const override;
 
-    Tokenizer& set_joiner(const std::string& joiner);
-
     void set_subword_encoder(const std::shared_ptr<SubwordEncoder>& subword_encoder);
 
-    void unset_annotate();
-
-    bool add_alphabet_to_segment(const std::string& alphabet);
-    bool is_alphabet_to_segment(const std::string& alphabet) const;
-    bool is_alphabet_to_segment(int alphabet) const;
-
-    static bool is_placeholder(const std::string& str);
+    const Options& options() const
+    {
+      return _options;
+    }
 
   private:
     static const int placeholder_alphabet = -2;
     static const int number_alphabet = -3;
 
-    Mode _mode;
-
-    bool _case_feature;
-    bool _case_markup;
-    bool _soft_case_regions;
-    bool _joiner_annotate;
-    bool _joiner_new;
-    bool _with_separators;
-    bool _segment_case;
-    bool _segment_numbers;
-    bool _segment_alphabet_change;
-    bool _no_substitution;
-    bool _spacer_annotate;
-    bool _spacer_new;
-    bool _preserve_placeholders;
-    bool _preserve_segmented_tokens;
-    bool _support_prior_joiners;
-
+    Options _options;
     std::shared_ptr<SubwordEncoder> _subword_encoder;
-    std::string _joiner;
-
-    std::unordered_set<int> _segment_alphabet;
-
-    void read_flags(int flags);
 
     void tokenize_on_placeholders(const std::string& text,
                                   std::vector<Token>& annotated_tokens) const;
@@ -177,6 +135,59 @@ namespace onmt
                       const std::vector<std::vector<std::string>>& features,
                       std::vector<Token>& tokens,
                       std::vector<size_t>* index_map = nullptr) const;
+
+  public:
+    // The symbols below are deprecated but kept for backward compatibility.
+    enum Flags
+    {
+      None = 0,
+      CaseFeature = 1 << 0,
+      JoinerAnnotate = 1 << 1,
+      JoinerNew = 1 << 2,
+      WithSeparators = 1 << 3,
+      SegmentCase = 1 << 4,
+      SegmentNumbers = 1 << 5,
+      SegmentAlphabetChange = 1 << 6,
+      CacheBPEModel = 1 << 7,  // Deprecated.
+      NoSubstitution = 1 << 8,  // Do not replace special characters.
+      SpacerAnnotate = 1 << 9,
+      CacheModel = 1 << 10,  // Deprecated.
+      SentencePieceModel = 1 << 11,
+      PreservePlaceholders = 1 << 12,
+      SpacerNew = 1 << 13,
+      PreserveSegmentedTokens = 1 << 14,
+      CaseMarkup = 1 << 15,
+      SupportPriorJoiners = 1 << 16,
+      SoftCaseRegions = 1 << 17,
+    };
+
+    Tokenizer(Mode mode,
+              int flags = Flags::None,
+              const std::string& model_path = "",
+              const std::string& joiner = joiner_marker,
+              const std::string& vocab_path = "",
+              int vocab_threshold = 50);
+
+    // External subword encoder constructor.
+    // Note: the tokenizer takes ownership of the subword_encoder pointer.
+    Tokenizer(Mode mode,
+              SubwordEncoder* subword_encoder,
+              int flags = Flags::None,
+              const std::string& joiner = joiner_marker);
+
+    // SentencePiece-specific constructor.
+    Tokenizer(const std::string& sp_model_path,
+              int sp_nbest_size = 0,
+              float sp_alpha = 0.1,
+              Mode mode = Mode::None,
+              int flags = Flags::None,
+              const std::string& joiner = joiner_marker);
+
+    Tokenizer& set_joiner(const std::string& joiner);
+    void unset_annotate();
+    bool add_alphabet_to_segment(const std::string& alphabet);
+    static bool is_placeholder(const std::string& str);
+
   };
 
 }
