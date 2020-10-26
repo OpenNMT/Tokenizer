@@ -157,7 +157,7 @@ namespace onmt
     : _options(mode, flags, joiner)
   {
     _options.validate();
-    set_subword_encoder(std::make_shared<SentencePiece>(sp_model_path, sp_nbest_size, sp_alpha));
+    set_subword_encoder(std::make_shared<const SentencePiece>(sp_model_path, sp_nbest_size, sp_alpha));
   }
 
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,
