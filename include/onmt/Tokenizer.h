@@ -6,12 +6,14 @@
 
 #include "onmt/opennmttokenizer_export.h"
 #include "onmt/ITokenizer.h"
-#include "onmt/SubwordEncoder.h"
+#include "onmt/Token.h"
 
 namespace onmt
 {
 
   void set_random_seed(const unsigned int seed);
+
+  class SubwordEncoder;
 
   // This Tokenizer implements the behaviour of OpenNMT's tools/tokenize.lua.
   class OPENNMTTOKENIZER_EXPORT Tokenizer: public ITokenizer
@@ -61,7 +63,7 @@ namespace onmt
     static const std::string ph_marker_close;
 
     Tokenizer(Options options,
-              const std::shared_ptr<SubwordEncoder>& subword_encoder = nullptr);
+              const std::shared_ptr<const SubwordEncoder>& subword_encoder = nullptr);
 
     using ITokenizer::tokenize;
     using ITokenizer::detokenize;
@@ -94,7 +96,7 @@ namespace onmt
                            const std::vector<std::vector<std::string> >& features,
                            Ranges& ranges, bool merge_ranges = false) const override;
 
-    void set_subword_encoder(const std::shared_ptr<SubwordEncoder>& subword_encoder);
+    void set_subword_encoder(const std::shared_ptr<const SubwordEncoder>& subword_encoder);
 
     const Options& options() const
     {
@@ -106,7 +108,7 @@ namespace onmt
     static const int number_alphabet = -3;
 
     Options _options;
-    std::shared_ptr<SubwordEncoder> _subword_encoder;
+    std::shared_ptr<const SubwordEncoder> _subword_encoder;
 
     void tokenize_on_placeholders(const std::string& text,
                                   std::vector<Token>& annotated_tokens) const;
@@ -171,7 +173,7 @@ namespace onmt
     // External subword encoder constructor.
     // Note: the tokenizer takes ownership of the subword_encoder pointer.
     Tokenizer(Mode mode,
-              SubwordEncoder* subword_encoder,
+              const SubwordEncoder* subword_encoder,
               int flags = Flags::None,
               const std::string& joiner = joiner_marker);
 

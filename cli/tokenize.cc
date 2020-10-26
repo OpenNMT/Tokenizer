@@ -87,10 +87,11 @@ int main(int argc, char* argv[])
                                                 vm["sp_alpha"].as<float>());
   }
 
+  auto options = build_tokenization_options(vm);
   if (subword_encoder && !vocabulary.empty())
-    subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);
+    subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold, &options);
 
-  onmt::Tokenizer tokenizer(build_tokenization_options(vm),
+  onmt::Tokenizer tokenizer(std::move(options),
                             std::shared_ptr<onmt::SubwordEncoder>(subword_encoder));
 
   tokenizer.tokenize_stream(std::cin, std::cout, vm["num_threads"].as<int>());

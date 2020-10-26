@@ -580,6 +580,18 @@ TEST(TokenizerTest, BPEVocabularyWithLeadingJoiner) {
   test_tok(tokenizer, "A100", "A ￭1￭ 0￭ 0");
 }
 
+TEST(TokenizerTest, BPEVocabularyWithSpacer) {
+  Tokenizer::Options options;
+  options.mode = Tokenizer::Mode::Space;
+  options.spacer_annotate = true;
+
+  auto bpe = std::make_shared<BPE>(get_data("bpe-models/bpe_code.v0.2"));
+  bpe->set_vocabulary(std::vector<std::string>{"▁wel"}, &options);
+  Tokenizer tokenizer(options, bpe);
+
+  test_tok(tokenizer, "die welle", "d i e ▁wel l e");
+}
+
 TEST(TokenizerTest, SpacerAnnotate) {
   Tokenizer tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::SpacerAnnotate);
   test_tok_and_detok(tokenizer,

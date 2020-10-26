@@ -20,12 +20,13 @@ namespace onmt
     std::vector<std::string> encode(const std::string& str) const override;
     std::vector<Token> encode_and_annotate(const Token& token) const override;
 
-    void set_vocabulary(const std::vector<std::string>& vocabulary) override;
+    void set_vocabulary(const std::vector<std::string>& vocabulary,
+                        const Tokenizer::Options* options = nullptr) override;
     void reset_vocabulary() override;
 
     void set_joiner(const std::string& joiner)
     {
-      _joiner = joiner;
+      _tokenization_options.joiner = joiner;
     }
 
     void set_dropout(const float dropout)
@@ -40,9 +41,10 @@ namespace onmt
     bool _suffix;
     bool _case_insensitive;
     std::pair<int, int> _version;
-
-    std::string _joiner;
     float _dropout;
+
+    // Tokenization options used to produce the vocabulary passed to set_vocabulary.
+    Tokenizer::Options _tokenization_options;
 
     std::unordered_map<std::string, int> _codes;
     std::unordered_map<std::string, std::pair<std::string, std::string> > _codes_reverse;

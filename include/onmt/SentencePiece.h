@@ -18,7 +18,9 @@ namespace onmt
     SentencePiece(const std::string& model_path, int nbest_size, float alpha);
     ~SentencePiece();
 
-    void set_vocabulary(const std::vector<std::string>& vocabulary) override;
+    void update_tokenization_options(Tokenizer::Options& options) const override;
+    void set_vocabulary(const std::vector<std::string>& vocabulary,
+                        const Tokenizer::Options* options = nullptr) override;
     void reset_vocabulary() override;
     void enable_regularization(int nbest_size, float alpha);
 

@@ -8,7 +8,13 @@
 namespace onmt
 {
 
-  void SubwordEncoder::load_vocabulary(const std::string& path, int frequency_threshold)
+  void SubwordEncoder::update_tokenization_options(Tokenizer::Options&) const
+  {
+  }
+
+  void SubwordEncoder::load_vocabulary(const std::string& path,
+                                       int frequency_threshold,
+                                       const Tokenizer::Options* options)
   {
     std::ifstream in(path);
     if (!in)
@@ -39,17 +45,15 @@ namespace onmt
         vocab.emplace_back(std::move(token));
     }
 
-    set_vocabulary(vocab);
+    set_vocabulary(vocab, options);
   }
 
-  void SubwordEncoder::set_vocabulary(const std::vector<std::string>&)
+  void SubwordEncoder::set_vocabulary(const std::vector<std::string>&, const Tokenizer::Options*)
   {
-    return;
   }
 
   void SubwordEncoder::reset_vocabulary()
   {
-    return;
   }
 
   std::vector<Token> SubwordEncoder::encode_and_annotate(const std::vector<Token>& tokens) const

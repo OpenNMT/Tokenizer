@@ -181,11 +181,6 @@ The following line formats are accepted:
 * `<token><tab><frequency>`
 * `<token>` (the token frequency is set to 1)
 
-This feature currently requires subword encoders to be used with their "natural" tokenization settings, that is:
-
-* SentencePiece: `--mode none --spacer_annotate`
-* BPE: `--joiner_annotate`
-
 ### `vocabulary_threshold` (int, default: `0`)
 
 When using `vocabulary_path`, any words with a frequency lower than `vocabulary_threshold` will be treated as OOV.
