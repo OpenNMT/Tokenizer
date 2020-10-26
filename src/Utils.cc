@@ -1,6 +1,9 @@
 #include "Utils.h"
 
+#include <iomanip>
 #include <random>
+#include <sstream>
+
 #include <sentencepiece_processor.h>
 
 #include "onmt/Tokenizer.h"
@@ -66,6 +69,13 @@ namespace onmt
   unsigned int get_random_generator_seed()
   {
     return g_seed == default_seed ? std::random_device{}() : g_seed;
+  }
+
+  std::string int_to_hex(int i, int width)
+  {
+    std::stringstream stream;
+    stream << std::setfill('0') << std::setw(width) << std::hex << i;
+    return stream.str();
   }
 
 }

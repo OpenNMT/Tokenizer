@@ -1,8 +1,6 @@
 #include "onmt/Tokenizer.h"
 
 #include <algorithm>
-#include <iomanip>
-#include <sstream>
 
 #include "onmt/BPE.h"
 #include "onmt/SentencePiece.h"
@@ -55,14 +53,6 @@ namespace onmt
     if (it != special_chars.end())
       return substitutes[std::distance(special_chars.begin(), it)];
     return c;
-  }
-
-  template <typename T>
-  std::string int_to_hex(T i, int width = 4)
-  {
-    std::stringstream stream;
-    stream << std::setfill('0') << std::setw(width) << std::hex << i;
-    return stream.str();
   }
 
   Tokenizer::Tokenizer(Mode mode,
@@ -774,7 +764,7 @@ namespace onmt
               }
 
               if (sub_c[0] == ' ' && !_no_substitution)
-                token.append(protected_character + "0020" + sub_c.substr(1));
+                token.append(protected_character + int_to_hex(sub_c[0]) + sub_c.substr(1));
               else
                 token.append(sub_c);
 
