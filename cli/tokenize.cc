@@ -15,6 +15,8 @@ int main(int argc, char* argv[])
     ("h,help", "Show this help")
     ("num_threads", "Number of threads to use",
      cxxopts::value<int>()->default_value("1"))
+    ("seed", "Random seed for reproducible tokenization",
+     cxxopts::value<unsigned int>()->default_value("0"))
     ;
 
   add_tokenization_options(cmd_options);
@@ -54,6 +56,9 @@ int main(int argc, char* argv[])
     std::cout << cmd_options.help() << std::endl;
     return 0;
   }
+
+  if (vm.count("seed") != 0)
+    onmt::set_random_seed(vm["seed"].as<unsigned int>());
 
   std::string vocabulary = vm["vocabulary"].as<std::string>();
   int vocabulary_threshold = vm["vocabulary_threshold"].as<int>();

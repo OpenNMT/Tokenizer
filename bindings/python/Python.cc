@@ -521,6 +521,7 @@ static ssize_t hash_token(const onmt::Token& token) {
 PYBIND11_MODULE(pyonmttok, m)
 {
   m.def("is_placeholder", &onmt::Tokenizer::is_placeholder, py::arg("token"));
+  m.def("set_random_seed", &onmt::set_random_seed, py::arg("seed"));
 
   py::enum_<onmt::Casing>(m, "Casing")
     .value("NONE", onmt::Casing::None)

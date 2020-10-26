@@ -13,4 +13,7 @@ namespace onmt
 
   bool is_placeholder(const std::string& str);
 
+  void set_random_generator_seed(const unsigned int seed);
+  unsigned int get_random_generator_seed();
+
 }

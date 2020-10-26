@@ -1,7 +1,6 @@
 #include "onmt/BPE.h"
 
 #include <algorithm>
-#include <chrono>
 #include <fstream>
 #include <limits>
 #include <random>
@@ -16,8 +15,7 @@ namespace onmt
 
   static std::mt19937& get_random_generator()
   {
-    static thread_local std::mt19937 generator(
-      std::chrono::system_clock::now().time_since_epoch().count());
+    static thread_local std::mt19937 generator(get_random_generator_seed());
     return generator;
   }
 

@@ -146,6 +146,22 @@ def test_detok_with_ranges():
     assert ranges[0] == (0, 1)
     assert ranges[1] == (0, 1)
 
+def test_random_seed():
+    pyonmttok.set_random_seed(42)
+
+    tokenizer = pyonmttok.Tokenizer(
+        "none",
+        sp_model_path=os.path.join(_DATA_DIR, "sp-models", "wmtende.model"),
+        sp_nbest_size=10,
+        sp_alpha=0.1)
+    assert tokenizer.tokenize("appealing")[0] == ["▁app", "e", "al", "ing"]
+
+    tokenizer = pyonmttok.Tokenizer(
+        "conservative",
+        bpe_model_path=os.path.join(_DATA_DIR, "bpe-models", "testcode.v0.1"),
+        bpe_dropout=0.3)
+    assert tokenizer.tokenize("improvement")[0] == ["i", "m", "pr", "ove", "m", "e", "n", "t"]
+
 def test_bpe_case_insensitive_issue_147():
     tokenizer = pyonmttok.Tokenizer(
         "conservative",
