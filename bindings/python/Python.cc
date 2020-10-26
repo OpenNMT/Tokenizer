@@ -88,7 +88,7 @@ public:
   {
   }
 
-  TokenizerWrapper(onmt::Tokenizer* tokenizer)
+  TokenizerWrapper(const onmt::Tokenizer* tokenizer)
     : _tokenizer(tokenizer)
   {
   }
@@ -311,7 +311,7 @@ public:
     _tokenizer->detokenize_stream(in, out);
   }
 
-  const std::shared_ptr<const onmt::Tokenizer> get() const
+  const std::shared_ptr<const onmt::Tokenizer>& get() const
   {
     return _tokenizer;
   }
@@ -324,10 +324,9 @@ class SubwordLearnerWrapper
 {
 public:
   SubwordLearnerWrapper(const TokenizerWrapper* tokenizer, onmt::SubwordLearner* learner)
-    : _learner(learner)
+    : _tokenizer(tokenizer ? tokenizer->get() : learner->get_default_tokenizer())
+    , _learner(learner)
   {
-    if (tokenizer)
-      _tokenizer = tokenizer->get();
   }
 
   virtual ~SubwordLearnerWrapper() = default;
@@ -363,17 +362,18 @@ public:
       _learner->learn(model_path, nullptr, verbose);
     }
 
-    auto new_tokenizer = create_tokenizer(model_path, _tokenizer.get());
+    auto* new_subword_encoder = create_subword_encoder(model_path);
+    auto* new_tokenizer = new onmt::Tokenizer(*_tokenizer);
+    new_tokenizer->set_subword_encoder(std::shared_ptr<onmt::SubwordEncoder>(new_subword_encoder));
     return TokenizerWrapper(new_tokenizer);
   }
 
 protected:
+  virtual onmt::SubwordEncoder* create_subword_encoder(const std::string& model_path) const = 0;
+
+private:
   std::shared_ptr<const onmt::Tokenizer> _tokenizer;
   std::unique_ptr<onmt::SubwordLearner> _learner;
-
-  // Create a new tokenizer with subword encoding configured.
-  virtual onmt::Tokenizer* create_tokenizer(const std::string& model_path,
-                                            const onmt::Tokenizer* tokenizer) const = 0;
 };
 
 class BPELearnerWrapper : public SubwordLearnerWrapper
@@ -393,16 +393,9 @@ public:
   }
 
 protected:
-  onmt::Tokenizer* create_tokenizer(const std::string& model_path,
-                                    const onmt::Tokenizer* tokenizer) const
+  onmt::SubwordEncoder* create_subword_encoder(const std::string& model_path) const override
   {
-    onmt::Tokenizer* new_tokenizer = nullptr;
-    if (!tokenizer)
-      new_tokenizer = new onmt::Tokenizer(onmt::Tokenizer::Mode::Space);
-    else
-      new_tokenizer = new onmt::Tokenizer(*tokenizer);
-    new_tokenizer->set_bpe_model(model_path);
-    return new_tokenizer;
+    return new onmt::BPE(model_path);
   }
 };
 
@@ -442,16 +435,10 @@ public:
   }
 
 protected:
-  onmt::Tokenizer* create_tokenizer(const std::string& model_path,
-                                    const onmt::Tokenizer* tokenizer) const
+  onmt::SubwordEncoder* create_subword_encoder(const std::string& model_path) const override
   {
     std::string sp_model = _keep_vocab ? model_path + ".model" : model_path;
-    if (!tokenizer)
-      return new onmt::Tokenizer(sp_model);
-
-    auto new_tokenizer = new onmt::Tokenizer(*tokenizer);
-    new_tokenizer->set_sp_model(sp_model);
-    return new_tokenizer;
+    return new onmt::SentencePiece(sp_model);
   }
 
 private:

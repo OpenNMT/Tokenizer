@@ -54,4 +54,9 @@ namespace onmt
     learn(out, description, verbose);
   }
 
+  const std::shared_ptr<const Tokenizer>& SubwordLearner::get_default_tokenizer() const
+  {
+    return _default_tokenizer;
+  }
+
 }

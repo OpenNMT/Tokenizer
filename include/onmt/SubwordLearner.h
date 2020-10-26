@@ -23,10 +23,12 @@ namespace onmt
     virtual void learn(const std::string& model_path,
                        const char* description = nullptr,
                        bool verbose = false);
+
+    const std::shared_ptr<const Tokenizer>& get_default_tokenizer() const;
   protected:
     virtual void ingest_token_impl(const std::string& token) = 0;
     bool _verbose;
-    std::unique_ptr<const Tokenizer> _default_tokenizer;
+    std::shared_ptr<const Tokenizer> _default_tokenizer;
   };
 
 }
