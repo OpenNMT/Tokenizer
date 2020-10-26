@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <map>
 #include <sstream>
 
 #include "onmt/BPE.h"
