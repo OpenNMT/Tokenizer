@@ -98,7 +98,12 @@ namespace onmt
 
     void set_subword_encoder(const std::shared_ptr<const SubwordEncoder>& subword_encoder);
 
-    const Options& options() const
+    const std::shared_ptr<const SubwordEncoder>& get_subword_encoder() const
+    {
+      return _subword_encoder;
+    }
+
+    const Options& get_options() const
     {
       return _options;
     }
