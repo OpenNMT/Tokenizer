@@ -54,36 +54,25 @@ inline void add_tokenization_options(cxxopts::Options& options)
     ;
 }
 
-inline int build_tokenization_flags(const cxxopts::ParseResult& args)
+inline onmt::Tokenizer::Options build_tokenization_options(const cxxopts::ParseResult& args)
 {
-  int flags = 0;
-  if (args["no_substitution"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::NoSubstitution;
-  if (args["joiner_annotate"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::JoinerAnnotate;
-  if (args["joiner_new"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::JoinerNew;
-  if (args["spacer_annotate"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SpacerAnnotate;
-  if (args["spacer_new"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SpacerNew;
-  if (args["preserve_placeholders"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::PreservePlaceholders;
-  if (args["preserve_segmented_tokens"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::PreserveSegmentedTokens;
-  if (args["support_prior_joiners"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SupportPriorJoiners;
-  if (args["segment_case"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SegmentCase;
-  if (args["segment_numbers"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SegmentNumbers;
-  if (args["segment_alphabet_change"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
-  if (args["case_feature"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::CaseFeature;
-  if (args["case_markup"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::CaseMarkup;
-  if (args["soft_case_regions"].as<bool>())
-    flags |= onmt::Tokenizer::Flags::SoftCaseRegions;
-  return flags;
+  onmt::Tokenizer::Options options;
+  options.mode = onmt::Tokenizer::str_to_mode(args["mode"].as<std::string>());
+  options.no_substitution = args["no_substitution"].as<bool>();
+  options.case_feature = args["case_feature"].as<bool>();
+  options.case_markup = args["case_markup"].as<bool>();
+  options.soft_case_regions = args["soft_case_regions"].as<bool>();
+  options.joiner_annotate = args["joiner_annotate"].as<bool>();
+  options.joiner_new = args["joiner_new"].as<bool>();
+  options.joiner = args["joiner"].as<std::string>();
+  options.spacer_annotate = args["spacer_annotate"].as<bool>();
+  options.spacer_new = args["spacer_new"].as<bool>();
+  options.preserve_placeholders = args["preserve_placeholders"].as<bool>();
+  options.preserve_segmented_tokens = args["preserve_segmented_tokens"].as<bool>();
+  options.support_prior_joiners = args["support_prior_joiners"].as<bool>();
+  options.segment_case = args["segment_case"].as<bool>();
+  options.segment_numbers = args["segment_numbers"].as<bool>();
+  options.segment_alphabet_change = args["segment_alphabet_change"].as<bool>();
+  options.segment_alphabet = args["segment_alphabet"].as<std::vector<std::string>>();
+  return options;
 }

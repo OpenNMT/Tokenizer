@@ -125,7 +125,7 @@ public:
     if (!sp_model_path.empty())
       subword_encoder = new onmt::SentencePiece(sp_model_path, sp_nbest_size, sp_alpha);
     else if (!bpe_model_path.empty())
-      subword_encoder = new onmt::BPE(bpe_model_path, joiner, bpe_dropout);
+      subword_encoder = new onmt::BPE(bpe_model_path, bpe_dropout);
 
     if (vocabulary_path.empty())
     {
@@ -137,48 +137,28 @@ public:
     if (subword_encoder && !vocabulary_path.empty())
       subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold);
 
-    int flags = 0;
-    if (joiner_annotate)
-      flags |= onmt::Tokenizer::Flags::JoinerAnnotate;
-    if (joiner_new)
-      flags |= onmt::Tokenizer::Flags::JoinerNew;
-    if (spacer_annotate)
-      flags |= onmt::Tokenizer::Flags::SpacerAnnotate;
-    if (spacer_new)
-      flags |= onmt::Tokenizer::Flags::SpacerNew;
-    if (case_feature)
-      flags |= onmt::Tokenizer::Flags::CaseFeature;
-    if (case_markup)
-      flags |= onmt::Tokenizer::Flags::CaseMarkup;
-    if (soft_case_regions)
-      flags |= onmt::Tokenizer::Flags::SoftCaseRegions;
-    if (no_substitution)
-      flags |= onmt::Tokenizer::Flags::NoSubstitution;
-    if (preserve_placeholders)
-      flags |= onmt::Tokenizer::Flags::PreservePlaceholders;
-    if (preserve_segmented_tokens)
-      flags |= onmt::Tokenizer::Flags::PreserveSegmentedTokens;
-    if (segment_case)
-      flags |= onmt::Tokenizer::Flags::SegmentCase;
-    if (segment_numbers)
-      flags |= onmt::Tokenizer::Flags::SegmentNumbers;
-    if (segment_alphabet_change)
-      flags |= onmt::Tokenizer::Flags::SegmentAlphabetChange;
-    if (support_prior_joiners)
-      flags |= onmt::Tokenizer::Flags::SupportPriorJoiners;
-
-    auto tokenizer = new onmt::Tokenizer(onmt::Tokenizer::str_to_mode(mode),
-                                         subword_encoder,
-                                         flags,
-                                         joiner);
-
+    onmt::Tokenizer::Options options;
+    options.mode = onmt::Tokenizer::str_to_mode(mode);
+    options.no_substitution = no_substitution;
+    options.case_feature = case_feature;
+    options.case_markup = case_markup;
+    options.soft_case_regions = soft_case_regions;
+    options.joiner_annotate = joiner_annotate;
+    options.joiner_new = joiner_new;
+    options.joiner = joiner;
+    options.spacer_annotate = spacer_annotate;
+    options.spacer_new = spacer_new;
+    options.preserve_placeholders = preserve_placeholders;
+    options.preserve_segmented_tokens = preserve_segmented_tokens;
+    options.support_prior_joiners = support_prior_joiners;
+    options.segment_case = segment_case;
+    options.segment_numbers = segment_numbers;
+    options.segment_alphabet_change = segment_alphabet_change;
     if (!segment_alphabet.is(py::none()))
-    {
-      for (const auto& alphabet : segment_alphabet.cast<py::list>())
-        tokenizer->add_alphabet_to_segment(alphabet.cast<std::string>());
-    }
+      options.segment_alphabet = to_std_vector<std::string>(segment_alphabet.cast<py::list>());
 
-    _tokenizer.reset(tokenizer);
+    _tokenizer.reset(new onmt::Tokenizer(options,
+                                         std::shared_ptr<onmt::SubwordEncoder>(subword_encoder)));
   }
 
   py::object tokenize(const std::string& text, const bool as_token_objects) const

@@ -75,7 +75,6 @@ int main(int argc, char* argv[])
                            : vm["bpe_model"].as<std::string>());
   if (!bpe_model.empty())
     subword_encoder = new onmt::BPE(bpe_model,
-                                    vm["joiner"].as<std::string>(),
                                     vm["bpe_dropout"].as<float>());
   else
   {
@@ -91,16 +90,8 @@ int main(int argc, char* argv[])
   if (subword_encoder && !vocabulary.empty())
     subword_encoder->load_vocabulary(vocabulary, vocabulary_threshold);
 
-  onmt::Tokenizer tokenizer(onmt::Tokenizer::str_to_mode(vm["mode"].as<std::string>()),
-                            subword_encoder,
-                            build_tokenization_flags(vm),
-                            vm["joiner"].as<std::string>());
-
-  for (const auto& alphabet : vm["segment_alphabet"].as<std::vector<std::string>>())
-  {
-    if (!alphabet.empty() && !tokenizer.add_alphabet_to_segment(alphabet))
-      std::cerr << "WARNING: " << alphabet << " alphabet is not supported" << std::endl;
-  }
+  onmt::Tokenizer tokenizer(build_tokenization_options(vm),
+                            std::shared_ptr<onmt::SubwordEncoder>(subword_encoder));
 
   tokenizer.tokenize_stream(std::cin, std::cout, vm["num_threads"].as<int>());
   return 0;

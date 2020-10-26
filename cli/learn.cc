@@ -44,9 +44,7 @@ int main(int argc, char* argv[])
     return 0;
   }
 
-  int flags = build_tokenization_flags(vm);
-  onmt::Tokenizer tokenizer(onmt::Tokenizer::str_to_mode(vm["mode"].as<std::string>()), flags);
-
+  onmt::Tokenizer tokenizer(build_tokenization_options(vm));
   onmt::SubwordLearner *learner;
 
   const auto subword_args = vm["subword"].as<std::vector<std::string>>();
