@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -33,10 +34,10 @@ namespace onmt
       SegmentCase = 1 << 4,
       SegmentNumbers = 1 << 5,
       SegmentAlphabetChange = 1 << 6,
-      CacheBPEModel = 1 << 7,  // Keeping for compatibility, replaced by CacheModel.
+      CacheBPEModel = 1 << 7,  // Deprecated.
       NoSubstitution = 1 << 8,  // Do not replace special characters.
       SpacerAnnotate = 1 << 9,
-      CacheModel = 1 << 10,
+      CacheModel = 1 << 10,  // Deprecated.
       SentencePieceModel = 1 << 11,
       PreservePlaceholders = 1 << 12,
       SpacerNew = 1 << 13,
@@ -58,14 +59,13 @@ namespace onmt
               int flags = Flags::None,
               const std::string& model_path = "",
               const std::string& joiner = joiner_marker,
-              const std::string& bpe_vocab_path = "",
-              int bpe_vocab_threshold = 50);
+              const std::string& vocab_path = "",
+              int vocab_threshold = 50);
 
     // External subword encoder constructor.
-    // Note: the tokenizer takes ownership of the subword_encoder pointer unless
-    // the CacheModel flag is set.
+    // Note: the tokenizer takes ownership of the subword_encoder pointer.
     Tokenizer(Mode mode,
-              const SubwordEncoder* subword_encoder,
+              SubwordEncoder* subword_encoder,
               int flags = Flags::None,
               const std::string& joiner = joiner_marker);
 
@@ -76,8 +76,6 @@ namespace onmt
               Mode mode = Mode::None,
               int flags = Flags::None,
               const std::string& joiner = joiner_marker);
-
-    ~Tokenizer();
 
     using ITokenizer::tokenize;
     using ITokenizer::detokenize;
@@ -112,10 +110,8 @@ namespace onmt
 
     Tokenizer& set_joiner(const std::string& joiner);
 
-    template <typename T>
-    Tokenizer& set_subword_encoder_model(const std::string& model_path, bool cache_model);
-    Tokenizer& set_bpe_model(const std::string& model_path, bool cache_model = false);
-    Tokenizer& set_sp_model(const std::string& model_path, bool cache_model = false);
+    void set_subword_encoder(const std::shared_ptr<SubwordEncoder>& subword_encoder);
+
     void unset_annotate();
 
     bool add_alphabet_to_segment(const std::string& alphabet);
@@ -139,7 +135,6 @@ namespace onmt
     bool _segment_case;
     bool _segment_numbers;
     bool _segment_alphabet_change;
-    bool _cache_model;
     bool _no_substitution;
     bool _spacer_annotate;
     bool _spacer_new;
@@ -147,7 +142,7 @@ namespace onmt
     bool _preserve_segmented_tokens;
     bool _support_prior_joiners;
 
-    const SubwordEncoder* _subword_encoder;
+    std::shared_ptr<SubwordEncoder> _subword_encoder;
     std::string _joiner;
 
     std::unordered_set<int> _segment_alphabet;

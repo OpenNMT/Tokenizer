@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iomanip>
 #include <map>
-#include <mutex>
 #include <sstream>
 
 #include "onmt/BPE.h"
@@ -49,23 +48,6 @@ namespace onmt
   static const std::vector<std::string> special_chars = {"▁", "￭", "￨", "％", "＃", "："};
   static const std::vector<std::string> substitutes = {"_", "■", "│", "%", "#", ":"};
 
-  static std::unordered_map<std::string, const SubwordEncoder*> cache;
-  static std::mutex cache_mutex;
-
-  template <typename T>
-  static const T* load_subword_encoder(const std::string& model_path)
-  {
-    std::lock_guard<std::mutex> lock(cache_mutex);
-
-    auto it = cache.find(model_path);
-    if (it != cache.end())
-      return dynamic_cast<const T*>(it->second);
-
-    T* encoder = new T(model_path);
-    cache[model_path] = encoder;
-    return encoder;
-  }
-
   static const std::string& normalize_character(const std::string& c) {
     auto it = std::find(special_chars.begin(), special_chars.end(), c);
     if (it != special_chars.end())
@@ -103,41 +85,33 @@ namespace onmt
                        int flags,
                        const std::string& model_path,
                        const std::string& joiner,
-                       const std::string& bpe_vocab_path,
-                       int bpe_vocab_threshold)
+                       const std::string& vocab_path,
+                       int vocab_threshold)
     : _mode(mode)
-    , _subword_encoder(nullptr)
     , _joiner(joiner)
   {
     read_flags(flags);
-    if (flags & Flags::SentencePieceModel)
-      set_sp_model(model_path, _cache_model);
-    else
+    if (!model_path.empty())
     {
-      set_bpe_model(model_path, _cache_model);
-      if (_subword_encoder != nullptr && !bpe_vocab_path.empty())
-      {
-        ((BPE *)_subword_encoder)->load_vocabulary(bpe_vocab_path, bpe_vocab_threshold);
-        ((BPE *)_subword_encoder)->set_joiner(joiner);
-      }
+      if (flags & Flags::SentencePieceModel)
+        set_subword_encoder(std::make_shared<SentencePiece>(model_path));
+      else
+        set_subword_encoder(std::make_shared<BPE>(model_path));
+
+      if (!vocab_path.empty())
+        _subword_encoder->load_vocabulary(vocab_path, vocab_threshold);
     }
   }
 
   Tokenizer::Tokenizer(Mode mode,
-                       const SubwordEncoder* subword_encoder,
+                       SubwordEncoder* subword_encoder,
                        int flags,
                        const std::string& joiner)
     : _mode(mode)
-    , _subword_encoder(subword_encoder)
     , _joiner(joiner)
   {
     read_flags(flags);
-    if (dynamic_cast<const SentencePiece*>(subword_encoder) != nullptr
-        && _mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
-    {
-      _spacer_annotate = true;
-      _no_substitution = true;
-    }
+    set_subword_encoder(std::shared_ptr<SubwordEncoder>(subword_encoder));
   }
 
   Tokenizer::Tokenizer(const std::string& sp_model_path,
@@ -147,13 +121,10 @@ namespace onmt
                        int flags,
                        const std::string& joiner)
     : _mode(mode)
-    , _subword_encoder(nullptr)
     , _joiner(joiner)
   {
     read_flags(flags);
-    set_sp_model(sp_model_path, _cache_model);
-    if (sp_nbest_size != 0)
-      ((SentencePiece*)_subword_encoder)->enable_regularization(sp_nbest_size, sp_alpha);
+    set_subword_encoder(std::make_shared<SentencePiece>(sp_model_path, sp_nbest_size, sp_alpha));
   }
 
   void Tokenizer::read_flags(int flags)
@@ -167,7 +138,6 @@ namespace onmt
     _segment_case = (flags & Flags::SegmentCase) | (flags & Flags::CaseMarkup);
     _segment_numbers = flags & Flags::SegmentNumbers;
     _segment_alphabet_change = flags & Flags::SegmentAlphabetChange;
-    _cache_model = (flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel);
     _no_substitution = flags & Flags::NoSubstitution;
     _spacer_annotate = flags & Flags::SpacerAnnotate;
     _spacer_new = flags & Flags::SpacerNew;
@@ -175,6 +145,8 @@ namespace onmt
     _preserve_segmented_tokens = flags & Flags::PreserveSegmentedTokens;
     _support_prior_joiners = flags & Flags::SupportPriorJoiners;
 
+    if ((flags & Flags::CacheBPEModel) | (flags & Flags::CacheModel))
+      throw std::invalid_argument("Subword model caching is deprecated and should be handled in the client side");
     if (_case_feature && _case_markup)
       throw std::invalid_argument("case_feature and case_markup can't be set at the same time");
     if (_joiner_annotate && _spacer_annotate)
@@ -185,12 +157,6 @@ namespace onmt
       throw std::invalid_argument("joiner_new requires joiner_annotate");
     if (_support_prior_joiners && unicode::utf8len(_joiner) != 1)
       throw std::invalid_argument("support_prior_joiners does not support multi-character joiners");
-  }
-
-  Tokenizer::~Tokenizer()
-  {
-    if (!_cache_model)
-      delete _subword_encoder;
   }
 
   std::string Tokenizer::detokenize(const std::vector<std::string>& words,
@@ -942,40 +908,30 @@ namespace onmt
     _joiner_annotate = _spacer_annotate = false;
   }
 
-  template <typename T>
-  Tokenizer& Tokenizer::set_subword_encoder_model(const std::string& model_path, bool cache_model)
+  void Tokenizer::set_subword_encoder(const std::shared_ptr<SubwordEncoder>& subword_encoder)
   {
-    if (_subword_encoder != nullptr && !_cache_model)
+    _subword_encoder = subword_encoder;
+
+    // TODO: clean this up, declare a base method "declare_tokenization_options".
+    auto* encoder = _subword_encoder.get();
+    auto* sp = encoder ? dynamic_cast<SentencePiece*>(encoder) : nullptr;
+    auto* bpe = encoder && !sp ? dynamic_cast<BPE*>(encoder) : nullptr;
+
+    if (sp)
     {
-      delete _subword_encoder;
+      // Maybe enable SentencePiece compatibility mode.
+      if (_mode == Mode::None
+          && !_joiner_annotate
+          && !_spacer_annotate)
+      {
+        _spacer_annotate = true;
+        _no_substitution = true;
+      }
     }
-
-    if (!model_path.empty())
+    else if (bpe)
     {
-      if (cache_model)
-        _subword_encoder = load_subword_encoder<T>(model_path);
-      else
-        _subword_encoder = new T(model_path);
-
-      _cache_model = cache_model;
+      bpe->set_joiner(_joiner);
     }
-
-    return *this;
-  }
-
-  Tokenizer& Tokenizer::set_bpe_model(const std::string& model_path, bool cache_model)
-  {
-    return this->set_subword_encoder_model<BPE>(model_path, cache_model);
-  }
-
-  Tokenizer& Tokenizer::set_sp_model(const std::string& model_path, bool cache_model)
-  {
-    if (_mode == Mode::None && !_joiner_annotate && !_spacer_annotate)
-    {
-      _spacer_annotate = true;
-      _no_substitution = true;
-    }
-    return this->set_subword_encoder_model<SentencePiece>(model_path, cache_model);
   }
 
   bool Tokenizer::add_alphabet_to_segment(const std::string& alphabet)
