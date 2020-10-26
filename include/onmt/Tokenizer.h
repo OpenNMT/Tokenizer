@@ -26,6 +26,8 @@ namespace onmt
       None
     };
 
+    static Mode str_to_mode(const std::string& mode);
+
     enum Flags
     {
       None = 0,
@@ -53,9 +55,6 @@ namespace onmt
     static const std::string spacer_marker;
     static const std::string ph_marker_open;
     static const std::string ph_marker_close;
-
-    static const std::unordered_map<std::string, Mode> mapMode;
-    static Mode str_to_mode(const std::string& mode);
 
     Tokenizer(Mode mode,
               int flags = Flags::None,

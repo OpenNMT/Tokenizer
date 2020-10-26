@@ -25,19 +25,18 @@ namespace onmt
   const std::string Tokenizer::ph_marker_close = "｠";
   static const std::vector<std::string> exclude_combining{Tokenizer::ph_marker_close};
 
-  const std::unordered_map<std::string, Tokenizer::Mode> Tokenizer::mapMode = {
-    { "aggressive", Tokenizer::Mode::Aggressive },
-    { "conservative", Tokenizer::Mode::Conservative },
-    { "space", Tokenizer::Mode::Space },
-    { "char", Tokenizer::Mode::Char },
-    { "none", Tokenizer::Mode::None }
-  };
-
   Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
-    auto it = mapMode.find(mode);
-    if (it == mapMode.end())
-      throw std::invalid_argument("invalid tokenization mode: " + mode);
-    return it->second;
+    if (mode == "conservative")
+      return Mode::Conservative;
+    if (mode == "aggressive")
+      return Mode::Aggressive;
+    if (mode == "none")
+      return Mode::None;
+    if (mode == "space")
+      return Mode::Space;
+    if (mode == "char")
+      return Mode::Char;
+    throw std::invalid_argument("invalid tokenization mode: " + mode);
   }
 
   enum State
