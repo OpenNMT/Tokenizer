@@ -23,6 +23,9 @@ namespace onmt
   const std::string Tokenizer::spacer_marker("▁");
   const std::string Tokenizer::ph_marker_open = "｟";
   const std::string Tokenizer::ph_marker_close = "｠";
+  static const std::string protected_character = "％";
+  static const std::vector<std::string> special_chars{"▁", "￭", "￨", "％", "＃", "："};
+  static const std::vector<std::string> substitutes{"_", "■", "│", "%", "#", ":"};
   static const std::vector<std::string> exclude_combining{Tokenizer::ph_marker_close};
 
   Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
@@ -47,10 +50,6 @@ namespace onmt
     Other = 1 << 3,
     Placeholder = 1 << 4
   };
-
-  static const std::string protected_character = "％";
-  static const std::vector<std::string> special_chars = {"▁", "￭", "￨", "％", "＃", "："};
-  static const std::vector<std::string> substitutes = {"_", "■", "│", "%", "#", ":"};
 
   static const std::string& normalize_character(const std::string& c) {
     auto it = std::find(special_chars.begin(), special_chars.end(), c);
