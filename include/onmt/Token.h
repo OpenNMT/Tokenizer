@@ -47,7 +47,8 @@ namespace onmt
       surface += str;
     }
 
-    bool empty() const {
+    bool empty() const
+    {
       return surface.empty();
     }
 
