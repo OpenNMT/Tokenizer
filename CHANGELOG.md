@@ -19,9 +19,19 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ## [Unreleased]
 
+### Changes
+
+* [C++] Subword model caching is no longer supported and should be handled by the client. The subword encoder instance can now be passed as a `std::shared_ptr` to make it outlive the `Tokenizer` instance.
+
 ### New features
 
+* Add `set_random_seed` function to make subword regularization reproducible
+* [C++] Add `Options` structure to configure tokenization options (`Flags` can still be used for backward compatibility)
+
 ### Fixes and improvements
+
+* Fix BPE vocabulary restriction when using `joiner_new`, `spacer_annotate`, or `spacer_new` (the previous implementation always assumed `joiner_annotate` was used)
+* [C++] Fix ambiguous subword encoder ownership by using a `std::shared_ptr`
 
 ## [v1.21.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.21.0) (2020-10-22)
 
