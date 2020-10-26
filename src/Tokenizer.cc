@@ -57,16 +57,6 @@ namespace onmt
     return c;
   }
 
-  static void annotate_case(std::vector<Token>& annotated_tokens)
-  {
-    for (auto& token : annotated_tokens)
-    {
-      if (token.is_placeholder())
-        continue;
-      std::tie(token.surface, token.casing) = lowercase_token(token.surface);
-    }
-  }
-
   template <typename T>
   std::string int_to_hex(T i, int width = 4)
   {
@@ -449,7 +439,11 @@ namespace onmt
     }
 
     if (_case_markup || _case_feature)
-      annotate_case(annotated_tokens);
+    {
+      for (auto& token : annotated_tokens)
+        token.lowercase();
+    }
+
     if (_subword_encoder)
       annotated_tokens = _subword_encoder->encode_and_annotate(annotated_tokens);
   }

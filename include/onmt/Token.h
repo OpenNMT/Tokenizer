@@ -54,6 +54,7 @@ namespace onmt
 
     bool is_placeholder() const;
     size_t unicode_length() const;
+    void lowercase();
 
     void append_feature(std::string feature)
     {
