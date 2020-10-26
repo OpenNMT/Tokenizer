@@ -134,9 +134,6 @@ public:
       vocabulary_threshold = bpe_vocab_threshold;
     }
 
-    if (subword_encoder && !vocabulary_path.empty())
-      subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold);
-
     onmt::Tokenizer::Options options;
     options.mode = onmt::Tokenizer::str_to_mode(mode);
     options.no_substitution = no_substitution;
@@ -157,8 +154,11 @@ public:
     if (!segment_alphabet.is(py::none()))
       options.segment_alphabet = to_std_vector<std::string>(segment_alphabet.cast<py::list>());
 
+    if (subword_encoder && !vocabulary_path.empty())
+      subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold, &options);
+
     _tokenizer.reset(new onmt::Tokenizer(options,
-                                         std::shared_ptr<onmt::SubwordEncoder>(subword_encoder)));
+                                         std::shared_ptr<const onmt::SubwordEncoder>(subword_encoder)));
   }
 
   py::object tokenize(const std::string& text, const bool as_token_objects) const
@@ -344,7 +344,7 @@ public:
 
     auto* new_subword_encoder = create_subword_encoder(model_path);
     auto* new_tokenizer = new onmt::Tokenizer(*_tokenizer);
-    new_tokenizer->set_subword_encoder(std::shared_ptr<onmt::SubwordEncoder>(new_subword_encoder));
+    new_tokenizer->set_subword_encoder(std::shared_ptr<const onmt::SubwordEncoder>(new_subword_encoder));
     return TokenizerWrapper(new_tokenizer);
   }
 

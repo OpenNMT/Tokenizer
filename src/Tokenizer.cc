@@ -106,7 +106,8 @@ namespace onmt
     }
   }
 
-  Tokenizer::Tokenizer(Options options, const std::shared_ptr<SubwordEncoder>& subword_encoder)
+  Tokenizer::Tokenizer(Options options,
+                       const std::shared_ptr<const SubwordEncoder>& subword_encoder)
     : _options(std::move(options))
   {
     _options.validate();
@@ -124,24 +125,27 @@ namespace onmt
     _options.validate();
     if (!model_path.empty())
     {
+      SubwordEncoder* subword_encoder = nullptr;
       if (flags & Flags::SentencePieceModel)
-        set_subword_encoder(std::make_shared<SentencePiece>(model_path));
+        subword_encoder = new SentencePiece(model_path);
       else
-        set_subword_encoder(std::make_shared<BPE>(model_path));
+        subword_encoder = new BPE(model_path);
 
       if (!vocab_path.empty())
-        _subword_encoder->load_vocabulary(vocab_path, vocab_threshold);
+        subword_encoder->load_vocabulary(vocab_path, vocab_threshold, &_options);
+
+      set_subword_encoder(std::shared_ptr<const SubwordEncoder>(subword_encoder));
     }
   }
 
   Tokenizer::Tokenizer(Mode mode,
-                       SubwordEncoder* subword_encoder,
+                       const SubwordEncoder* subword_encoder,
                        int flags,
                        const std::string& joiner)
     : _options(mode, flags, joiner)
   {
     _options.validate();
-    set_subword_encoder(std::shared_ptr<SubwordEncoder>(subword_encoder));
+    set_subword_encoder(std::shared_ptr<const SubwordEncoder>(subword_encoder));
   }
 
   Tokenizer::Tokenizer(const std::string& sp_model_path,
@@ -917,30 +921,11 @@ namespace onmt
     _options.joiner_annotate = _options.spacer_annotate = false;
   }
 
-  void Tokenizer::set_subword_encoder(const std::shared_ptr<SubwordEncoder>& subword_encoder)
+  void Tokenizer::set_subword_encoder(const std::shared_ptr<const SubwordEncoder>& subword_encoder)
   {
     _subword_encoder = subword_encoder;
-
-    // TODO: clean this up, declare a base method "declare_tokenization_options".
-    auto* encoder = _subword_encoder.get();
-    auto* sp = encoder ? dynamic_cast<SentencePiece*>(encoder) : nullptr;
-    auto* bpe = encoder && !sp ? dynamic_cast<BPE*>(encoder) : nullptr;
-
-    if (sp)
-    {
-      // Maybe enable SentencePiece compatibility mode.
-      if (_options.mode == Mode::None
-          && !_options.joiner_annotate
-          && !_options.spacer_annotate)
-      {
-        _options.spacer_annotate = true;
-        _options.no_substitution = true;
-      }
-    }
-    else if (bpe)
-    {
-      bpe->set_joiner(_options.joiner);
-    }
+    if (_subword_encoder)
+      _subword_encoder->update_tokenization_options(_options);
   }
 
   bool Tokenizer::add_alphabet_to_segment(const std::string& alphabet)

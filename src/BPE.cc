@@ -34,10 +34,13 @@ namespace onmt
     , _suffix(true)
     , _case_insensitive(false)
     , _version(0, 0)
-    , _joiner(Tokenizer::joiner_marker)
     , _dropout(check_dropout(dropout))
   {
     load_model(model_path);
+
+    // For backward compatibility, assume the tokenization uses joiner annotation.
+    _tokenization_options.joiner_annotate = true;
+    _tokenization_options.joiner = Tokenizer::joiner_marker;
   }
 
   BPE::BPE(const std::string& model_path, const std::string& joiner, const float dropout)
@@ -47,10 +50,13 @@ namespace onmt
     , _suffix(true)
     , _case_insensitive(false)
     , _version(0, 0)
-    , _joiner(joiner)
     , _dropout(check_dropout(dropout))
   {
     load_model(model_path);
+
+    // For backward compatibility, assume the tokenization uses joiner annotation.
+    _tokenization_options.joiner_annotate = true;
+    _tokenization_options.joiner = joiner;
   }
 
   void BPE::load_model(const std::string& model_path)
@@ -297,10 +303,13 @@ namespace onmt
     }
   }
 
-  void BPE::set_vocabulary(const std::vector<std::string>& vocabulary)
+  void BPE::set_vocabulary(const std::vector<std::string>& vocabulary,
+                           const Tokenizer::Options* options)
   {
     _bpe_vocab.clear();
     _bpe_vocab.insert(vocabulary.begin(), vocabulary.end());
+    if (options)
+      _tokenization_options = *options;
   }
 
   void BPE::reset_vocabulary()
@@ -315,12 +324,25 @@ namespace onmt
 
   bool BPE::in_vocabulary(const onmt::Token& token) const
   {
-    // TODO: support joiner_new, spacer_annotate, spacer_new.
-    if (token.preserve || (!token.join_left && !token.join_right))
-      return in_vocabulary(token.surface);
-    return in_vocabulary((token.join_left ? _joiner : "")
-                         + token.surface
-                         + (token.join_right ? _joiner : ""));
+    std::string surface = token.surface;
+
+    if (!token.preserve)
+    {
+      if (_tokenization_options.joiner_annotate && !_tokenization_options.joiner_new)
+      {
+        if (token.join_left)
+          surface = _tokenization_options.joiner + surface;
+        if (token.join_right)
+          surface = surface + _tokenization_options.joiner;
+      }
+      else if (_tokenization_options.spacer_annotate && !_tokenization_options.spacer_new)
+      {
+        if (!token.join_left)
+          surface = Tokenizer::spacer_marker + surface;
+      }
+    }
+
+    return in_vocabulary(surface);
   }
 
   std::vector<Token> BPE::check_vocab_and_split(std::vector<Token> pieces) const

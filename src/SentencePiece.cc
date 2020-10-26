@@ -42,8 +42,28 @@ namespace onmt
     delete _processor;
   }
 
-  void SentencePiece::set_vocabulary(const std::vector<std::string>& vocabulary)
+  void SentencePiece::update_tokenization_options(Tokenizer::Options& options) const
   {
+    // Maybe enable SentencePiece compatibility mode.
+    if (options.mode == Tokenizer::Mode::None
+        && !options.joiner_annotate
+        && !options.spacer_annotate)
+    {
+      options.spacer_annotate = true;
+      options.no_substitution = true;
+    }
+  }
+
+  void SentencePiece::set_vocabulary(const std::vector<std::string>& vocabulary,
+                                     const Tokenizer::Options* options)
+  {
+    if (options
+        && (options->mode != Tokenizer::Mode::None
+            || !options->spacer_annotate
+            || options->spacer_new))
+      throw std::invalid_argument("SentencePiece vocabulary restriction requires the tokenization "
+                                  "to use the \"none\" mode and \"spacer_annotate\" "
+                                  "(same as spm_encode)");
     auto status = _processor->SetVocabulary(vocabulary);
     if (!status.ok())
       throw std::invalid_argument(status.ToString());
