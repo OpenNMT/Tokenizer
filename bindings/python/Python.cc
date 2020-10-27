@@ -514,7 +514,7 @@ PYBIND11_MODULE(pyonmttok, m)
          py::arg("casing")=onmt::Casing::None,
          py::arg("join_left")=false,
          py::arg("join_right")=false,
-         py::arg("join_spacer")=false,
+         py::arg("spacer")=false,
          py::arg("preserve")=false,
          py::arg("features")=py::none())
     .def_readwrite("surface", &onmt::Token::surface)
