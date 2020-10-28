@@ -26,11 +26,13 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 ### New features
 
 * Add `set_random_seed` function to make subword regularization reproducible
+* [Python] Support serialization of `Token` instances
 * [C++] Add `Options` structure to configure tokenization options (`Flags` can still be used for backward compatibility)
 
 ### Fixes and improvements
 
 * Fix BPE vocabulary restriction when using `joiner_new`, `spacer_annotate`, or `spacer_new` (the previous implementation always assumed `joiner_annotate` was used)
+* [Python] Fix `spacer` argument name in `Token` constructor
 * [C++] Fix ambiguous subword encoder ownership by using a `std::shared_ptr`
 
 ## [v1.21.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.21.0) (2020-10-22)
