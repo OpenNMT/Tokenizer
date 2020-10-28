@@ -529,6 +529,30 @@ PYBIND11_MODULE(pyonmttok, m)
     .def("__eq__", &onmt::Token::operator==)
     .def("__hash__", &hash_token)
     .def("__repr__", &repr_token)
+    .def(py::pickle(
+           [](const onmt::Token& token)
+             {
+               return py::make_tuple(token.surface,
+                                     token.type,
+                                     token.casing,
+                                     token.join_left,
+                                     token.join_right,
+                                     token.spacer,
+                                     token.preserve,
+                                     token.features);
+             },
+           [](py::tuple t)
+             {
+               return create_token(t[0].cast<std::string>(),
+                                   t[1].cast<onmt::TokenType>(),
+                                   t[2].cast<onmt::Casing>(),
+                                   t[3].cast<bool>(),
+                                   t[4].cast<bool>(),
+                                   t[5].cast<bool>(),
+                                   t[6].cast<bool>(),
+                                   t[7]);
+             }
+           ));
     ;
 
   py::class_<TokenizerWrapper>(m, "Tokenizer")
