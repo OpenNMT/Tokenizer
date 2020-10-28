@@ -2,6 +2,7 @@
 
 import os
 import copy
+import pickle
 import pytest
 
 try:
@@ -350,3 +351,17 @@ def test_token_repr():
         "preserve=True, "
         "features=['X', 'Y'], "
         "casing=Casing.MIXED)")
+
+def test_token_pickle():
+    token = pyonmttok.Token(
+        "Hello",
+        type=pyonmttok.TokenType.LEADING_SUBWORD,
+        casing=pyonmttok.Casing.MIXED,
+        join_right=True,
+        join_left=True,
+        preserve=True,
+        features=["X", "Y"])
+
+    data = pickle.dumps(token)
+    token2 = pickle.loads(data)
+    assert token == token2
