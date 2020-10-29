@@ -19,6 +19,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ## [Unreleased]
 
+### New features
+
+### Fixes and improvements
+
+## [v1.22.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.22.0) (2020-10-29)
+
 ### Changes
 
 * [C++] Subword model caching is no longer supported and should be handled by the client. The subword encoder instance can now be passed as a `std::shared_ptr` to make it outlive the `Tokenizer` instance.
