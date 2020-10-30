@@ -1,6 +1,7 @@
 #include "onmt/unicode/Unicode.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include <unicode/uchar.h>
 #include <unicode/unistr.h>
@@ -172,18 +173,48 @@ namespace onmt
       return u_toupper(u);
     }
 
+    // The functions below are made backward compatible with the Kangxi and Kanbun script names
+    // that were previously declared in Alphabet.h but are not Unicode script aliases.
+    static const std::vector<std::pair<std::pair<const char*, int>,
+                                       std::pair<code_point_t, code_point_t>>>
+    compat_scripts = {
+      {{"Kangxi", USCRIPT_CODE_LIMIT + 0}, {0x2F00, 0x2FD5}},
+      {{"Kanbun", USCRIPT_CODE_LIMIT + 1}, {0x3190, 0x319F}},
+    };
+
     int get_script_code(const char* script_name)
     {
+      for (const auto& pair : compat_scripts)
+      {
+        const auto& script_info = pair.first;
+        if (strcmp(script_name, script_info.first) == 0)
+          return script_info.second;
+      }
+
       return u_getPropertyValueEnum(UCHAR_SCRIPT, script_name);
     }
 
     const char* get_script_name(int script_code)
     {
+      for (const auto& pair : compat_scripts)
+      {
+        const auto& script_info = pair.first;
+        if (script_info.second == script_code)
+          return script_info.first;
+      }
+
       return uscript_getName(static_cast<UScriptCode>(script_code));
     }
 
     int get_script(code_point_t c)
     {
+      for (const auto& pair : compat_scripts)
+      {
+        const auto& range = pair.second;
+        if (c >= range.first && c <= range.second)
+          return pair.first.second;
+      }
+
       UErrorCode error = U_ZERO_ERROR;
       return static_cast<int>(uscript_getScript(c, &error));
     }

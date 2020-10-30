@@ -466,6 +466,21 @@ TEST(TokenizerTest, SegmentAlphabet) {
            "有￭ 入￭ 聲￭ 嘅￭ 唐￭ 話￭ 往￭ 往￭ 有￭ 陽￭ 入￭ 對￭ 轉 ￭，￭ 即￭ 係￭ 入￭ 聲￭ 韻￭ 尾￭ 同￭ 鼻￭ 音￭ 韻￭ 尾￭ 可￭ 以￭ 轉￭ 化 ￭。￭ 比￭ 如￭ 粵￭ 語￭ 嘅 ￭「￭ 抌 ￭」 ￭（￭ dam ￭） ￭「￭ 揼 ￭」 ￭（￭ dap ￭） ￭，￭ 意￭ 思￭ 接￭ 近 ￭，￭ 意￭ 味￭ 微￭ 妙 ￭，￭ 區￭ 別￭ 在￭ 於-m同-p嘅￭ 轉￭ 換 ￭。");
 }
 
+// Checking backward compatibility with the "Kanbun" and "Kangxi" alphabets that are not
+// included in ICU list of Unicode script aliases.
+TEST(TokenizerTest, SegmentAlphabetKangxi) {
+  Tokenizer::Options options;
+  options.segment_alphabet = {"Kangxi"};
+  Tokenizer tokenizer(options);
+  test_tok(tokenizer, "12⼀⼁", "12 ⼀ ⼁");
+}
+TEST(TokenizerTest, SegmentAlphabetKanbun) {
+  Tokenizer::Options options;
+  options.segment_alphabet = {"Kanbun"};
+  Tokenizer tokenizer(options);
+  test_tok(tokenizer, "12㆙㆚", "12 ㆙ ㆚");
+}
+
 TEST(TokenizerTest, SegmentAlphabetChange) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::SegmentAlphabetChange);
   test_tok(tokenizer, "rawБ", "raw Б");
