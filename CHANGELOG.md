@@ -23,6 +23,13 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.22.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.22.1) (2020-10-30)
+
+### Fixes and improvements
+
+* Fix error when enabling vocabulary restriction with SentencePiece and `spacer_annotate` is not explicitly set
+* Fix backward compatibility with Kangxi and Kanbun scripts (see `segment_alphabet` option)
+
 ## [v1.22.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.22.0) (2020-10-29)
 
 ### Changes
