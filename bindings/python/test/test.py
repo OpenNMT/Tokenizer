@@ -105,6 +105,30 @@ def test_segment_alphabet():
     tokens, _ = tokenizer.tokenize("測試 abc")
     assert tokens == ["測試", "abc"]
 
+def test_sp_with_vocabulary(tmpdir):
+    sp_model_path = os.path.join(_DATA_DIR, "sp-models", "wmtende.model")
+    vocab_path = str(tmpdir.join("vocab.txt"))
+    with open(vocab_path, "w") as vocab_file:
+        vocab_file.write("▁Wor\n")
+
+    with pytest.raises(ValueError, match="none"):
+        tokenizer = pyonmttok.Tokenizer(
+            mode="conservative",
+            sp_model_path=sp_model_path,
+            vocabulary_path=vocab_path)
+    with pytest.raises(ValueError, match="spacer_annotate"):
+        tokenizer = pyonmttok.Tokenizer(
+            mode="none",
+            sp_model_path=sp_model_path,
+            vocabulary_path=vocab_path,
+            joiner_annotate=True)
+
+    tokenizer = pyonmttok.Tokenizer(
+        mode="none",
+        sp_model_path=os.path.join(_DATA_DIR, "sp-models", "wmtende.model"),
+        vocabulary_path=vocab_path)
+    assert tokenizer.tokenize("World")[0] == ["▁Wor", "l", "d"]
+
 def test_named_arguments():
     tokenizer = pyonmttok.Tokenizer(mode="aggressive", joiner_annotate=True)
     text = "Hello World!"

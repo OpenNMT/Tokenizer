@@ -59,7 +59,7 @@ namespace onmt
   {
     if (options
         && (options->mode != Tokenizer::Mode::None
-            || !options->spacer_annotate
+            || options->joiner_annotate
             || options->spacer_new))
       throw std::invalid_argument("SentencePiece vocabulary restriction requires the tokenization "
                                   "to use the \"none\" mode and \"spacer_annotate\" "
