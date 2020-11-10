@@ -1,4 +1,4 @@
-name: CI tests
+name: CI
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - master
 
 jobs:
-  cpp:
+  build-and-test-cpp:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,7 +29,7 @@ jobs:
           test/onmt_tokenizer_test test/data
 
 
-  python:
+  build-and-test-python-wheels:
     runs-on: ubuntu-latest
 
     steps:
@@ -62,7 +62,7 @@ jobs:
           path: wheelhouse
 
 
-  publish-wheels-on-pypi:
+  publish-python-wheels-on-pypi:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: [cpp, python]
     runs-on: ubuntu-latest
