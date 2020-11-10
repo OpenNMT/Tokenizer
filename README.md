@@ -1,4 +1,4 @@
-![CI](https://github.com/OpenNMT/Tokenizer/workflows/CI/badge.svg) [![PyPI version](https://badge.fury.io/py/pyonmttok.svg)](https://badge.fury.io/py/pyonmttok)
+[![CI](https://github.com/OpenNMT/Tokenizer/workflows/CI/badge.svg)](https://github.com/OpenNMT/Tokenizer/actions?query=workflow%3ACI) [![PyPI version](https://badge.fury.io/py/pyonmttok.svg)](https://badge.fury.io/py/pyonmttok)
 
 # Tokenizer
 
