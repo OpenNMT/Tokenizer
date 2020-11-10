@@ -5,13 +5,6 @@ import copy
 import pickle
 import pytest
 
-try:
-    # PyTorch is another pybind11 extension that uses a non-compliant toolchain.
-    # If available, test that pyonmttok do not crash on import after it.
-    import torch
-except ImportError:
-    pass
-
 import pyonmttok
 
 _DATA_DIR = os.path.join(
