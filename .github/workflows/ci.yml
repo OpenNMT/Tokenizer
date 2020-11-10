@@ -64,7 +64,7 @@ jobs:
 
   publish-python-wheels-on-pypi:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: [cpp, python]
+    needs: [build-and-test-cpp, build-and-test-python-wheels]
     runs-on: ubuntu-latest
 
     steps:
