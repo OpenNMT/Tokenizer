@@ -23,6 +23,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.22.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.22.2) (2020-11-12)
+
+### Fixes and improvements
+
+* Do not require "none" tokenization mode for SentencePiece vocabulary restriction
+
 ## [v1.22.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.22.1) (2020-10-30)
 
 ### Fixes and improvements
