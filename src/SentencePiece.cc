@@ -57,13 +57,9 @@ namespace onmt
   void SentencePiece::set_vocabulary(const std::vector<std::string>& vocabulary,
                                      const Tokenizer::Options* options)
   {
-    if (options
-        && (options->mode != Tokenizer::Mode::None
-            || options->joiner_annotate
-            || options->spacer_new))
+    if (options && (options->joiner_annotate || options->spacer_new))
       throw std::invalid_argument("SentencePiece vocabulary restriction requires the tokenization "
-                                  "to use the \"none\" mode and \"spacer_annotate\" "
-                                  "(same as spm_encode)");
+                                  "to use \"spacer_annotate\" (same as spm_encode)");
     auto status = _processor->SetVocabulary(vocabulary);
     if (!status.ok())
       throw std::invalid_argument(status.ToString());
