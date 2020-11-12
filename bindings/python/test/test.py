@@ -104,11 +104,6 @@ def test_sp_with_vocabulary(tmpdir):
     with open(vocab_path, "w") as vocab_file:
         vocab_file.write("▁Wor\n")
 
-    with pytest.raises(ValueError, match="none"):
-        tokenizer = pyonmttok.Tokenizer(
-            mode="conservative",
-            sp_model_path=sp_model_path,
-            vocabulary_path=vocab_path)
     with pytest.raises(ValueError, match="spacer_annotate"):
         tokenizer = pyonmttok.Tokenizer(
             mode="none",
