@@ -709,9 +709,9 @@ namespace onmt
             if (_options.mode == Mode::Conservative)
             {
               if (is_number
-                  || (sub_c == "-" && letter)
-                  || (sub_c == "_")
-                  || (letter && (sub_c == "." || sub_c == ",") && (unicode::is_number(next_v) || unicode::is_letter(next_v))))
+                  || (sub_c[0] == '-' && letter)
+                  || (sub_c[0] == '_')
+                  || (letter && (sub_c[0] == '.' || sub_c[0] == ',') && (unicode::is_number(next_v) || unicode::is_letter(next_v))))
                 {
                   is_letter = true;
                   alphabet = number_alphabet;
