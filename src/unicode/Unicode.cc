@@ -91,7 +91,7 @@ namespace onmt
                                  std::vector<std::string>& chars,
                                  std::vector<code_point_t>* code_points_main,
                                  std::vector<std::vector<code_point_t>>* code_points_combining,
-                                 const std::vector<std::string>* protected_chars)
+                                 const std::vector<code_point_t>* protected_chars)
     {
       const char* c_str = str.c_str();
 
@@ -106,22 +106,24 @@ namespace onmt
         unsigned int char_size = 0;
         code_point_t code_point = utf8_to_cp(
           reinterpret_cast<const unsigned char*>(c_str), char_size);
-        if (!chars.empty()
-            && is_mark(code_point)
-            && (!protected_chars
-                || std::find(protected_chars->begin(), protected_chars->end(), chars.back()) == protected_chars->end()))
-        {
-          if (code_points_combining)
-            code_points_combining->back().push_back(code_point);
-          chars.back().append(c_str, char_size);
-        }
-        else
+        if (chars.empty()
+            || !is_mark(code_point)
+            || (protected_chars
+                && std::find(protected_chars->begin(),
+                             protected_chars->end(),
+                             code_points_main->back()) != protected_chars->end()))
         {
           if (code_points_main)
             code_points_main->emplace_back(code_point);
           if (code_points_combining)
             code_points_combining->emplace_back();
           chars.emplace_back(c_str, char_size);
+        }
+        else
+        {
+          if (code_points_combining)
+            code_points_combining->back().push_back(code_point);
+          chars.back().append(c_str, char_size);
         }
         c_str += char_size;
       }
