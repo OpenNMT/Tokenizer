@@ -829,11 +829,11 @@ namespace onmt
     }
   }
 
-  static void add_final_token(std::vector<std::string>& tokens,
-                              std::vector<std::vector<std::string>>& features,
-                              bool case_feature,
-                              std::string token,
-                              Casing casing = Casing::None)
+  static inline void add_final_token(std::vector<std::string>& tokens,
+                                     std::vector<std::vector<std::string>>& features,
+                                     bool case_feature,
+                                     std::string token,
+                                     Casing casing = Casing::None)
   {
     if (token.empty())
       return;
