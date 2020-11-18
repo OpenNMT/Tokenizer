@@ -1,7 +1,5 @@
 #include "onmt/Tokenizer.h"
 
-#include <algorithm>
-
 #include "onmt/BPE.h"
 #include "onmt/SentencePiece.h"
 #include "onmt/unicode/Unicode.h"
@@ -20,10 +18,18 @@ namespace onmt
   const std::string Tokenizer::spacer_marker("▁");
   const std::string Tokenizer::ph_marker_open = "｟";
   const std::string Tokenizer::ph_marker_close = "｠";
+  static const unicode::code_point_t ph_marker_open_cp = 0xFF5F;
+  static const unicode::code_point_t ph_marker_close_cp = 0xFF60;
   static const std::string protected_character = "％";
-  static const std::vector<std::string> special_chars{"▁", "￭", "￨", "％", "＃", "："};
-  static const std::vector<std::string> substitutes{"_", "■", "│", "%", "#", ":"};
-  static const std::vector<std::string> exclude_combining{Tokenizer::ph_marker_close};
+  static const std::vector<unicode::code_point_t> exclude_combining{ph_marker_close_cp};
+  static const std::vector<std::pair<unicode::code_point_t, std::string>> substitutes = {
+    {0x2581 /* ▁ */, "_"},
+    {0xFFED /* ￭ */, "■"},
+    {0xFFE8 /* ￨ */, "│"},
+    {0xFF05 /* ％ */, "%"},
+    {0xFF03 /* ＃ */, "#"},
+    {0xFF1A /* ： */, ":"},
+  };
 
   Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
     if (mode == "conservative")
@@ -48,10 +54,14 @@ namespace onmt
     Placeholder = 1 << 4
   };
 
-  static const std::string& normalize_character(const std::string& c) {
-    auto it = std::find(special_chars.begin(), special_chars.end(), c);
-    if (it != special_chars.end())
-      return substitutes[std::distance(special_chars.begin(), it)];
+  static inline const std::string& normalize_character(const std::string& c,
+                                                       const unicode::code_point_t v)
+  {
+    for (const auto& pair : substitutes)
+    {
+      if (pair.first == v)
+        return pair.second;
+    }
     return c;
   }
 
@@ -480,6 +490,7 @@ namespace onmt
     for (size_t i = 0; i < chars.size(); ++i)
     {
       const auto& c = chars[i];
+      const auto v = code_points_main[i];
 
       if (!in_placeholder)
       {
@@ -491,7 +502,7 @@ namespace onmt
           else
             token.join_right = true;
         }
-        else if (c == ph_marker_open)
+        else if (v == ph_marker_open_cp)
         {
           if (!token.empty())
           {
@@ -510,13 +521,13 @@ namespace onmt
         else
         {
           // Normalize character for consistency with other tokenization modes.
-          token.append(_options.no_substitution ? c : normalize_character(c));
+          token.append(_options.no_substitution ? c : normalize_character(c, v));
         }
       }
       else  // In a placeholder.
       {
         token.append(c);  // Do not normalize character inside placeholders.
-        if (c == ph_marker_close)
+        if (v == ph_marker_close_cp)
         {
           // Flush accumulated placeholder and mark joint if the next character is not a separator.
           // No need to check for emptiness as in_placeholder == true means at least the opening
@@ -627,7 +638,7 @@ namespace onmt
         bool is_separator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
 
         if (placeholder) {
-          if (c == Tokenizer::ph_marker_close) {
+          if (v == ph_marker_close_cp) {
             token.append(c);
             if (_options.preserve_placeholders)
               token.preserve = true;
@@ -641,7 +652,7 @@ namespace onmt
             }
           }
         }
-        else if (c == Tokenizer::ph_marker_open) {
+        else if (v == ph_marker_open_cp) {
           if (!space) {
             Token next_token;
             if ((letter && prev_alphabet != placeholder_alphabet) || number)
@@ -693,7 +704,7 @@ namespace onmt
           // skip special characters and BOM
           if (v >= 32 && v != 0xFEFF)
           {
-            const std::string& sub_c(_options.no_substitution ? c : normalize_character(c));
+            const std::string& sub_c(_options.no_substitution ? c : normalize_character(c, v));
             bool is_letter = unicode::is_letter(v);
             bool is_number = !is_letter && unicode::is_number(v);
             int alphabet = unicode::get_script(v);

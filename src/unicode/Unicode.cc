@@ -91,7 +91,7 @@ namespace onmt
                                  std::vector<std::string>& chars,
                                  std::vector<code_point_t>* code_points_main,
                                  std::vector<std::vector<code_point_t>>* code_points_combining,
-                                 const std::vector<std::string>* protected_chars)
+                                 const std::vector<code_point_t>* protected_chars)
     {
       const char* c_str = str.c_str();
 
@@ -111,7 +111,7 @@ namespace onmt
             || (protected_chars
                 && std::find(protected_chars->begin(),
                              protected_chars->end(),
-                             chars.back()) != protected_chars->end()))
+                             code_points_main->back()) != protected_chars->end()))
         {
           if (code_points_main)
             code_points_main->emplace_back(code_point);

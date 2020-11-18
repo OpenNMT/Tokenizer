@@ -25,7 +25,7 @@ namespace onmt
                             std::vector<std::string>& chars,
                             std::vector<code_point_t>* code_points_main = nullptr,
                             std::vector<std::vector<code_point_t>>* code_points_combining = nullptr,
-                            const std::vector<std::string>* protected_chars = nullptr);
+                            const std::vector<code_point_t>* protected_chars = nullptr);
 
     OPENNMTTOKENIZER_EXPORT size_t utf8len(const std::string& str);
 
