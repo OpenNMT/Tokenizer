@@ -31,6 +31,9 @@ namespace onmt
     {0xFF1A /* ： */, ":"},
   };
 
+  static const int placeholder_alphabet = -2;
+  static const int number_alphabet = -3;
+
   Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
     if (mode == "conservative")
       return Mode::Conservative;

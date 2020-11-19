@@ -115,9 +115,6 @@ namespace onmt
     }
 
   private:
-    static const int placeholder_alphabet = -2;
-    static const int number_alphabet = -3;
-
     Options _options;
     std::shared_ptr<const SubwordEncoder> _subword_encoder;
 
