@@ -1,9 +1,14 @@
 #pragma once
 
 #include "onmt/Token.h"
+#include "onmt/unicode/Unicode.h"
 
 namespace onmt
 {
+
+  Casing update_casing(Casing current_casing,
+                       unicode::CaseType letter_case,
+                       size_t letter_index);
 
   std::pair<std::string, Casing> lowercase_token(const std::string& token);
   std::string restore_token_casing(const std::string& token, Casing casing);

@@ -608,9 +608,6 @@ namespace onmt
                                        &exclude_combining);
 
       Token token;
-
-      bool uppercase = false;
-      bool uppercase_sequence = false;
       int state = State::Space;
       int prev_alphabet = -1;
 
@@ -704,8 +701,6 @@ namespace onmt
             }
           }
 
-          uppercase = false;
-          uppercase_sequence = false;
           state = State::Space;
         }
         else
@@ -741,6 +736,10 @@ namespace onmt
             if (is_letter && _options.mode != Mode::Char)
             {
               const unicode::CaseType case_type = unicode::get_case_v2(v);
+              const Casing new_casing = update_casing(token.casing,
+                                                      case_type,
+                                                      token.unicode_length());
+
               bool segment_case = false;
               bool segment_alphabet = false;
               bool segment_alphabet_change = false;
@@ -752,10 +751,9 @@ namespace onmt
                                                 != _options.segment_alphabet_codes.end())))
                        || (segment_alphabet_change = (prev_alphabet != alphabet
                                                       && _options.segment_alphabet_change))
-                       || (prev_alphabet == placeholder_alphabet
-                           || (_options.segment_case && (segment_case = (letter
-                               && ((case_type == unicode::CaseType::Upper && !uppercase)
-                                   || (case_type == unicode::CaseType::Lower && uppercase_sequence)))))))))
+                       || (prev_alphabet == placeholder_alphabet)
+                       || (_options.segment_case
+                           && (segment_case = (new_casing == Casing::Mixed))))))
               {
                 token.join_right = true;
                 if (_options.preserve_segmented_tokens
@@ -763,17 +761,13 @@ namespace onmt
                   token.preserve = true;
                 annotated_tokens.emplace_back(std::move(token));
                 token = Token();
-                uppercase = (case_type == unicode::CaseType::Upper);
-                uppercase_sequence = false;
+                token.casing = update_casing(token.casing, case_type, 0);
               }
-              else if (other && token.empty())
+              else
               {
-                annotated_tokens.back().join_right = true;
-                uppercase = (case_type == unicode::CaseType::Upper);
-                uppercase_sequence = false;
-              } else {
-                uppercase_sequence = (case_type == unicode::CaseType::Upper) & uppercase;
-                uppercase = (case_type == unicode::CaseType::Upper);
+                token.casing = new_casing;
+                if (other && token.empty())
+                  annotated_tokens.back().join_right = true;
               }
 
               token.append(sub_c);
@@ -800,8 +794,6 @@ namespace onmt
               }
 
               token.append(sub_c);
-              uppercase = false;
-              uppercase_sequence = false;
               state = State::Number;
             }
             else
@@ -825,8 +817,6 @@ namespace onmt
 
               annotated_tokens.emplace_back(std::move(token));
               token = Token();
-              uppercase = false;
-              uppercase_sequence = false;
               state = State::Other | State::Space;
             }
           }

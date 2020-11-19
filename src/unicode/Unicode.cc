@@ -132,8 +132,11 @@ namespace onmt
 
     size_t utf8len(const std::string& str)
     {
-      icu::UnicodeString uni_str(str.c_str(), str.length());
-      return uni_str.length();
+      const auto* c_str = reinterpret_cast<const unsigned char*>(str.c_str());
+      size_t length = 0;
+      for (unsigned int char_size = 0; *c_str; ++length, c_str += char_size)
+        utf8_to_cp(c_str, char_size);
+      return length;
     }
 
     bool is_separator(code_point_t u)

@@ -3,7 +3,6 @@
 #include <algorithm>
 
 #include "onmt/Tokenizer.h"
-#include "onmt/unicode/Unicode.h"
 #include "Utils.h"
 
 namespace onmt
@@ -13,9 +12,9 @@ namespace onmt
   static const std::string case_markup_begin_prefix = "mrk_begin_case_region_";
   static const std::string case_markup_end_prefix = "mrk_end_case_region_";
 
-  static inline Casing update_casing(Casing current_casing,
-                                     unicode::CaseType letter_case,
-                                     size_t letter_index)
+  Casing update_casing(Casing current_casing,
+                       unicode::CaseType letter_case,
+                       size_t letter_index)
   {
     switch (current_casing)
     {
