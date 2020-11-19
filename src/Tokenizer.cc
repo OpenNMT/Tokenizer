@@ -14,8 +14,8 @@ namespace onmt
     set_random_generator_seed(seed);
   }
 
-  const std::string Tokenizer::joiner_marker("￭");
-  const std::string Tokenizer::spacer_marker("▁");
+  const std::string Tokenizer::joiner_marker = "￭";
+  const std::string Tokenizer::spacer_marker = "▁";
   const std::string Tokenizer::ph_marker_open = "｟";
   const std::string Tokenizer::ph_marker_close = "｠";
   static const unicode::code_point_t ph_marker_open_cp = 0xFF5F;
