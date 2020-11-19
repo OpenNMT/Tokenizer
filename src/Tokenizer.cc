@@ -669,13 +669,12 @@ namespace onmt
         }
         else if (v == ph_marker_open_cp) {
           if (!space) {
-            Token next_token;
-            if ((letter && prev_alphabet != placeholder_alphabet) || number)
-              next_token.join_left = true;
-            else
-              token.join_right = true;
             annotated_tokens.emplace_back(std::move(token));
-            std::swap(token, next_token);
+            token = Token();
+            if ((letter && prev_alphabet != placeholder_alphabet) || number)
+              token.join_left = true;
+            else
+              annotated_tokens.back().join_right = true;
           } else if (other && token.empty()) {
             annotated_tokens.back().join_right = true;
           }
@@ -787,15 +786,14 @@ namespace onmt
             {
               if (letter || (number && _options.segment_numbers) || (!number && !space))
               {
-                Token next_token;
-                if (!letter || prev_alphabet == placeholder_alphabet)
-                  token.join_right = true;
-                else
-                  next_token.join_left = true;
                 if (_options.preserve_segmented_tokens && number && _options.segment_numbers)
                   token.preserve = true;
                 annotated_tokens.emplace_back(std::move(token));
-                std::swap(token, next_token);
+                token = Token();
+                if (!letter || prev_alphabet == placeholder_alphabet)
+                  annotated_tokens.back().join_right = true;
+                else
+                  token.join_left = true;
               }
               else if (other)
               {
