@@ -55,6 +55,12 @@ namespace onmt
       Options(Mode mode, int legacy_flags, const std::string& joiner = joiner_marker);
 
       void validate();
+
+    private:
+      bool add_alphabet_to_segment(const std::string& alphabet);
+      std::unordered_set<int> segment_alphabet_codes;
+
+      friend class Tokenizer;
     };
 
     static const std::string joiner_marker;

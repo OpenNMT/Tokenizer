@@ -111,10 +111,20 @@ namespace onmt
 
     for (const std::string& alphabet : segment_alphabet)
     {
-      if (unicode::get_script_code(alphabet.c_str()) < 0)
+      if (!add_alphabet_to_segment(alphabet))
         throw std::invalid_argument("invalid Unicode script: " + alphabet);
     }
   }
+
+  bool Tokenizer::Options::add_alphabet_to_segment(const std::string& alphabet)
+  {
+    const int code = unicode::get_script_code(alphabet.c_str());
+    if (code < 0)
+      return false;
+    segment_alphabet_codes.emplace(code);
+    return true;
+  }
+
 
   Tokenizer::Tokenizer(Options options,
                        const std::shared_ptr<const SubwordEncoder>& subword_encoder)
@@ -601,10 +611,6 @@ namespace onmt
       int state = State::Space;
       int prev_alphabet = -1;
 
-      std::unordered_set<int> alphabet_to_segment;
-      for (const std::string& alphabet : _options.segment_alphabet)
-        alphabet_to_segment.insert(unicode::get_script_code(alphabet.c_str()));
-
       for (size_t i = 0; i < chars.size(); ++i)
       {
         const bool letter = state & State::Letter;
@@ -739,8 +745,8 @@ namespace onmt
                   || (letter &&
                       ((segment_alphabet = (prev_alphabet == alphabet
                                             && alphabet >= 0
-                                            && (alphabet_to_segment.find(alphabet)
-                                                != alphabet_to_segment.end())))
+                                            && (_options.segment_alphabet_codes.find(alphabet)
+                                                != _options.segment_alphabet_codes.end())))
                        || (segment_alphabet_change = (prev_alphabet != alphabet
                                                       && _options.segment_alphabet_change))
                        || (prev_alphabet == placeholder_alphabet
@@ -941,10 +947,7 @@ namespace onmt
 
   bool Tokenizer::add_alphabet_to_segment(const std::string& alphabet)
   {
-    if (unicode::get_script_code(alphabet.c_str()) < 0)
-      return false;
-    _options.segment_alphabet.push_back(alphabet);
-    return true;
+    return _options.add_alphabet_to_segment(alphabet);
   }
 
   bool Tokenizer::is_placeholder(const std::string& str)
