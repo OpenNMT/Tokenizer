@@ -12,7 +12,7 @@ By default, the Tokenizer applies a simple tokenization based on Unicode types. 
 * **Subword tokenization**<br/>Support for training and using BPE and SentencePiece models.
 * **Advanced text segmentation**<br/>Split digits, segment on case or alphabet change, segment each character of selected alphabets, etc.
 * **Case management**<br/>Lowercase text and return case information as a separate feature or inject case modifier tokens.
-* **Protected sequences**<br/>Sequences can be protected against tokenization with the special characters "｟" and "｠".
+* **Protected sequences**<br/>Sequences can be protected against tokenization with the special characters ｟ and ｠.
 
 See the [available options](docs/options.md) for an overview of supported features.
 
