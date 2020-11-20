@@ -17,5 +17,6 @@ namespace onmt
   unsigned int get_random_generator_seed();
 
   std::string int_to_hex(int i, int width = 4);
+  int hex_to_int(const std::string& str);
 
 }
