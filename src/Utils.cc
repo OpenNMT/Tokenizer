@@ -78,4 +78,13 @@ namespace onmt
     return stream.str();
   }
 
+  int hex_to_int(const std::string& str)
+  {
+    int value;
+    std::stringstream ss;
+    ss << std::hex << str;
+    ss >> value;
+    return value;
+  }
+
 }

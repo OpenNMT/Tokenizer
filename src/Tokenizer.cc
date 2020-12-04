@@ -33,6 +33,7 @@ namespace onmt
 
   static const int placeholder_alphabet = -2;
   static const int number_alphabet = -3;
+  static const int hex_value_width  = 4;
 
   Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
     if (mode == "conservative")
@@ -262,6 +263,22 @@ namespace onmt
     return merged_ranges;
   }
 
+  static inline void unescape_characters(std::string& str)
+  {
+    for (size_t offset = 0;;)
+    {
+      const size_t index = str.find(protected_character, offset);
+      if (index == std::string::npos
+          || index + protected_character.size() + hex_value_width >= str.size())
+        break;
+
+      const std::string code = str.substr(index + protected_character.size(), hex_value_width);
+      const int v = hex_to_int(code);
+      str.replace(index, protected_character.size() + hex_value_width, unicode::cp_to_utf8(v));
+      offset = index + 1;
+    }
+  }
+
   std::string Tokenizer::detokenize(const std::vector<Token>& tokens,
                                     Ranges* ranges,
                                     bool merge_ranges,
@@ -282,15 +299,7 @@ namespace onmt
       {
         if (token.casing != Casing::None)
           prep_word = restore_token_casing(prep_word, token.casing);
-
-        size_t p = prep_word.find(protected_character, 0);
-        while (p != std::string::npos && p+protected_character.size()+4 < prep_word.size()) {
-          std::string code = prep_word.substr(p+protected_character.size(), 4);
-          int v;
-          if (sscanf(code.c_str(), "%x", &v) == 1)
-            prep_word.replace(p, protected_character.size()+4, unicode::cp_to_utf8(v));
-          p = prep_word.find(protected_character, p+protected_character.size());
-        }
+        unescape_characters(prep_word);
       }
 
       if (!prep_word.empty())
@@ -652,7 +661,7 @@ namespace onmt
             state = State::Letter;
           } else {
             if (is_separator && !_options.no_substitution) {
-              token.append(protected_character + int_to_hex(v));
+              token.append(protected_character + int_to_hex(v, hex_value_width));
             } else {
               token.append(c);
             }
@@ -811,7 +820,9 @@ namespace onmt
               }
 
               if (sub_c[0] == ' ' && !_options.no_substitution)
-                token.append(protected_character + int_to_hex(sub_c[0]) + sub_c.substr(1));
+                token.append(protected_character
+                             + int_to_hex(sub_c[0], hex_value_width)
+                             + sub_c.substr(1));
               else
                 token.append(sub_c);
 
