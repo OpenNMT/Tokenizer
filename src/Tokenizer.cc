@@ -573,28 +573,26 @@ namespace onmt
   void Tokenizer::tokenize_on_spaces(const std::string& text,
                                      std::vector<Token>& annotated_tokens) const
   {
+    std::vector<std::string> chunks = split_string(text, " ");
+    for (auto& chunk: chunks)
     {
-      std::vector<std::string> chunks = split_string(text, " ");
-      for (auto& chunk: chunks)
+      if (chunk.empty())
+        continue;
+
+      std::vector<std::string> fields = split_string(chunk, ITokenizer::feature_marker);
+      auto& token = fields[0];
+
+      std::vector<Token> sub_tokens;
+      tokenize_on_placeholders(token, sub_tokens);
+
+      for (size_t i = 1; i < fields.size(); ++i)
       {
-        if (chunk.empty())
-          continue;
-
-        std::vector<std::string> fields = split_string(chunk, ITokenizer::feature_marker);
-        auto& token = fields[0];
-
-        std::vector<Token> sub_tokens;
-        tokenize_on_placeholders(token, sub_tokens);
-
-        for (size_t i = 1; i < fields.size(); ++i)
-        {
-          // Replicate the features to each sub token.
-          for (auto& sub_token : sub_tokens)
-            sub_token.append_feature(fields[i]);
-        }
-
-        annotated_tokens.insert(annotated_tokens.end(), sub_tokens.begin(), sub_tokens.end());
+        // Replicate the features to each sub token.
+        for (auto& sub_token : sub_tokens)
+          sub_token.append_feature(fields[i]);
       }
+
+      annotated_tokens.insert(annotated_tokens.end(), sub_tokens.begin(), sub_tokens.end());
     }
   }
 
@@ -605,236 +603,233 @@ namespace onmt
     // TODO: this method has grown big and is hard to follow. It should be refactored into
     // smaller pieces to clarify its logic.
 
+    std::vector<std::string> chars;
+    std::vector<unicode::code_point_t> code_points_main;
+    std::vector<std::vector<unicode::code_point_t>> code_points_combining;
+
+    unicode::explode_utf8_with_marks(text,
+                                     chars,
+                                     &code_points_main,
+                                     &code_points_combining,
+                                     &exclude_combining);
+
+    Token token;
+    int state = State::Space;
+    int prev_alphabet = -1;
+
+    for (size_t i = 0; i < chars.size(); ++i)
     {
-      std::vector<std::string> chars;
-      std::vector<unicode::code_point_t> code_points_main;
-      std::vector<std::vector<unicode::code_point_t>> code_points_combining;
+      const bool letter = state & State::Letter;
+      const bool space = state & State::Space;
+      const bool number = state & State::Number;
+      const bool other = state & State::Other;
+      const bool placeholder = state & State::Placeholder;
 
-      unicode::explode_utf8_with_marks(text,
-                                       chars,
-                                       &code_points_main,
-                                       &code_points_combining,
-                                       &exclude_combining);
+      const std::string& c = chars[i];
+      const unicode::code_point_t v = code_points_main[i];
+      if (v < 32 || v == 0xFEFF)  // skip special characters and BOM
+        continue;
 
-      Token token;
-      int state = State::Space;
-      int prev_alphabet = -1;
-
-      for (size_t i = 0; i < chars.size(); ++i)
-      {
-        const bool letter = state & State::Letter;
-        const bool space = state & State::Space;
-        const bool number = state & State::Number;
-        const bool other = state & State::Other;
-        const bool placeholder = state & State::Placeholder;
-
-        const std::string& c = chars[i];
-        if (_options.support_prior_joiners && c == _options.joiner) {
-          /* it is either after a space, in that case it annotates the following word,
-             or a closed token (other & space), or a unclosed token - in that case it is a right joiner.
-            */
-          if (other) {
-            annotated_tokens.back().join_right = true;
-            continue;
-          }
-          else if (space) {
-            token.join_left = true;
-            continue;
-          } else {
-            token.join_right = true;
-            annotated_tokens.emplace_back(std::move(token));
-            token = Token();
-            state = State::Space;
-            continue;
-          }
+      if (_options.support_prior_joiners && c == _options.joiner) {
+        /* it is either after a space, in that case it annotates the following word,
+           or a closed token (other & space), or a unclosed token - in that case it is a right joiner.
+        */
+        if (other) {
+          annotated_tokens.back().join_right = true;
+          continue;
         }
-        unicode::code_point_t v = code_points_main[i];
-        unicode::code_point_t next_v = i + 1 < code_points_main.size() ? code_points_main[i + 1] : 0;
-        bool is_separator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
-
-        if (placeholder) {
-          if (v == ph_marker_close_cp) {
-            token.append(c);
-            if (_options.preserve_placeholders)
-              token.preserve = true;
-            prev_alphabet = placeholder_alphabet;
-            state = State::Letter;
-          } else {
-            if (is_separator && !_options.no_substitution) {
-              token.append(protected_character + int_to_hex(v, hex_value_width));
-            } else {
-              token.append(c);
-            }
-          }
+        else if (space) {
+          token.join_left = true;
+          continue;
+        } else {
+          token.join_right = true;
+          annotated_tokens.emplace_back(std::move(token));
+          token = Token();
+          state = State::Space;
+          continue;
         }
-        else if (v == ph_marker_open_cp) {
-          if (!space) {
-            annotated_tokens.emplace_back(std::move(token));
-            token = Token();
-            if ((letter && prev_alphabet != placeholder_alphabet) || number)
-              token.join_left = true;
-            else
-              annotated_tokens.back().join_right = true;
-          } else if (other && token.empty()) {
-            annotated_tokens.back().join_right = true;
-          }
+      }
+      unicode::code_point_t next_v = i + 1 < code_points_main.size() ? code_points_main[i + 1] : 0;
+      bool is_separator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
+
+      if (placeholder) {
+        if (v == ph_marker_close_cp) {
           token.append(c);
-          state = State::Placeholder;
+          if (_options.preserve_placeholders)
+            token.preserve = true;
+          prev_alphabet = placeholder_alphabet;
+          state = State::Letter;
+        } else {
+          if (is_separator && !_options.no_substitution) {
+            token.append(protected_character + int_to_hex(v, hex_value_width));
+          } else {
+            token.append(c);
+          }
         }
-        else if (is_separator)
+      }
+      else if (v == ph_marker_open_cp) {
+        if (!space) {
+          annotated_tokens.emplace_back(std::move(token));
+          token = Token();
+          if ((letter && prev_alphabet != placeholder_alphabet) || number)
+            token.join_left = true;
+          else
+            annotated_tokens.back().join_right = true;
+        } else if (other && token.empty()) {
+          annotated_tokens.back().join_right = true;
+        }
+        token.append(c);
+        state = State::Placeholder;
+      }
+      else if (is_separator)
+      {
+        if (!space)
+        {
+          annotated_tokens.emplace_back(std::move(token));
+          token = Token();
+        }
+
+        if (v == 0x200D) // Zero-Width joiner.
+        {
+          if (other || (number && unicode::is_letter(next_v)))
+            annotated_tokens.back().join_right = true;
+          else
+          {
+            token = Token();
+            token.join_left = true;
+          }
+        }
+        else if (_options.with_separators)
+        {
+          token.append(c);
+          if (!unicode::is_separator(next_v))
+          {
+            annotated_tokens.emplace_back(std::move(token));
+            token = Token();
+          }
+        }
+
+        state = State::Space;
+      }
+      else
+      {
+        const std::string& sub_c(_options.no_substitution ? c : normalize_character(c, v));
+        bool is_letter = unicode::is_letter(v);
+        bool is_number = !is_letter && unicode::is_number(v);
+        int alphabet = unicode::get_script(v);
+
+        if (alphabets != nullptr)
+        {
+          if (alphabet >= 0 && is_letter)
+            (*alphabets)[unicode::get_script_name(alphabet)]++;
+          else
+            (*alphabets)[is_number ? "Numeric" : "Other"]++;
+        }
+
+        if (_options.mode == Mode::Conservative)
+        {
+          if (is_number
+              || (sub_c[0] == '-' && letter)
+              || (sub_c[0] == '_')
+              || (letter && (sub_c[0] == '.' || sub_c[0] == ',') && (unicode::is_number(next_v) || unicode::is_letter(next_v))))
+          {
+            is_letter = true;
+            alphabet = number_alphabet;
+          }
+        }
+
+        if (is_letter && _options.mode != Mode::Char)
+        {
+          const unicode::CaseType case_type = unicode::get_case_v2(v);
+          const Casing new_casing = update_casing(token.casing,
+                                                  case_type,
+                                                  token.unicode_length());
+
+          bool segment_case = false;
+          bool segment_alphabet = false;
+          bool segment_alphabet_change = false;
+          if ((!letter && !space)
+              || (letter &&
+                  ((segment_alphabet = (prev_alphabet == alphabet
+                                        && alphabet >= 0
+                                        && (_options.segment_alphabet_codes.find(alphabet)
+                                            != _options.segment_alphabet_codes.end())))
+                   || (segment_alphabet_change = (prev_alphabet != alphabet
+                                                  && _options.segment_alphabet_change))
+                   || (prev_alphabet == placeholder_alphabet)
+                   || (_options.segment_case
+                       && (segment_case = (new_casing == Casing::Mixed))))))
+          {
+            token.join_right = true;
+            if (_options.preserve_segmented_tokens
+                && (segment_case || segment_alphabet || segment_alphabet_change))
+              token.preserve = true;
+            annotated_tokens.emplace_back(std::move(token));
+            token = Token();
+            token.casing = update_casing(token.casing, case_type, 0);
+          }
+          else
+          {
+            token.casing = new_casing;
+            if (other && token.empty())
+              annotated_tokens.back().join_right = true;
+          }
+
+          token.append(sub_c);
+          state = State::Letter;
+          prev_alphabet = alphabet;
+        }
+        else if (is_number && _options.mode != Mode::Char)
+        {
+          if (letter || (number && _options.segment_numbers) || (!number && !space))
+          {
+            if (_options.preserve_segmented_tokens && number && _options.segment_numbers)
+              token.preserve = true;
+            annotated_tokens.emplace_back(std::move(token));
+            token = Token();
+            if (!letter || prev_alphabet == placeholder_alphabet)
+              annotated_tokens.back().join_right = true;
+            else
+              token.join_left = true;
+          }
+          else if (other)
+          {
+            annotated_tokens.back().join_right = true;
+          }
+
+          token.append(sub_c);
+          state = State::Number;
+        }
+        else
         {
           if (!space)
           {
             annotated_tokens.emplace_back(std::move(token));
             token = Token();
+            token.join_left = true;
           }
-
-          if (v == 0x200D) // Zero-Width joiner.
+          else if (other)
           {
-            if (other || (number && unicode::is_letter(next_v)))
-              annotated_tokens.back().join_right = true;
-            else
-            {
-              token = Token();
-              token.join_left = true;
-            }
-          }
-          else if (_options.with_separators)
-          {
-            token.append(c);
-            if (!unicode::is_separator(next_v))
-            {
-              annotated_tokens.emplace_back(std::move(token));
-              token = Token();
-            }
+            token = Token();
+            token.join_left = true;
           }
 
-          state = State::Space;
-        }
-        else
-        {
-          // skip special characters and BOM
-          if (v >= 32 && v != 0xFEFF)
-          {
-            const std::string& sub_c(_options.no_substitution ? c : normalize_character(c, v));
-            bool is_letter = unicode::is_letter(v);
-            bool is_number = !is_letter && unicode::is_number(v);
-            int alphabet = unicode::get_script(v);
+          if (sub_c[0] == ' ' && !_options.no_substitution)
+            token.append(protected_character
+                         + int_to_hex(sub_c[0], hex_value_width)
+                         + sub_c.substr(1));
+          else
+            token.append(sub_c);
 
-            if (alphabets != nullptr)
-            {
-              if (alphabet >= 0 && is_letter)
-                (*alphabets)[unicode::get_script_name(alphabet)]++;
-              else
-                (*alphabets)[is_number ? "Numeric" : "Other"]++;
-            }
-
-            if (_options.mode == Mode::Conservative)
-            {
-              if (is_number
-                  || (sub_c[0] == '-' && letter)
-                  || (sub_c[0] == '_')
-                  || (letter && (sub_c[0] == '.' || sub_c[0] == ',') && (unicode::is_number(next_v) || unicode::is_letter(next_v))))
-                {
-                  is_letter = true;
-                  alphabet = number_alphabet;
-                }
-            }
-
-            if (is_letter && _options.mode != Mode::Char)
-            {
-              const unicode::CaseType case_type = unicode::get_case_v2(v);
-              const Casing new_casing = update_casing(token.casing,
-                                                      case_type,
-                                                      token.unicode_length());
-
-              bool segment_case = false;
-              bool segment_alphabet = false;
-              bool segment_alphabet_change = false;
-              if ((!letter && !space)
-                  || (letter &&
-                      ((segment_alphabet = (prev_alphabet == alphabet
-                                            && alphabet >= 0
-                                            && (_options.segment_alphabet_codes.find(alphabet)
-                                                != _options.segment_alphabet_codes.end())))
-                       || (segment_alphabet_change = (prev_alphabet != alphabet
-                                                      && _options.segment_alphabet_change))
-                       || (prev_alphabet == placeholder_alphabet)
-                       || (_options.segment_case
-                           && (segment_case = (new_casing == Casing::Mixed))))))
-              {
-                token.join_right = true;
-                if (_options.preserve_segmented_tokens
-                    && (segment_case || segment_alphabet || segment_alphabet_change))
-                  token.preserve = true;
-                annotated_tokens.emplace_back(std::move(token));
-                token = Token();
-                token.casing = update_casing(token.casing, case_type, 0);
-              }
-              else
-              {
-                token.casing = new_casing;
-                if (other && token.empty())
-                  annotated_tokens.back().join_right = true;
-              }
-
-              token.append(sub_c);
-              state = State::Letter;
-              prev_alphabet = alphabet;
-            }
-            else if (is_number && _options.mode != Mode::Char)
-            {
-              if (letter || (number && _options.segment_numbers) || (!number && !space))
-              {
-                if (_options.preserve_segmented_tokens && number && _options.segment_numbers)
-                  token.preserve = true;
-                annotated_tokens.emplace_back(std::move(token));
-                token = Token();
-                if (!letter || prev_alphabet == placeholder_alphabet)
-                  annotated_tokens.back().join_right = true;
-                else
-                  token.join_left = true;
-              }
-              else if (other)
-              {
-                annotated_tokens.back().join_right = true;
-              }
-
-              token.append(sub_c);
-              state = State::Number;
-            }
-            else
-            {
-              if (!space)
-              {
-                annotated_tokens.emplace_back(std::move(token));
-                token = Token();
-                token.join_left = true;
-              }
-              else if (other)
-              {
-                token = Token();
-                token.join_left = true;
-              }
-
-              if (sub_c[0] == ' ' && !_options.no_substitution)
-                token.append(protected_character
-                             + int_to_hex(sub_c[0], hex_value_width)
-                             + sub_c.substr(1));
-              else
-                token.append(sub_c);
-
-              annotated_tokens.emplace_back(std::move(token));
-              token = Token();
-              state = State::Other | State::Space;
-            }
-          }
+          annotated_tokens.emplace_back(std::move(token));
+          token = Token();
+          state = State::Other | State::Space;
         }
       }
-
-      if (!token.empty())
-        annotated_tokens.emplace_back(std::move(token));
     }
+
+    if (!token.empty())
+      annotated_tokens.emplace_back(std::move(token));
   }
 
   static inline void add_final_token(std::vector<std::string>& tokens,
