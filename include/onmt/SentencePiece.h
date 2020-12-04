@@ -1,15 +1,18 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "onmt/opennmttokenizer_export.h"
 #include "onmt/SubwordEncoder.h"
 
+namespace sentencepiece
+{
+  class SentencePieceProcessor;
+}
+
 namespace onmt
 {
-
-  // Use the PImpl idiom to hide the sentencepiece dependency.
-  class OPENNMTTOKENIZER_EXPORT SentencePieceProcessor;
 
   class OPENNMTTOKENIZER_EXPORT SentencePiece: public SubwordEncoder
   {
@@ -28,7 +31,7 @@ namespace onmt
     std::vector<Token> encode_and_annotate(const Token& token) const override;
 
   private:
-    SentencePieceProcessor* _processor;
+    const std::unique_ptr<sentencepiece::SentencePieceProcessor> _processor;
     int _nbest_size;
     float _alpha;
   };

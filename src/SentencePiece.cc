@@ -10,11 +10,8 @@ namespace onmt
 
   static const std::string sp_marker("▁");
 
-  class SentencePieceProcessor : public sentencepiece::SentencePieceProcessor
-  {
-  };
-
-  static void load_model(SentencePieceProcessor& processor, const std::string& model_path)
+  static inline void load_model(sentencepiece::SentencePieceProcessor& processor,
+                                const std::string& model_path)
   {
     auto status = processor.Load(model_path);
     if (!status.ok())
@@ -22,7 +19,7 @@ namespace onmt
   }
 
   SentencePiece::SentencePiece(const std::string& model_path)
-    : _processor(new SentencePieceProcessor())
+    : _processor(new sentencepiece::SentencePieceProcessor())
     , _nbest_size(0)
     , _alpha(0.0)
   {
@@ -30,17 +27,14 @@ namespace onmt
   }
 
   SentencePiece::SentencePiece(const std::string& model_path, int nbest_size, float alpha)
-    : _processor(new SentencePieceProcessor())
+    : _processor(new sentencepiece::SentencePieceProcessor())
     , _nbest_size(nbest_size)
     , _alpha(alpha)
   {
     load_model(*_processor, model_path);
   }
 
-  SentencePiece::~SentencePiece()
-  {
-    delete _processor;
-  }
+  SentencePiece::~SentencePiece() = default;
 
   void SentencePiece::update_tokenization_options(Tokenizer::Options& options) const
   {
