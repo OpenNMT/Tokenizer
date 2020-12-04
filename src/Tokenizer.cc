@@ -297,7 +297,7 @@ namespace onmt
 
       if (!token.is_placeholder())
       {
-        if (token.casing != Casing::None)
+        if (token.casing != Casing::None && token.casing != Casing::Lowercase)
           prep_word = restore_token_casing(prep_word, token.casing);
         unescape_characters(prep_word);
       }
