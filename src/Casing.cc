@@ -63,7 +63,7 @@ namespace onmt
 
     Casing current_casing = Casing::None;
     std::string new_token;
-    new_token.reserve(chars.size());
+    new_token.reserve(token.size());
 
     for (size_t i = 0, letter_index = 0; i < chars.size(); ++i)
     {
