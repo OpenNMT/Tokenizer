@@ -29,8 +29,9 @@ make -j2 install
 cd $ROOT_DIR
 
 cd bindings/python
-for PYTHON_ROOT in /opt/python/*
+for PYTHON_VERSION in cp35-cp35m cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39
 do
+    PYTHON_ROOT=/opt/python/$PYTHON_VERSION
     $PYTHON_ROOT/bin/pip install pybind11==$PYBIND11_VERSION
     $PYTHON_ROOT/bin/python setup.py bdist_wheel
     rm -r build

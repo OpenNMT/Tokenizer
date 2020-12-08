@@ -14,12 +14,6 @@
 
 namespace py = pybind11;
 
-#if PY_MAJOR_VERSION < 3
-#  define STR_TYPE py::bytes
-#else
-#  define STR_TYPE py::str
-#endif
-
 template <typename T>
 std::vector<T> to_std_vector(const py::list& list)
 {
@@ -36,15 +30,6 @@ py::list to_py_list(const std::vector<T>& vec)
   py::list list(vec.size());
   for (size_t i = 0; i < vec.size(); ++i)
     list[i] = vec[i];
-  return list;
-}
-
-template<>
-py::list to_py_list(const std::vector<std::string>& vec)
-{
-  py::list list(vec.size());
-  for (size_t i = 0; i < vec.size(); ++i)
-    list[i] = STR_TYPE(vec[i]);
   return list;
 }
 
@@ -241,13 +226,13 @@ public:
       ranges_py[index++] = py::make_tuple(pair.first, range);
     }
 
-    return py::make_tuple(STR_TYPE(text), py::dict(ranges_py));
+    return py::make_tuple(text, py::dict(ranges_py));
   }
 
-  STR_TYPE detokenize(const py::list& words, const py::object& features) const
+  std::string detokenize(const py::list& words, const py::object& features) const
   {
     if (words.size() == 0)
-      return STR_TYPE("");
+      return "";
 
     if (py::isinstance<onmt::Token>(words[0]))
       return _tokenizer->detokenize(to_std_vector<onmt::Token>(words));
