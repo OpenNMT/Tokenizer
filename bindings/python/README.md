@@ -4,6 +4,10 @@
 pip install pyonmttok
 ```
 
+**Requirements:**
+
+* Python version: >= 3.5
+
 **Table of contents**
 
 1. [Tokenization](#tokenization)

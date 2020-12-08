@@ -53,8 +53,8 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -67,6 +67,7 @@ setup(
         "Forum": "http://forum.opennmt.net/",
         "Source": "https://github.com/OpenNMT/Tokenizer/"
     },
+    python_requires=">=3.5",
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     ext_modules=[tokenizer_module]
