@@ -67,24 +67,37 @@ namespace onmt
       return split_string(str, sep);
     }
 
-    void explode_utf8(const std::string& str,
-                      std::vector<std::string>& chars,
-                      std::vector<code_point_t>& code_points)
+    template <typename Callback>
+    static inline void character_iterator(const std::string& str, const Callback& callback)
     {
       const char* c_str = str.c_str();
-
-      chars.reserve(str.length());
-      code_points.reserve(str.length());
-
       while (*c_str)
       {
         unsigned int char_size = 0;
         code_point_t code_point = utf8_to_cp(
           reinterpret_cast<const unsigned char*>(c_str), char_size);
-        code_points.push_back(code_point);
-        chars.emplace_back(c_str, char_size);
+        if (code_point == 0)  // Ignore invalid code points.
+          continue;
+        callback(c_str, char_size, code_point);
         c_str += char_size;
       }
+    }
+
+    void explode_utf8(const std::string& str,
+                      std::vector<std::string>& chars,
+                      std::vector<code_point_t>& code_points)
+    {
+      chars.reserve(str.length());
+      code_points.reserve(str.length());
+
+      const auto callback = [&chars, &code_points](const char* data,
+                                                   unsigned int length,
+                                                   code_point_t code_point) {
+        code_points.push_back(code_point);
+        chars.emplace_back(data, length);
+      };
+
+      character_iterator(str, callback);
     }
 
     void explode_utf8_with_marks(const std::string& str,
@@ -93,19 +106,15 @@ namespace onmt
                                  std::vector<std::vector<code_point_t>>* code_points_combining,
                                  const std::vector<code_point_t>* protected_chars)
     {
-      const char* c_str = str.c_str();
-
       chars.reserve(str.length());
       if (code_points_main)
         code_points_main->reserve(str.length());
       if (code_points_combining)
         code_points_combining->reserve(str.length());
 
-      while (*c_str)
-      {
-        unsigned int char_size = 0;
-        code_point_t code_point = utf8_to_cp(
-          reinterpret_cast<const unsigned char*>(c_str), char_size);
+      const auto callback = [&](const char* data,
+                                unsigned int length,
+                                code_point_t code_point) {
         if (chars.empty()
             || !is_mark(code_point)
             || (protected_chars
@@ -117,25 +126,24 @@ namespace onmt
             code_points_main->emplace_back(code_point);
           if (code_points_combining)
             code_points_combining->emplace_back();
-          chars.emplace_back(c_str, char_size);
+          chars.emplace_back(data, length);
         }
         else
         {
           if (code_points_combining)
             code_points_combining->back().push_back(code_point);
-          chars.back().append(c_str, char_size);
+          chars.back().append(data, length);
         }
-        c_str += char_size;
-      }
+      };
+
+      character_iterator(str, callback);
     }
 
 
     size_t utf8len(const std::string& str)
     {
-      const auto* c_str = reinterpret_cast<const unsigned char*>(str.c_str());
       size_t length = 0;
-      for (unsigned int char_size = 0; *c_str; ++length, c_str += char_size)
-        utf8_to_cp(c_str, char_size);
+      character_iterator(str, [&length](const char*, unsigned int, code_point_t) { ++length; });
       return length;
     }
 
