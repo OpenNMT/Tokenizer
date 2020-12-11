@@ -112,7 +112,6 @@ namespace onmt
       if (code_points_combining)
         code_points_combining->reserve(str.length());
 
-
       const auto callback = [&](const char* data,
                                 unsigned int length,
                                 code_point_t code_point) {
