@@ -680,6 +680,11 @@ TEST(TokenizerTest, PriorJoinerSupport) {
            "It is a test ￭-￭ aggressive ￭'￭ with pre￭ tokenizat ￭ions World￭ 123 ￭.");
 }
 
+TEST(TokenizerTest, PriorJoinerAndPlaceholder) {
+  Tokenizer tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SupportPriorJoiners);
+  test_tok(tokenizer, "｟a￭b｠", "｟a￭b｠");
+}
+
 TEST(TokenizerTest, CharModeSpacer) {
   Tokenizer tokenizer(Tokenizer::Mode::Char, Tokenizer::Flags::SpacerAnnotate);
   test_tok(tokenizer, "  Hello   World 123.", "H e l l o ▁W o r l d ▁1 2 3 .");

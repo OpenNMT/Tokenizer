@@ -630,25 +630,6 @@ namespace onmt
       if (v < 32 || v == 0xFEFF)  // skip special characters and BOM
         continue;
 
-      if (_options.support_prior_joiners && c == _options.joiner) {
-        /* it is either after a space, in that case it annotates the following word,
-           or a closed token (other & space), or a unclosed token - in that case it is a right joiner.
-        */
-        if (other) {
-          annotated_tokens.back().join_right = true;
-          continue;
-        }
-        else if (space) {
-          token.join_left = true;
-          continue;
-        } else {
-          token.join_right = true;
-          annotated_tokens.emplace_back(std::move(token));
-          token = Token();
-          state = State::Space;
-          continue;
-        }
-      }
       unicode::code_point_t next_v = i + 1 < code_points_main.size() ? code_points_main[i + 1] : 0;
       bool is_separator = unicode::is_separator(v) && code_points_combining[i].size() == 0;
 
@@ -710,6 +691,20 @@ namespace onmt
         }
 
         state = State::Space;
+      }
+      else if (_options.support_prior_joiners && c == _options.joiner)
+      {
+        if (other)
+          annotated_tokens.back().join_right = true;
+        else if (space)
+          token.join_left = true;
+        else
+        {
+          token.join_right = true;
+          annotated_tokens.emplace_back(std::move(token));
+          token = Token();
+          state = State::Space;
+        }
       }
       else
       {
