@@ -772,17 +772,7 @@ namespace onmt
           if (!space)
             builder.segment();
 
-          if (v == 0x200D) // Zero-Width joiner.
-          {
-            if (other || (number && next_c && next_c->char_type == unicode::CharType::Letter))
-              builder.previous().join_right = true;
-            else
-            {
-              builder.segment();
-              builder.current().join_left = true;
-            }
-          }
-          else if (_options.with_separators)
+          if (_options.with_separators)
           {
             builder.append(c);
             if (!next_c || next_c->char_type != unicode::CharType::Separator)

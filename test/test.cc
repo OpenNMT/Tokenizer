@@ -279,6 +279,11 @@ TEST(TokenizerTest, NoSubstitution) {
   test_tok(tokenizer, "｟tag：value with spaces｠", "｟tag：value with spaces｠");
 }
 
+TEST(TokenizerTest, ZeroWidthJoiner) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate);
+  test_tok_and_detok(tokenizer, "👨‍👩‍👦", "👨 ￭‍ ￭👩 ￭‍ ￭👦");
+}
+
 TEST(TokenizerTest, CombiningMark) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::JoinerAnnotate);
   test_tok_and_detok(tokenizer,
