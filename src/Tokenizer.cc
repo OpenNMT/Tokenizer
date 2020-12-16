@@ -258,7 +258,7 @@ namespace onmt
     {
       const size_t index = str.find(protected_character, offset);
       if (index == std::string::npos
-          || index + protected_character.size() + hex_value_width >= str.size())
+          || index + protected_character.size() + hex_value_width > str.size())
         break;
 
       const std::string code = str.substr(index + protected_character.size(), hex_value_width);
