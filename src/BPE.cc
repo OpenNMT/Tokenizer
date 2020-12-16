@@ -130,14 +130,36 @@ namespace onmt
     }
   }
 
+  std::vector<std::string> BPE::get_initial_pieces(const std::vector<unicode::CharInfo>& chars,
+                                                   const bool lowercase)
+  {
+    // Merge combining marks and possibly lowercase characters.
+
+    std::vector<std::string> pieces;
+    pieces.reserve(chars.size());
+
+    for (const auto& c : chars)
+    {
+      if (c.char_type == unicode::CharType::Mark)
+      {
+        if (pieces.empty())
+          pieces.emplace_back(c.data, c.length);
+        else
+          pieces.back().append(c.data, c.length);
+      }
+      else if (lowercase && c.case_type == unicode::CaseType::Upper)
+        pieces.emplace_back(unicode::cp_to_utf8(unicode::get_lower(c.value)));
+      else
+        pieces.emplace_back(c.data, c.length);
+    }
+
+    return pieces;
+  }
+
   std::vector<std::string> BPE::encode(const std::string& str) const
   {
-    std::vector<std::string> chars;
-
-    if (_case_insensitive)
-      unicode::explode_utf8_with_marks(lowercase_token(str).first, chars);
-    else
-      unicode::explode_utf8_with_marks(str, chars);
+    const auto chars_info = unicode::get_characters_info(str);
+    std::vector<std::string> chars = get_initial_pieces(chars_info, _case_insensitive);
 
     if (chars.size() == 1)
     {
@@ -184,10 +206,6 @@ namespace onmt
       std::vector<std::string> words_tc;
       words_tc.reserve(chars.size());
 
-      std::vector<std::string> chars_tc;
-      std::vector<unicode::code_point_t> code_points_tc;
-      unicode::explode_utf8(str, chars_tc, code_points_tc);
-
       for (size_t word_index = 0, char_index = 0; word_index < chars.size(); ++word_index)
       {
         // We accumulate true case characters from the original input (str) until the length
@@ -196,13 +214,15 @@ namespace onmt
         const std::string& word_lc = chars[word_index];
         std::string word_tc;
         for (size_t length_lc = 0;
-             char_index < code_points_tc.size() && length_lc < word_lc.size();
+             char_index < chars_info.size() && length_lc < word_lc.size();
              ++char_index)
         {
-          const unicode::code_point_t cp_lc = unicode::get_lower(code_points_tc[char_index]);
-          const std::string char_lc = unicode::cp_to_utf8(cp_lc);
-          length_lc += char_lc.size();
-          word_tc += chars_tc[char_index];
+          const auto& char_tc = chars_info[char_index];
+          if (char_tc.case_type == unicode::CaseType::Upper)
+            length_lc += unicode::cp_to_utf8(unicode::get_lower(char_tc.value)).size();
+          else
+            length_lc += char_tc.length;
+          word_tc.append(char_tc.data, char_tc.length);
         }
         words_tc.emplace_back(std::move(word_tc));
       }

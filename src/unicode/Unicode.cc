@@ -147,33 +147,78 @@ namespace onmt
       return length;
     }
 
+    static inline CaseType get_case_type(const int8_t category)
+    {
+      switch (category)
+      {
+      case U_LOWERCASE_LETTER:
+        return CaseType::Lower;
+      case U_UPPERCASE_LETTER:
+        return CaseType::Upper;
+      default:
+        return CaseType::None;
+      }
+    }
+
+    static inline CharType get_char_type(const int8_t category)
+    {
+      switch (category)
+      {
+      case U_SPACE_SEPARATOR:
+      case U_LINE_SEPARATOR:
+      case U_PARAGRAPH_SEPARATOR:
+        return CharType::Separator;
+
+      case U_DECIMAL_DIGIT_NUMBER:
+      case U_LETTER_NUMBER:
+      case U_OTHER_NUMBER:
+        return CharType::Number;
+
+      case U_UPPERCASE_LETTER:
+      case U_LOWERCASE_LETTER:
+      case U_TITLECASE_LETTER:
+      case U_MODIFIER_LETTER:
+      case U_OTHER_LETTER:
+        return CharType::Letter;
+
+      case U_NON_SPACING_MARK:
+      case U_ENCLOSING_MARK:
+      case U_COMBINING_SPACING_MARK:
+        return CharType::Mark;
+
+      default:
+        return CharType::Other;
+      }
+    }
+
+    CharType get_char_type(code_point_t u)
+    {
+      return get_char_type(u_charType(u));
+    }
+
     bool is_separator(code_point_t u)
     {
-      return U_GET_GC_MASK(u) & U_GC_Z_MASK;
+      return get_char_type(u) == CharType::Separator;
     }
 
     bool is_letter(code_point_t u)
     {
-      return U_GET_GC_MASK(u) & U_GC_L_MASK;
+      return get_char_type(u) == CharType::Letter;
     }
 
     bool is_number(code_point_t u)
     {
-      return U_GET_GC_MASK(u) & U_GC_N_MASK;
+      return get_char_type(u) == CharType::Number;
     }
 
     bool is_mark(code_point_t u)
     {
-      return U_GET_GC_MASK(u) & U_GC_M_MASK;
+      return get_char_type(u) == CharType::Mark;
     }
 
     CaseType get_case_v2(code_point_t u)
     {
-      if (u_islower(u))
-        return CaseType::Lower;
-      if (u_isupper(u))
-        return CaseType::Upper;
-      return CaseType::None;
+      return get_case_type(u_charType(u));
     }
 
     code_point_t get_lower(code_point_t u)
@@ -184,6 +229,24 @@ namespace onmt
     code_point_t get_upper(code_point_t u)
     {
       return u_toupper(u);
+    }
+
+    std::vector<CharInfo> get_characters_info(const std::string& str)
+    {
+      std::vector<CharInfo> chars;
+      chars.reserve(str.size());
+
+      character_iterator(
+        str,
+        [&chars](const char* data, unsigned int length, code_point_t code_point)
+        {
+          const auto category = u_charType(code_point);
+          const auto char_type = get_char_type(category);
+          const auto case_type = get_case_type(category);
+          chars.emplace_back(data, length, code_point, char_type, case_type);
+        });
+
+      return chars;
     }
 
     // The functions below are made backward compatible with the Kangxi and Kanbun script names

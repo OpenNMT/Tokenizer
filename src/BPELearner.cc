@@ -16,6 +16,7 @@ The code is converted from bpe_learn.py (https://github.com/rsennrich/subword-nm
 #include <limits>
 #include <unordered_set>
 
+#include "onmt/BPE.h"
 #include "onmt/unicode/Unicode.h"
 
 namespace onmt
@@ -260,8 +261,7 @@ namespace onmt
     for (const auto& pair : vocab) {
       const std::string& token = pair.first;
       const int frequency = pair.second;
-      sequence chars;
-      unicode::explode_utf8_with_marks(token, chars);
+      sequence chars = BPE::get_initial_pieces(unicode::get_characters_info(token));
       chars.back().append("</w>");
       char_vocab.emplace(-frequency, std::move(chars));
     }

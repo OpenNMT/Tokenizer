@@ -7,6 +7,7 @@
 
 #include "onmt/opennmttokenizer_export.h"
 #include "onmt/SubwordEncoder.h"
+#include "onmt/unicode/Unicode.h"
 
 namespace onmt
 {
@@ -33,6 +34,9 @@ namespace onmt
     {
       _dropout = dropout;
     }
+
+    static std::vector<std::string> get_initial_pieces(const std::vector<unicode::CharInfo>& chars,
+                                                       const bool lowercase = false);
 
   private:
     std::string _end_of_word;

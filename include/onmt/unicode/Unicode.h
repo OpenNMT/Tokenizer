@@ -16,19 +16,18 @@ namespace onmt
     OPENNMTTOKENIZER_EXPORT std::string cp_to_utf8(code_point_t u);
     OPENNMTTOKENIZER_EXPORT code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l);
 
-    OPENNMTTOKENIZER_EXPORT void explode_utf8(const std::string& str,
-                                              std::vector<std::string>& chars,
-                                              std::vector<code_point_t>& code_points);
-
-    OPENNMTTOKENIZER_EXPORT void
-    explode_utf8_with_marks(const std::string& str,
-                            std::vector<std::string>& chars,
-                            std::vector<code_point_t>* code_points_main = nullptr,
-                            std::vector<std::vector<code_point_t>>* code_points_combining = nullptr,
-                            const std::vector<code_point_t>* protected_chars = nullptr);
-
     OPENNMTTOKENIZER_EXPORT size_t utf8len(const std::string& str);
 
+    enum class CharType
+    {
+      Letter,
+      Mark,
+      Number,
+      Other,
+      Separator,
+    };
+
+    OPENNMTTOKENIZER_EXPORT CharType get_char_type(code_point_t u);
     OPENNMTTOKENIZER_EXPORT bool is_separator(code_point_t u);
     OPENNMTTOKENIZER_EXPORT bool is_letter(code_point_t u);
     OPENNMTTOKENIZER_EXPORT bool is_number(code_point_t u);
@@ -48,11 +47,56 @@ namespace onmt
     OPENNMTTOKENIZER_EXPORT const char* get_script_name(int script_code);
     OPENNMTTOKENIZER_EXPORT int get_script(code_point_t c);
 
+    struct OPENNMTTOKENIZER_EXPORT CharInfo
+    {
+      const char* data;
+      size_t length;
+      code_point_t value;
+      CharType char_type;
+      CaseType case_type;
+
+      CharInfo(const char* data_,
+               size_t length_,
+               code_point_t value_,
+               CharType char_type_,
+               CaseType case_type_)
+        : data(data_)
+        , length(length_)
+        , value(value_)
+        , char_type(char_type_)
+        , case_type(case_type_)
+      {
+      }
+
+      bool operator==(const std::string& str) const
+      {
+        return str.compare(0, str.size(), data, length) == 0;
+      }
+
+      bool operator==(char c) const
+      {
+        return static_cast<code_point_t>(c) == value;
+      }
+    };
+
+    OPENNMTTOKENIZER_EXPORT std::vector<CharInfo> get_characters_info(const std::string& str);
+
 
     // The symbols below are deprecated but kept for backward compatibility.
 
     OPENNMTTOKENIZER_EXPORT std::vector<std::string> split_utf8(const std::string& str,
                                                                 const std::string& sep);
+
+    OPENNMTTOKENIZER_EXPORT void explode_utf8(const std::string& str,
+                                              std::vector<std::string>& chars,
+                                              std::vector<code_point_t>& code_points);
+
+    OPENNMTTOKENIZER_EXPORT void
+    explode_utf8_with_marks(const std::string& str,
+                            std::vector<std::string>& chars,
+                            std::vector<code_point_t>* code_points_main = nullptr,
+                            std::vector<std::vector<code_point_t>>* code_points_combining = nullptr,
+                            const std::vector<code_point_t>* protected_chars = nullptr);
 
     inline void explode_utf8_with_marks(const std::string& str,
                                         std::vector<std::string>& chars,

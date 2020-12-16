@@ -145,6 +145,16 @@ TEST(TokenizerTest, NoneWithPlaceholders2) {
   test_tok(tokenizer, "Hello:｟World｠!", "Hello:￭ ｟World｠ ￭ !");
 }
 
+TEST(TokenizerTest, NonePlaceholderSpacesEscape) {
+  Tokenizer tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::None);
+  test_tok(tokenizer, "｟a b c｠", "｟a％0020b％0020c｠");
+}
+
+TEST(TokenizerTest, NonePlaceholderSpacesNoEscape) {
+  Tokenizer tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::NoSubstitution);
+  test_tok(tokenizer, "｟a b c｠", "｟a b c｠");
+}
+
 TEST(TokenizerTest, PreserveTokensInNoneMode) {
   Tokenizer tokenizer(Tokenizer::Mode::None,
                       Tokenizer::Flags::JoinerAnnotate
