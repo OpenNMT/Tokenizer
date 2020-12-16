@@ -585,7 +585,6 @@ namespace onmt
       else
         append(protected_character + int_to_hex(character.value, hex_value_width));
     }
-
   };
 
   void Tokenizer::tokenize_on_placeholders(const std::string& text,
