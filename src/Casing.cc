@@ -56,31 +56,23 @@ namespace onmt
 
   std::pair<std::string, Casing> lowercase_token(const std::string& token)
   {
-    std::vector<std::string> chars;
-    std::vector<unicode::code_point_t> code_points;
-
-    unicode::explode_utf8(token, chars, code_points);
-
     Casing current_casing = Casing::None;
+    size_t letter_index = 0;
     std::string new_token;
     new_token.reserve(token.size());
 
-    for (size_t i = 0, letter_index = 0; i < chars.size(); ++i)
+    for (const auto& c : unicode::get_characters_info(token))
     {
-      const auto& c = chars[i];
-      const auto v = code_points[i];
-
-      if (unicode::is_letter(v))
+      if (c.char_type == unicode::CharType::Letter)
       {
-        const unicode::CaseType letter_case = unicode::get_case_v2(v);
-        current_casing = update_casing(current_casing, letter_case, letter_index++);
-        if (letter_case == unicode::CaseType::Upper)
-          new_token += unicode::cp_to_utf8(unicode::get_lower(v));
+        current_casing = update_casing(current_casing, c.case_type, letter_index++);
+        if (c.case_type == unicode::CaseType::Upper)
+          new_token.append(unicode::cp_to_utf8(unicode::get_lower(c.value)));
         else
-          new_token += c;
+          new_token.append(c.data, c.length);
       }
       else
-        new_token += c;
+        new_token.append(c.data, c.length);
     }
 
     return std::make_pair(std::move(new_token), std::move(current_casing));
@@ -88,29 +80,20 @@ namespace onmt
 
   std::string restore_token_casing(const std::string& token, Casing casing)
   {
-    if (casing == Casing::Lowercase || casing == Casing::None)
+    if (token.empty() || casing == Casing::Lowercase || casing == Casing::None)
       return token;
-
-    std::vector<std::string> chars;
-    std::vector<unicode::code_point_t> code_points;
-
-    unicode::explode_utf8(token, chars, code_points);
+    if (casing == Casing::Mixed)
+      throw std::invalid_argument("Can't restore mixed casing");
 
     std::string new_token;
-    new_token.reserve(chars.size());
+    new_token.reserve(token.size());
 
-    for (size_t i = 0; i < chars.size(); ++i)
+    for (const auto& c : unicode::get_characters_info(token))
     {
-      unicode::code_point_t v = code_points[i];
-
       if (new_token.empty() || casing == Casing::Uppercase)
-      {
-        unicode::code_point_t upper = unicode::get_upper(v);
-        if (upper)
-          v = upper;
-      }
-
-      new_token += unicode::cp_to_utf8(v);
+        new_token.append(unicode::cp_to_utf8(unicode::get_upper(c.value)));
+      else
+        new_token.append(c.data, c.length);
     }
 
     return new_token;
@@ -224,10 +207,10 @@ namespace onmt
   // Returns true if token only contains numbers.
   static bool numbers_only(const std::string& token)
   {
-    std::vector<std::string> chars;
-    std::vector<unicode::code_point_t> code_points;
-    unicode::explode_utf8(token, chars, code_points);
-    return std::all_of(code_points.begin(), code_points.end(), unicode::is_number);
+    const auto chars = unicode::get_characters_info(token);
+    return std::all_of(chars.begin(), chars.end(), [](const unicode::CharInfo& c) {
+      return c.char_type == unicode::CharType::Number;
+    });
   }
 
   std::vector<TokenCaseMarkup> get_case_markups(const std::vector<Token>& tokens,

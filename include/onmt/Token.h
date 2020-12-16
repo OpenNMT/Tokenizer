@@ -42,9 +42,10 @@ namespace onmt
     {
     }
 
-    void append(const std::string& str)
+    template <typename... Args>
+    void append(Args&&... args)
     {
-      surface += str;
+      surface.append(std::forward<Args>(args)...);
     }
 
     bool empty() const
