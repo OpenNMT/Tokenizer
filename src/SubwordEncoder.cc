@@ -82,8 +82,8 @@ namespace onmt
     tokens.front().join_left = token.join_left;
     tokens.back().join_right = token.join_right;
 
-    tokens.front().preserve = token.preserve;
-    tokens.back().preserve = token.preserve;
+    tokens.front().preserve = token.join_left && token.preserve;
+    tokens.back().preserve = token.join_right && token.preserve;
 
     if (token.casing != Casing::None)
     {

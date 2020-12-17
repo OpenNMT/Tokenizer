@@ -539,8 +539,8 @@ TEST(TokenizerTest, PreserveSegmentCaseBPE) {
                       Tokenizer::Flags::SegmentCase
                       | Tokenizer::Flags::JoinerAnnotate
                       | Tokenizer::Flags::PreserveSegmentedTokens,
-                      get_data("bpe-models/testcode.v0.1"));
-  test_tok_and_detok(tokenizer, "iF", "i ￭ F");
+                      get_data("bpe-models/fr500"));
+  test_tok_and_detok(tokenizer, "BonjourMonde", "B￭ on￭ jou￭ r ￭ M￭ on￭ de");
 }
 
 TEST(TokenizerTest, BPEBasic) {

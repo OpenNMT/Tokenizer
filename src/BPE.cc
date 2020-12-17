@@ -245,14 +245,14 @@ namespace onmt
       if (j == 0)
       {
         subword.join_left = token.join_left;
-        subword.preserve = token.preserve;
+        subword.preserve = token.join_left && token.preserve;
       }
       if (j + 1 < encoded.size())
         subword.join_right = true;
       else
       {
         subword.join_right = token.join_right;
-        subword.preserve = token.preserve;
+        subword.preserve = token.join_right && token.preserve;
       }
       tokens.emplace_back(std::move(subword));
     }
