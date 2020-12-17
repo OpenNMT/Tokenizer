@@ -282,7 +282,7 @@ namespace onmt
       return uscript_getName(static_cast<UScriptCode>(script_code));
     }
 
-    int get_script(code_point_t c)
+    int get_script(code_point_t c, int previous_script)
     {
       for (const auto& pair : compat_scripts)
       {
@@ -292,7 +292,28 @@ namespace onmt
       }
 
       UErrorCode error = U_ZERO_ERROR;
-      return static_cast<int>(uscript_getScript(c, &error));
+      UScriptCode code = uscript_getScript(c, &error);
+
+      switch (code)
+      {
+      case USCRIPT_INHERITED:
+        return previous_script;
+      case USCRIPT_COMMON:
+      {
+        // For common characters, we return previous_script if it is included in
+        // their script extensions.
+        UScriptCode extensions[USCRIPT_CODE_LIMIT];
+        int num_extensions = uscript_getScriptExtensions(c, extensions, USCRIPT_CODE_LIMIT, &error);
+        for (int i = 0; i < num_extensions; ++i)
+        {
+          if (extensions[i] == previous_script)
+            return previous_script;
+        }
+        return extensions[0];
+      }
+      default:
+        return code;
+      }
     }
 
   }
