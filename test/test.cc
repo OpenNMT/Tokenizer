@@ -501,6 +501,13 @@ TEST(TokenizerTest, SegmentAlphabetChange) {
   test_tok(tokenizer, "rawБ", "raw Б");
 }
 
+TEST(TokenizerTest, SegmentAlphabetChangeCommonScript) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::SegmentAlphabetChange);
+  // Character ー can appear in both Hiragana and Katakana and should not be segmented when
+  // appearing in these contexts. See https://github.com/OpenNMT/Tokenizer/issues/210.
+  test_tok(tokenizer, "「キャント・バイ・ミー・ラヴ」", "「 キャント ・ バイ ・ ミー ・ ラヴ 」");
+}
+
 TEST(TokenizerTest, PreserveSegmentedNumbers) {
   Tokenizer tokenizer(Tokenizer::Mode::Aggressive,
                       Tokenizer::Flags::SegmentNumbers

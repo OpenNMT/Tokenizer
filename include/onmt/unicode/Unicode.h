@@ -45,7 +45,7 @@ namespace onmt
 
     OPENNMTTOKENIZER_EXPORT int get_script_code(const char* script_name);
     OPENNMTTOKENIZER_EXPORT const char* get_script_name(int script_code);
-    OPENNMTTOKENIZER_EXPORT int get_script(code_point_t c);
+    OPENNMTTOKENIZER_EXPORT int get_script(code_point_t c, int previous_script = -1);
 
     struct OPENNMTTOKENIZER_EXPORT CharInfo
     {

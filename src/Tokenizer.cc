@@ -801,14 +801,21 @@ namespace onmt
       {
         bool is_letter = c.char_type == unicode::CharType::Letter;
         bool is_number = c.char_type == unicode::CharType::Number;
-        int alphabet = unicode::get_script(v);
+
+        int alphabet = -1;
+        if (is_number)
+          alphabet = number_alphabet;
+        else if (is_letter)
+          alphabet = unicode::get_script(v, prev_alphabet);
 
         if (alphabets != nullptr)
         {
-          if (alphabet >= 0 && is_letter)
-            (*alphabets)[unicode::get_script_name(alphabet)]++;
-          else
-            (*alphabets)[is_number ? "Numeric" : "Other"]++;
+          const char* alphabet_name = "Other";
+          if (is_number)
+            alphabet_name = "Numeric";
+          else if (is_letter && alphabet >= 0)
+            alphabet_name = unicode::get_script_name(alphabet);
+          (*alphabets)[alphabet_name]++;
         }
 
         if (_options.mode == Mode::Conservative)
