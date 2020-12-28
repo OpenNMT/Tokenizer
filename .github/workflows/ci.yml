@@ -68,6 +68,7 @@ jobs:
         env:
           CIBW_BEFORE_ALL: bindings/python/tools/prepare_build_environment.sh
           CIBW_BEFORE_BUILD: pip install pybind11==2.6.0
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux1
           CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
           CIBW_TEST_REQUIRES: pytest
           CIBW_SKIP: cp27-* pp* *i686
