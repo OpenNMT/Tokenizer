@@ -12,16 +12,30 @@ on:
 
 jobs:
   build-and-test-cpp:
-    runs-on: ubuntu-latest
+    name: Build and test C++ library on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
 
-      - name: Build
+      - name: Build and install
+        if: startsWith(matrix.os, 'ubuntu')
         run: |
           cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$PWD/install .
+          make install
+
+      - name: Build and install
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$PWD/install \
+            -DICU_INCLUDE_DIR=/usr/local/opt/icu4c/include \
+            -DICU_LIBRARY=/usr/local/opt/icu4c/lib/libicuuc.dylib .
           make install
 
       - name: Test
@@ -30,7 +44,12 @@ jobs:
 
 
   build-and-test-python-wheels:
-    runs-on: ubuntu-latest
+    name: Build and test Python wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v2
@@ -44,21 +63,20 @@ jobs:
 
       - name: Build wheels
         run: |
-          docker run -v $PWD:/root -w /root quay.io/pypa/manylinux1_x86_64 bash /root/bindings/python/tools/build_wheel.sh
-
-      - name: Install dependencies
-        run: |
-          python -m pip install wheelhouse/*36*.whl
-          python -m pip install pytest
-
-      - name: Test with pytest
-        run: |
-          python -m pytest bindings/python/test/test.py
+          python -m pip install cibuildwheel==1.7.2
+          python -m cibuildwheel bindings/python --output-dir wheelhouse
+        env:
+          CIBW_BEFORE_ALL: bindings/python/tools/prepare_build_environment.sh
+          CIBW_BEFORE_BUILD: pip install pybind11==2.6.0
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux1
+          CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_SKIP: cp27-* pp* *i686
 
       - name: Upload Python wheels
         uses: actions/upload-artifact@v2
         with:
-          name: python-wheels-linux
+          name: python-wheels
           path: wheelhouse
 
 
@@ -71,7 +89,7 @@ jobs:
       - name: Download Python wheels
         uses: actions/download-artifact@v2
         with:
-          name: python-wheels-linux
+          name: python-wheels
 
       - name: Publish Python wheels to PyPI
         uses: pypa/gh-action-pypi-publish@master

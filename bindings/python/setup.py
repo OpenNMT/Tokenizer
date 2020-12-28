@@ -1,7 +1,7 @@
 import os
 import sys
 
-from setuptools import setup, Extension
+from setuptools import find_packages, setup, Extension
 
 import pybind11
 
@@ -10,7 +10,7 @@ include_dirs = [pybind11.get_include()]
 library_dirs = []
 
 def _get_long_description():
-    readme_path = os.path.join(os.path.dirname(__file__), "..", "..", "README.md")
+    readme_path = "README.md"
     with open(readme_path) as readme_file:
         return readme_file.read()
 
@@ -27,13 +27,18 @@ def _maybe_add_library_root(lib_name, header_only=False):
 _maybe_add_library_root("TOKENIZER")
 
 cflags = ["-std=c++11", "-fvisibility=hidden"]
-if sys.platform == 'darwin':
-    cflags.append('-mmacosx-version-min=10.9')
+if sys.platform == "darwin":
+    cflags.append("-mmacosx-version-min=10.9")
+
+ldflags = []
+if sys.platform == "darwin":
+    ldflags.append("-Wl,-rpath,/usr/local/lib")
 
 tokenizer_module = Extension(
-    "pyonmttok",
-    sources=["Python.cc"],
+    "pyonmttok._ext",
+    sources=["pyonmttok/Python.cc"],
     extra_compile_args=cflags,
+    extra_link_args=ldflags,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
     libraries=["OpenNMTTokenizer"])
@@ -67,6 +72,7 @@ setup(
         "Forum": "http://forum.opennmt.net/",
         "Source": "https://github.com/OpenNMT/Tokenizer/"
     },
+    packages=find_packages(),
     python_requires=">=3.5",
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],

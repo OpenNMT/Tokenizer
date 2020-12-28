@@ -470,7 +470,7 @@ static ssize_t hash_token(const onmt::Token& token) {
                                  list_to_tuple(py::cast(token.features))));
 }
 
-PYBIND11_MODULE(pyonmttok, m)
+PYBIND11_MODULE(_ext, m)
 {
   m.def("is_placeholder", &onmt::Tokenizer::is_placeholder, py::arg("token"));
   m.def("set_random_seed", &onmt::set_random_seed, py::arg("seed"));
