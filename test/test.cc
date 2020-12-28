@@ -189,6 +189,11 @@ TEST(TokenizerTest, SpaceDuplicated) {
   test_tok(tokenizer, "  Hello   World ", "Hello World");
 }
 
+TEST(TokenizerTest, SpacePlaceholderSpacesEscape) {
+  Tokenizer tokenizer(Tokenizer::Mode::Space, Tokenizer::Flags::JoinerAnnotate);
+  test_tok(tokenizer, "a｟b c｠ d", "a￭ ｟b％0020c｠ d");
+}
+
 TEST(TokenizerTest, BasicJoiner) {
   Tokenizer tokenizer(Tokenizer::Mode::Aggressive, Tokenizer::Flags::JoinerAnnotate);
   test_tok_and_detok(tokenizer,
@@ -201,9 +206,14 @@ TEST(TokenizerTest, BasicJoiner) {
 
 TEST(TokenizerTest, BasicSpaceWithFeatures) {
   Tokenizer tokenizer(Tokenizer::Mode::Space, Tokenizer::Flags::CaseFeature);
-  test_tok(tokenizer,
-           "49th meeting Social and human rights questions: human rights [14 (g)]",
-           "49th￨L meeting￨L social￨C and￨L human￨L rights￨L questions:￨L human￨L rights￨L [14￨N (g)]￨L");
+  std::vector<std::string> tokens;
+  std::vector<std::vector<std::string>> features;
+  tokenizer.tokenize("Hello￨12￨AB world￨34￨CD", tokens, features);
+  EXPECT_EQ(tokens, (std::vector<std::string>{"hello", "world"}));
+  ASSERT_EQ(features.size(), 3);
+  EXPECT_EQ(features[0], (std::vector<std::string>{"12", "34"}));
+  EXPECT_EQ(features[1], (std::vector<std::string>{"AB", "CD"}));
+  EXPECT_EQ(features[2], (std::vector<std::string>{"C", "L"}));
 }
 
 TEST(TokenizerTest, ProtectedSequence) {

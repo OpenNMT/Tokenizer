@@ -466,10 +466,8 @@ namespace onmt
     switch (_options.mode)
     {
     case Mode::None:
-      tokenize_on_placeholders(text, annotated_tokens);
-      break;
     case Mode::Space:
-      tokenize_on_spaces(text, annotated_tokens);
+      tokenize_on_placeholders(text, annotated_tokens);
       break;
     default:
       tokenize_text(text, annotated_tokens, alphabets);
@@ -493,6 +491,7 @@ namespace onmt
     const bool _no_substitution;
     Token _current_token;
     size_t _current_length;
+    std::string _current_feature;
 
     void append(const char* str, const size_t length)
     {
@@ -515,7 +514,13 @@ namespace onmt
 
     ~TokensBuilder()
     {
+      flush_feature();
       segment();
+    }
+
+    size_t num_tokens() const
+    {
+      return _tokens.size();
     }
 
     bool is_new_token() const
@@ -585,6 +590,20 @@ namespace onmt
       else
         append(protected_character + int_to_hex(character.value, hex_value_width));
     }
+
+    void flush_feature()
+    {
+      if (!_current_feature.empty())
+      {
+        _current_token.append_feature(std::move(_current_feature));
+        _current_feature.clear();
+      }
+    }
+
+    void append_to_feature(const unicode::CharInfo& character)
+    {
+      _current_feature.append(character.data, character.length);
+    }
   };
 
   void Tokenizer::tokenize_on_placeholders(const std::string& text,
@@ -595,6 +614,7 @@ namespace onmt
 
     TokensBuilder builder(_options, tokens);
     bool in_placeholder = false;
+    bool in_features = false;
 
     for (size_t i = 0; i < chars.size(); ++i)
     {
@@ -608,9 +628,17 @@ namespace onmt
         {
           // Mark joint but discard character.
           if (token.empty())
-            token.join_left = true;
+          {
+            if (i > 0 && chars[i - 1].char_type == unicode::CharType::Separator)
+              token.join_left = true;
+            else if (builder.num_tokens() > 0)
+              builder.previous().join_right = true;
+          }
           else
+          {
             token.join_right = true;
+            builder.segment();
+          }
         }
         else if (v == ph_marker_open_cp)
         {
@@ -626,6 +654,28 @@ namespace onmt
 
           builder.append(c);
           in_placeholder = true;
+        }
+        else if (_options.mode == Mode::Space)
+        {
+          if (c == ITokenizer::feature_marker)
+          {
+            builder.flush_feature();
+            in_features = true;
+          }
+          else if (c.char_type == unicode::CharType::Separator)
+          {
+            builder.flush_feature();
+            builder.segment();
+            in_features = false;
+          }
+          else if (in_features)
+          {
+            builder.append_to_feature(c);
+          }
+          else
+          {
+            builder.safe_append(c);
+          }
         }
         else
         {
@@ -653,32 +703,6 @@ namespace onmt
           in_placeholder = false;
         }
       }
-    }
-  }
-
-  void Tokenizer::tokenize_on_spaces(const std::string& text,
-                                     std::vector<Token>& annotated_tokens) const
-  {
-    std::vector<std::string> chunks = split_string(text, " ");
-    for (auto& chunk: chunks)
-    {
-      if (chunk.empty())
-        continue;
-
-      std::vector<std::string> fields = split_string(chunk, ITokenizer::feature_marker);
-      auto& token = fields[0];
-
-      std::vector<Token> sub_tokens;
-      tokenize_on_placeholders(token, sub_tokens);
-
-      for (size_t i = 1; i < fields.size(); ++i)
-      {
-        // Replicate the features to each sub token.
-        for (auto& sub_token : sub_tokens)
-          sub_token.append_feature(fields[i]);
-      }
-
-      annotated_tokens.insert(annotated_tokens.end(), sub_tokens.begin(), sub_tokens.end());
     }
   }
 
