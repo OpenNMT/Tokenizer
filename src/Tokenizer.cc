@@ -34,7 +34,8 @@ namespace onmt
   static const int number_alphabet = -3;
   static const int hex_value_width  = 4;
 
-  Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode) {
+  Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode)
+  {
     if (mode == "conservative")
       return Mode::Conservative;
     if (mode == "aggressive")
@@ -739,23 +740,24 @@ namespace onmt
       const auto* next_c = next_index < chars.size() ? &chars[next_index] : nullptr;
       const bool has_combining_marks = (next_index != i + 1);
 
-      if (state == State::Placeholder) {
-        if (v == ph_marker_close_cp) {
+      if (state == State::Placeholder)
+      {
+        if (v == ph_marker_close_cp)
+        {
           builder.append(c);
           if (_options.preserve_placeholders)
             builder.current().preserve = true;
           prev_alphabet = placeholder_alphabet;
           state = State::Letter;
-        } else {
-          if (c.char_type == unicode::CharType::Separator) {
-            builder.escape_append(c);
-          } else {
-            builder.append(c);
-          }
         }
+        else if (c.char_type == unicode::CharType::Separator)
+          builder.escape_append(c);
+        else
+          builder.append(c);
       }
 
-      else if (v == ph_marker_open_cp) {
+      else if (v == ph_marker_open_cp)
+      {
         if (state == State::Other)
         {
           if (builder.is_new_token())
@@ -1047,7 +1049,8 @@ namespace onmt
     return *this;
   }
 
-  void Tokenizer::unset_annotate() {
+  void Tokenizer::unset_annotate()
+  {
     _options.joiner_annotate = _options.spacer_annotate = false;
   }
 
