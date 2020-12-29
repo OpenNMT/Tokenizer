@@ -758,12 +758,7 @@ namespace onmt
 
       else if (v == ph_marker_open_cp)
       {
-        if (state == State::Other)
-        {
-          if (builder.is_new_token())
-            builder.previous().join_right = true;
-        }
-        else if (state != State::Space)
+        if (state != State::Space)
         {
           builder.segment();
           if ((state == State::Letter && prev_alphabet != placeholder_alphabet)
