@@ -48,13 +48,13 @@ namespace onmt
     throw std::invalid_argument("invalid tokenization mode: " + mode);
   }
 
-  enum State
+  enum class State
   {
-    Letter = 1 << 0,
-    Number = 1 << 1,
-    Space = 1 << 2,
-    Other = 1 << 3,
-    Placeholder = 1 << 4
+    Letter,
+    Number,
+    Space,
+    Other,
+    Placeholder,
   };
 
 
@@ -725,17 +725,11 @@ namespace onmt
     const auto chars = unicode::get_characters_info(text);
 
     TokensBuilder builder(_options, annotated_tokens);
-    int state = State::Space;
+    State state = State::Space;
     int prev_alphabet = -1;
 
     for (size_t i = 0; i < chars.size(); ++i)
     {
-      const bool letter = state & State::Letter;
-      const bool space = state & State::Space;
-      const bool number = state & State::Number;
-      const bool other = state & State::Other;
-      const bool placeholder = state & State::Placeholder;
-
       const auto& c = chars[i];
       const unicode::code_point_t v = c.value;
       if (v < 32 || v == 0xFEFF)  // skip special characters and BOM
@@ -745,7 +739,7 @@ namespace onmt
       const auto* next_c = next_index < chars.size() ? &chars[next_index] : nullptr;
       const bool has_combining_marks = (next_index != i + 1);
 
-      if (placeholder) {
+      if (state == State::Placeholder) {
         if (v == ph_marker_close_cp) {
           builder.append(c);
           if (_options.preserve_placeholders)
@@ -762,14 +756,19 @@ namespace onmt
       }
 
       else if (v == ph_marker_open_cp) {
-        if (!space) {
+        if (state == State::Other)
+        {
+          if (builder.is_new_token())
+            builder.previous().join_right = true;
+        }
+        else if (state != State::Space)
+        {
           builder.segment();
-          if ((letter && prev_alphabet != placeholder_alphabet) || number)
+          if ((state == State::Letter && prev_alphabet != placeholder_alphabet)
+              || state == State::Number)
             builder.current().join_left = true;
           else
             builder.previous().join_right = true;
-        } else if (other && builder.is_new_token()) {
-          builder.previous().join_right = true;
         }
         builder.append(c);
         state = State::Placeholder;
@@ -779,7 +778,7 @@ namespace onmt
       {
         if (has_combining_marks)
         {
-          if (!space || other)
+          if (state != State::Space)
           {
             builder.segment();
             builder.current().join_left = true;
@@ -789,11 +788,11 @@ namespace onmt
           builder.append(chars, i + 1, next_index);
           builder.segment();
           i = next_index - 1;
-          state = State::Other | State::Space;
+          state = State::Other;
         }
         else
         {
-          if (!space)
+          if (state != State::Space)
             builder.segment();
 
           if (_options.with_separators)
@@ -809,9 +808,9 @@ namespace onmt
 
       else if (_options.support_prior_joiners && c == _options.joiner)
       {
-        if (other)
+        if (state == State::Other)
           builder.previous().join_right = true;
-        else if (space)
+        else if (state == State::Space)
           builder.current().join_left = true;
         else
         {
@@ -845,9 +844,9 @@ namespace onmt
         if (_options.mode == Mode::Conservative)
         {
           if (is_number
-              || (c == '-' && letter)
               || (c == '_')
-              || (letter
+              || (state == State::Letter && c == '-')
+              || (state == State::Letter
                   && (c == '.' || c == ',')
                   && next_c
                   && (next_c->char_type == unicode::CharType::Number
@@ -867,8 +866,8 @@ namespace onmt
           bool segment_case = false;
           bool segment_alphabet = false;
           bool segment_alphabet_change = false;
-          if ((!letter && !space)
-              || (letter &&
+          if (state == State::Number
+              || (state == State::Letter &&
                   ((segment_alphabet = (prev_alphabet == alphabet
                                         && alphabet >= 0
                                         && (_options.segment_alphabet_codes.find(alphabet)
@@ -889,7 +888,7 @@ namespace onmt
           else
           {
             builder.current().casing = new_casing;
-            if (other && builder.is_new_token())
+            if (state == State::Other && builder.is_new_token())
               builder.previous().join_right = true;
           }
 
@@ -904,17 +903,18 @@ namespace onmt
         }
         else if (is_number && _options.mode != Mode::Char)
         {
-          if (letter || (number && _options.segment_numbers) || (!number && !space))
+          const bool segment_number = (_options.segment_numbers && state == State::Number);
+          if (state == State::Letter || segment_number)
           {
-            if (_options.preserve_segmented_tokens && number && _options.segment_numbers)
+            if (_options.preserve_segmented_tokens && segment_number)
               builder.current().preserve = true;
             builder.segment();
-            if (!letter || prev_alphabet == placeholder_alphabet)
+            if (state != State::Letter || prev_alphabet == placeholder_alphabet)
               builder.previous().join_right = true;
             else
               builder.current().join_left = true;
           }
-          else if (other)
+          else if (state == State::Other)
           {
             builder.previous().join_right = true;
           }
@@ -929,7 +929,7 @@ namespace onmt
         }
         else
         {
-          if (!space || other)
+          if (state != State::Space)
           {
             builder.segment();
             builder.current().join_left = true;
@@ -942,7 +942,7 @@ namespace onmt
             i = next_index - 1;
           }
           builder.segment();
-          state = State::Other | State::Space;
+          state = State::Other;
         }
       }
     }
