@@ -23,6 +23,24 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.23.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.23.0) (2020-12-30)
+
+### Changes
+
+* Drop Python 2 support
+
+### New features
+
+* Publish Python wheels for macOS
+
+### Fixes and improvements
+
+* Improve performance in all tokenization modes (up to 2x faster)
+* Fix missing space escaping within protected sequences in "none" and "space" tokenization modes
+* Fix a regression introduced in 1.20 where `segment_alphabet_*` options behave differently on characters that appear in multiple Unicode scripts (e.g. some Japanese characters can belong to both Hiragana and Katakana scripts and should not trigger a segmentation)
+* Fix a regression introduced in 1.21 where a joiner is incorrectly placed when using `preserve_segmented_tokens` and the word is segmented by both a `segment_*` option and BPE
+* Fix incorrect tokenization when using `support_prior_joiners` and some joiners are within protected sequences
+
 ## [v1.22.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.22.2) (2020-11-12)
 
 ### Fixes and improvements
