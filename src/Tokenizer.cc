@@ -348,10 +348,7 @@ namespace onmt
                                   const std::vector<std::vector<std::string>>& features,
                                   std::vector<Token>& tokens) const
   {
-    if (_subword_encoder)
-      tokenize(detokenize(words, features), tokens);
-    else
-      parse_tokens(words, features, tokens);
+    tokenize(detokenize(words, features), tokens);
   }
 
   void Tokenizer::parse_tokens(const std::vector<std::string>& words,

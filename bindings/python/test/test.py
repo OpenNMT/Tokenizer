@@ -296,6 +296,15 @@ def test_token_api_with_subword():
     _check_subword(tokens)
     assert serialized_tokens == tokenizer.serialize_tokens(tokens)[0]
 
+def test_token_deserialize_with_preserved_tokens():
+    tokenizer = pyonmttok.Tokenizer(
+        "conservative",
+        joiner_annotate=True,
+        segment_case=True,
+        preserve_segmented_tokens=True)
+    tokens = tokenizer.tokenize("HelloWorld", as_token_objects=True)
+    assert tokenizer.deserialize_tokens(*tokenizer.serialize_tokens(tokens)) == tokens
+
 def test_token_api_features():
     tokenizer = pyonmttok.Tokenizer("space")
     tokens = tokenizer.tokenize("a b", as_token_objects=True)
