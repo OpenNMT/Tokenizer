@@ -82,8 +82,10 @@ namespace onmt
   void SentencePieceLearner::learn(const std::string& model_path, const char*, bool verbose)
   {
     verbose = verbose || _verbose;
-    _input_stream->flush();
-    _input_stream.reset();  // Freeze the input file for training.
+    if (_input_stream) {
+      _input_stream->flush();
+      _input_stream.reset();  // Freeze the input file for training.
+    }
 
     if (!verbose)
       std::cerr.setstate(std::ios_base::failbit);
