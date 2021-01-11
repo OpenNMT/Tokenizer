@@ -16,15 +16,18 @@ namespace onmt
     SentencePieceLearner(bool verbose,
                          const std::string& opts,
                          const std::string& input_filename,
-                         bool keep_vocab = false);
+                         bool keep_vocab = false, 
+                         bool keep_input_file = false);
     SentencePieceLearner(bool verbose,
                          const std::vector<std::string>& opts,
                          const std::string& input_filename,
-                         bool keep_vocab = false);
+                         bool keep_vocab = false, 
+                         bool keep_input_file = false);
     SentencePieceLearner(bool verbose,
                          const std::unordered_map<std::string, std::string>& opts,
                          const std::string& input_filename,
-                         bool keep_vocab = false);
+                         bool keep_vocab = false, 
+                         bool keep_input_file = false);
     ~SentencePieceLearner();
 
     void set_input_filename(const std::string& filename);
@@ -40,6 +43,7 @@ namespace onmt
     std::string _input_filename;
     bool _keep_vocab;
     std::unique_ptr<std::ofstream> _input_stream;
+    bool _keep_input_file;
   };
 
 }
