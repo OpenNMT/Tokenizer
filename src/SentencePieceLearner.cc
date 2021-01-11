@@ -8,21 +8,25 @@ namespace onmt
   SentencePieceLearner::SentencePieceLearner(bool verbose,
                                              const std::string& opts,
                                              const std::string& input_filename,
-                                             bool keep_vocab)
+                                             bool keep_vocab, 
+                                             bool keep_input_file)
     : SubwordLearner(verbose)
     , _args(opts)
     , _input_filename(input_filename)
-    , _keep_vocab(keep_vocab)
+    , _keep_vocab(keep_vocab) 
+    , _keep_input_file(keep_input_file)
   {
   }
 
   SentencePieceLearner::SentencePieceLearner(bool verbose,
                                              const std::vector<std::string>& opts,
                                              const std::string& input_filename,
-                                             bool keep_vocab)
+                                             bool keep_vocab, 
+                                             bool keep_input_file)
     : SubwordLearner(verbose)
     , _input_filename(input_filename)
-    , _keep_vocab(keep_vocab)
+    , _keep_vocab(keep_vocab) 
+    , _keep_input_file(keep_input_file)
   {
     for(size_t i = 0; i < opts.size(); i += 2)
       _args += opts[i] + "=" + opts[i + 1] + " ";
@@ -31,10 +35,12 @@ namespace onmt
   SentencePieceLearner::SentencePieceLearner(bool verbose,
                                              const std::unordered_map<std::string, std::string>& opts,
                                              const std::string& input_filename,
-                                             bool keep_vocab)
+                                             bool keep_vocab, 
+                                             bool keep_input_file)
     : SubwordLearner(verbose)
     , _input_filename(input_filename)
     , _keep_vocab(keep_vocab)
+    , _keep_input_file(keep_input_file)
   {
     for (const auto& pair : opts)
       _args += " --" + pair.first + "=" + pair.second;
@@ -42,7 +48,9 @@ namespace onmt
 
   SentencePieceLearner::~SentencePieceLearner()
   {
-    remove(_input_filename.c_str());
+    if (!_keep_input_file) {
+      remove(_input_filename.c_str());
+    }
   }
 
   void SentencePieceLearner::set_input_filename(const std::string& filename)
@@ -86,7 +94,7 @@ namespace onmt
       std::cerr.clear();
 
     // Cleanup the input file.
-    remove(_input_filename.c_str());
+    if (!_keep_input_file) { remove(_input_filename.c_str()); }
 
     std::string sp_model_path = model_path + ".model";
     std::string sp_vocab_path = model_path + ".vocab";
