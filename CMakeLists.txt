@@ -20,10 +20,17 @@ endif(NOT CMAKE_BUILD_TYPE)
 option(SPM_ENABLE_SHARED "" OFF)
 option(SPM_ENABLE_TCMALLOC "" OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/sentencepiece EXCLUDE_FROM_ALL)
+
+if(MSVC)
+  set(SENTENCEPIECE_CXX_FLAGS "/w")
+else()
+  set(SENTENCEPIECE_CXX_FLAGS "-Wno-all -Wno-extra -Wno-error")
+endif()
+
 set_target_properties(
   sentencepiece-static
   sentencepiece_train-static
-  PROPERTIES COMPILE_FLAGS "-Wno-all -Wno-extra -Wno-error"
+  PROPERTIES COMPILE_FLAGS ${SENTENCEPIECE_CXX_FLAGS}
   )
 
 if(MSVC)
