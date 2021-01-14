@@ -11,7 +11,7 @@
 namespace onmt
 {
 
-  void set_random_seed(const unsigned int seed);
+  void OPENNMTTOKENIZER_EXPORT set_random_seed(const unsigned int seed);
 
   class SubwordEncoder;
 
