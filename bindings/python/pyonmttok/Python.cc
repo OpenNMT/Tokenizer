@@ -13,6 +13,7 @@
 #include <onmt/SentencePieceLearner.h>
 
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 template <typename T>
 std::vector<T> to_std_vector(const py::list& list)
@@ -149,25 +150,25 @@ public:
   py::dict get_options() const
   {
     const auto& options = _tokenizer->get_options();
-    py::dict options_dict;
-    options_dict["mode"] = onmt::Tokenizer::mode_to_str(options.mode);
-    options_dict["no_substitution"] = options.no_substitution;
-    options_dict["case_feature"] = options.case_feature;
-    options_dict["case_markup"] = options.case_markup;
-    options_dict["soft_case_regions"] = options.soft_case_regions;
-    options_dict["joiner_annotate"] = options.joiner_annotate;
-    options_dict["joiner_new"] = options.joiner_new;
-    options_dict["joiner"] = options.joiner;
-    options_dict["spacer_annotate"] = options.spacer_annotate;
-    options_dict["spacer_new"] = options.spacer_new;
-    options_dict["preserve_placeholders"] = options.preserve_placeholders;
-    options_dict["preserve_segmented_tokens"] = options.preserve_segmented_tokens;
-    options_dict["support_prior_joiners"] = options.support_prior_joiners;
-    options_dict["segment_case"] = options.segment_case;
-    options_dict["segment_numbers"] = options.segment_numbers;
-    options_dict["segment_alphabet_change"] = options.segment_alphabet_change;
-    options_dict["segment_alphabet"] = to_py_list(options.segment_alphabet);
-    return options_dict;
+    return py::dict(
+      "mode"_a=onmt::Tokenizer::mode_to_str(options.mode),
+      "no_substitution"_a=options.no_substitution,
+      "case_feature"_a=options.case_feature,
+      "case_markup"_a=options.case_markup,
+      "soft_case_regions"_a=options.soft_case_regions,
+      "joiner_annotate"_a=options.joiner_annotate,
+      "joiner_new"_a=options.joiner_new,
+      "joiner"_a=options.joiner,
+      "spacer_annotate"_a=options.spacer_annotate,
+      "spacer_new"_a=options.spacer_new,
+      "preserve_placeholders"_a=options.preserve_placeholders,
+      "preserve_segmented_tokens"_a=options.preserve_segmented_tokens,
+      "support_prior_joiners"_a=options.support_prior_joiners,
+      "segment_case"_a=options.segment_case,
+      "segment_numbers"_a=options.segment_numbers,
+      "segment_alphabet_change"_a=options.segment_alphabet_change,
+      "segment_alphabet"_a=to_py_list(options.segment_alphabet)
+      );
   }
 
   py::object tokenize(const std::string& text, const bool as_token_objects) const
