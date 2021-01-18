@@ -28,6 +28,7 @@ namespace onmt
     };
 
     static Mode str_to_mode(const std::string& mode);
+    static std::string mode_to_str(const Mode mode);
 
     // See https://github.com/OpenNMT/Tokenizer/blob/master/docs/options.md for more details.
     struct Options

@@ -26,6 +26,19 @@ def test_simple():
     detok = tokenizer.detokenize(tokens)
     assert detok == text
 
+def test_options():
+    options = {
+        "mode": "aggressive",
+        "joiner_annotate": True,
+        "joiner_new": True,
+        "joiner": "@@",
+        "segment_numbers": True,
+        "segment_alphabet": ["Han"],
+    }
+    tokenizer = pyonmttok.Tokenizer(**options)
+    for name, value in options.items():
+        assert tokenizer.options[name] == value
+
 def test_invalid_mode():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("xxx")

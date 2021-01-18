@@ -146,6 +146,30 @@ public:
                                          std::shared_ptr<const onmt::SubwordEncoder>(subword_encoder)));
   }
 
+  py::dict get_options() const
+  {
+    const auto& options = _tokenizer->get_options();
+    py::dict options_dict;
+    options_dict["mode"] = onmt::Tokenizer::mode_to_str(options.mode);
+    options_dict["no_substitution"] = options.no_substitution;
+    options_dict["case_feature"] = options.case_feature;
+    options_dict["case_markup"] = options.case_markup;
+    options_dict["soft_case_regions"] = options.soft_case_regions;
+    options_dict["joiner_annotate"] = options.joiner_annotate;
+    options_dict["joiner_new"] = options.joiner_new;
+    options_dict["joiner"] = options.joiner;
+    options_dict["spacer_annotate"] = options.spacer_annotate;
+    options_dict["spacer_new"] = options.spacer_new;
+    options_dict["preserve_placeholders"] = options.preserve_placeholders;
+    options_dict["preserve_segmented_tokens"] = options.preserve_segmented_tokens;
+    options_dict["support_prior_joiners"] = options.support_prior_joiners;
+    options_dict["segment_case"] = options.segment_case;
+    options_dict["segment_numbers"] = options.segment_numbers;
+    options_dict["segment_alphabet_change"] = options.segment_alphabet_change;
+    options_dict["segment_alphabet"] = to_py_list(options.segment_alphabet);
+    return options_dict;
+  }
+
   py::object tokenize(const std::string& text, const bool as_token_objects) const
   {
     if (as_token_objects)
@@ -570,6 +594,7 @@ PYBIND11_MODULE(_ext, m)
          py::arg("segment_alphabet_change")=false,
          py::arg("support_prior_joiners")=false,
          py::arg("segment_alphabet")=py::none())
+    .def_property_readonly("options", &TokenizerWrapper::get_options)
     .def("tokenize", &TokenizerWrapper::tokenize,
          py::arg("text"),
          py::arg("as_token_objects")=false)
