@@ -49,6 +49,24 @@ namespace onmt
     throw std::invalid_argument("invalid tokenization mode: " + mode);
   }
 
+  std::string Tokenizer::mode_to_str(const Mode mode)
+  {
+    switch (mode)
+    {
+    case Mode::Aggressive:
+      return "aggressive";
+    case Mode::Char:
+      return "char";
+    case Mode::Conservative:
+      return "conservative";
+    case Mode::None:
+      return "none";
+    case Mode::Space:
+      return "space";
+    }
+    throw std::invalid_argument("invalid tokenization mode");
+  }
+
   enum class State
   {
     Letter,

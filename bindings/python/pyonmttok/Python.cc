@@ -13,6 +13,7 @@
 #include <onmt/SentencePieceLearner.h>
 
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 template <typename T>
 std::vector<T> to_std_vector(const py::list& list)
@@ -144,6 +145,30 @@ public:
 
     _tokenizer.reset(new onmt::Tokenizer(options,
                                          std::shared_ptr<const onmt::SubwordEncoder>(subword_encoder)));
+  }
+
+  py::dict get_options() const
+  {
+    const auto& options = _tokenizer->get_options();
+    return py::dict(
+      "mode"_a=onmt::Tokenizer::mode_to_str(options.mode),
+      "no_substitution"_a=options.no_substitution,
+      "case_feature"_a=options.case_feature,
+      "case_markup"_a=options.case_markup,
+      "soft_case_regions"_a=options.soft_case_regions,
+      "joiner_annotate"_a=options.joiner_annotate,
+      "joiner_new"_a=options.joiner_new,
+      "joiner"_a=options.joiner,
+      "spacer_annotate"_a=options.spacer_annotate,
+      "spacer_new"_a=options.spacer_new,
+      "preserve_placeholders"_a=options.preserve_placeholders,
+      "preserve_segmented_tokens"_a=options.preserve_segmented_tokens,
+      "support_prior_joiners"_a=options.support_prior_joiners,
+      "segment_case"_a=options.segment_case,
+      "segment_numbers"_a=options.segment_numbers,
+      "segment_alphabet_change"_a=options.segment_alphabet_change,
+      "segment_alphabet"_a=to_py_list(options.segment_alphabet)
+      );
   }
 
   py::object tokenize(const std::string& text, const bool as_token_objects) const
@@ -570,6 +595,7 @@ PYBIND11_MODULE(_ext, m)
          py::arg("segment_alphabet_change")=false,
          py::arg("support_prior_joiners")=false,
          py::arg("segment_alphabet")=py::none())
+    .def_property_readonly("options", &TokenizerWrapper::get_options)
     .def("tokenize", &TokenizerWrapper::tokenize,
          py::arg("text"),
          py::arg("as_token_objects")=false)

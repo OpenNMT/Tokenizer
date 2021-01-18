@@ -60,6 +60,9 @@ tokenizer = pyonmttok.Tokenizer(
 
 # Copy constructor.
 tokenizer = pyonmttok.Tokenizer(tokenizer: pyonmttok.Tokenizer)
+
+# Return the tokenization options (excluding options related to subword).
+tokenizer.options
 ```
 
 See the [documentation](../../docs/options.md) for a description of each tokenization option.
