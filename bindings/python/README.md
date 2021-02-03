@@ -50,6 +50,7 @@ tokenizer = pyonmttok.Tokenizer(
     spacer_new: bool = False,
     case_feature: bool = False,
     case_markup: bool = False,
+    soft_case_regions: bool = False,
     no_substitution: bool = False,
     preserve_placeholders: bool = False,
     preserve_segmented_tokens: bool = False,
