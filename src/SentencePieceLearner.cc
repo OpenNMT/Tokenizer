@@ -8,12 +8,12 @@ namespace onmt
   SentencePieceLearner::SentencePieceLearner(bool verbose,
                                              const std::string& opts,
                                              const std::string& input_filename,
-                                             bool keep_vocab, 
+                                             bool keep_vocab,
                                              bool keep_input_file)
     : SubwordLearner(verbose)
     , _args(opts)
     , _input_filename(input_filename)
-    , _keep_vocab(keep_vocab) 
+    , _keep_vocab(keep_vocab)
     , _keep_input_file(keep_input_file)
   {
   }
@@ -21,11 +21,11 @@ namespace onmt
   SentencePieceLearner::SentencePieceLearner(bool verbose,
                                              const std::vector<std::string>& opts,
                                              const std::string& input_filename,
-                                             bool keep_vocab, 
+                                             bool keep_vocab,
                                              bool keep_input_file)
     : SubwordLearner(verbose)
     , _input_filename(input_filename)
-    , _keep_vocab(keep_vocab) 
+    , _keep_vocab(keep_vocab)
     , _keep_input_file(keep_input_file)
   {
     for(size_t i = 0; i < opts.size(); i += 2)
@@ -35,7 +35,7 @@ namespace onmt
   SentencePieceLearner::SentencePieceLearner(bool verbose,
                                              const std::unordered_map<std::string, std::string>& opts,
                                              const std::string& input_filename,
-                                             bool keep_vocab, 
+                                             bool keep_vocab,
                                              bool keep_input_file)
     : SubwordLearner(verbose)
     , _input_filename(input_filename)

@@ -32,7 +32,7 @@ namespace onmt
 
   static const int placeholder_alphabet = -2;
   static const int number_alphabet = -3;
-  static const int hex_value_width  = 4;
+  static const int hex_value_width = 4;
 
   Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode)
   {
