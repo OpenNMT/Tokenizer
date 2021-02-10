@@ -30,9 +30,13 @@ _maybe_add_library_root("TOKENIZER")
 
 cflags = ["-std=c++17", "-fvisibility=hidden"]
 ldflags = []
+package_data = {}
 if sys.platform == "darwin":
     cflags.append("-mmacosx-version-min=10.14")
     ldflags.append("-Wl,-rpath,/usr/local/lib")
+elif sys.platform == "win32":
+    cflags = ["/std:c++17", "/d2FH4-"]
+    package_data["pyonmttok"] = ["*.dll"]
 
 tokenizer_module = Extension(
     "pyonmttok._ext",
@@ -74,6 +78,7 @@ setup(
     },
     keywords="tokenization opennmt unicode bpe sentencepiece subword",
     packages=find_packages(),
+    package_data=package_data,
     python_requires=">=3.5,<3.10",
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],

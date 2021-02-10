@@ -74,17 +74,17 @@ def test_invalid_annotation():
 def test_file(tmpdir):
     input_path = str(tmpdir.join("input.txt"))
     output_path = str(tmpdir.join("output.txt"))
-    with open(input_path, "w") as input_file:
+    with open(input_path, "w", encoding="utf-8") as input_file:
         input_file.write("Hello world!")
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, joiner_new=True)
     tokenizer.tokenize_file(input_path, output_path)
     assert os.path.exists(output_path)
-    with open(output_path) as output_file:
+    with open(output_path, encoding="utf-8") as output_file:
         assert output_file.readline().strip() == "Hello world ￭ !"
     os.remove(input_path)
     tokenizer.detokenize_file(output_path, input_path)
     assert os.path.exists(input_path)
-    with open(input_path) as input_file:
+    with open(input_path, encoding="utf-8") as input_file:
         assert input_file.readline().strip() == "Hello world!"
 
 def test_invalid_files(tmpdir):
@@ -98,7 +98,7 @@ def test_invalid_files(tmpdir):
     directory.ensure(dir=True)
     directory = str(directory)
     input_file = str(tmpdir.join("input.txt"))
-    with open(input_file, "w") as f:
+    with open(input_file, "w", encoding="utf-8") as f:
         f.write("Hello world!")
     with pytest.raises(ValueError):
         tokenizer.tokenize_file(input_file, directory)
@@ -129,7 +129,7 @@ def test_sp_tokenizer():
 def test_sp_with_vocabulary(tmpdir):
     sp_model_path = os.path.join(_DATA_DIR, "sp-models", "wmtende.model")
     vocab_path = str(tmpdir.join("vocab.txt"))
-    with open(vocab_path, "w") as vocab_file:
+    with open(vocab_path, "w", encoding="utf-8") as vocab_file:
         vocab_file.write("▁Wor\n")
 
     with pytest.raises(ValueError, match="spacer_annotate"):
@@ -218,7 +218,7 @@ def test_bpe_learner(tmpdir):
     learner.ingest("hello world")
     model_path = str(tmpdir.join("bpe.model"))
     tokenizer = learner.learn(model_path)
-    with open(model_path) as model:
+    with open(model_path, encoding="utf-8") as model:
         assert model.read() == "#version: 0.2\ne l\nel l\n"
     tokens, _ = tokenizer.tokenize("hello")
     assert tokens == ["h￭", "ell￭", "o"]
@@ -231,7 +231,7 @@ def test_bpe_learner_tokens(tmpdir):
     learner.ingest_token(token)
     model_path = str(tmpdir.join("bpe.model"))
     learner.learn(model_path)
-    with open(model_path) as model:
+    with open(model_path, encoding="utf-8") as model:
         assert model.read() == "#version: 0.2\na b</w>\nc d</w>\n"
 
 @pytest.mark.parametrize("keep_vocab", [False, True])
