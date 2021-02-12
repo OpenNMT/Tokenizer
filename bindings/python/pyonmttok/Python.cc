@@ -276,7 +276,8 @@ public:
 
   void tokenize_file(const std::string& input_path,
                      const std::string& output_path,
-                     int num_threads)
+                     int num_threads,
+                     bool verbose)
   {
     std::ifstream in(input_path);
     if (!in)
@@ -285,7 +286,7 @@ public:
     if (!out)
       throw std::invalid_argument("Failed to open output file " + output_path);
     py::gil_scoped_release release;
-    _tokenizer->tokenize_stream(in, out, num_threads);
+    _tokenizer->tokenize_stream(in, out, num_threads, verbose);
   }
 
   void detokenize_file(const std::string& input_path,
@@ -606,7 +607,8 @@ PYBIND11_MODULE(_ext, m)
     .def("tokenize_file", &TokenizerWrapper::tokenize_file,
          py::arg("input_path"),
          py::arg("output_path"),
-         py::arg("num_threads")=1)
+         py::arg("num_threads")=1,
+         py::arg("verbose")=false)
     .def("detokenize", &TokenizerWrapper::detokenize,
          py::arg("tokens"), py::arg("features")=py::none())
     .def("detokenize_with_ranges", &TokenizerWrapper::detokenize_with_ranges,

@@ -43,23 +43,34 @@ namespace onmt
     }
   }
 
+  static inline void log_progress(const size_t num_processed) {
+    std::cerr << "... processed " << num_processed << " lines" << std::endl;
+  }
+
   template <typename Output, typename Function, typename Writer>
   void process_stream(const Function& function,
                       const Writer& writer,
                       std::istream& in,
                       std::ostream& out,
                       size_t num_threads,
-                      size_t buffer_size)
+                      size_t buffer_size,
+                      size_t report_every = 0)
   {
     std::string line;
+    size_t num_processed = 0;
     if (num_threads <= 1) // Fast path for sequential processing.
     {
       while (std::getline(in, line))
       {
         writer(out, function(line));
         out << '\n';
+        num_processed++;
+        if (report_every > 0 && num_processed % report_every == 0)
+          log_progress(num_processed);
       }
       out.flush();
+      if (report_every > 0)
+        log_progress(num_processed);
       return;
     }
 
@@ -80,7 +91,7 @@ namespace onmt
 
     std::queue<std::future<Output>> futures;
 
-    auto pop_results = [&writer, &futures, &out](bool blocking) {
+    auto pop_results = [&writer, &futures, &out, &num_processed, report_every](bool blocking) {
       static const auto zero_sec = std::chrono::seconds(0);
       while (!futures.empty()
              && (blocking
@@ -88,6 +99,9 @@ namespace onmt
         writer(out, futures.front().get());
         out << '\n';
         futures.pop();
+        num_processed++;
+        if (report_every > 0 && num_processed % report_every == 0)
+          log_progress(num_processed);
       }
     };
 
@@ -118,6 +132,8 @@ namespace onmt
     for (auto& worker : workers)
       worker.join();
     out.flush();
+    if (report_every > 0)
+      log_progress(num_processed);
   }
 
 
@@ -158,6 +174,7 @@ namespace onmt
   void ITokenizer::tokenize_stream(std::istream& in,
                                    std::ostream& out,
                                    size_t num_threads,
+                                   bool verbose,
                                    size_t buffer_size) const
   {
     using Result = std::pair<std::vector<std::string>, std::vector<std::vector<std::string>>>;
@@ -185,7 +202,15 @@ namespace onmt
                       }
                     }
                   };
-    process_stream<Result>(function, writer, in, out, num_threads, buffer_size);
+    if (verbose)
+      std::cerr << "Start processing..." << std::endl;
+    process_stream<Result>(function,
+                           writer,
+                           in,
+                           out,
+                           num_threads,
+                           buffer_size,
+                           verbose ? 100000 : 0);
   }
 
   void ITokenizer::detokenize_stream(std::istream& in, std::ostream& out) const
