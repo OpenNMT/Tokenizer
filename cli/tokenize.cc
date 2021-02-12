@@ -17,6 +17,8 @@ int main(int argc, char* argv[])
      cxxopts::value<int>()->default_value("1"))
     ("seed", "Random seed for reproducible tokenization",
      cxxopts::value<unsigned int>()->default_value("0"))
+    ("v,verbose", "Log tokenization progress",
+     cxxopts::value<bool>()->default_value("false"))
     ;
 
   add_tokenization_options(cmd_options);
@@ -94,6 +96,9 @@ int main(int argc, char* argv[])
   onmt::Tokenizer tokenizer(std::move(options),
                             std::shared_ptr<onmt::SubwordEncoder>(subword_encoder));
 
-  tokenizer.tokenize_stream(std::cin, std::cout, vm["num_threads"].as<int>());
+  tokenizer.tokenize_stream(std::cin,
+                            std::cout,
+                            vm["num_threads"].as<int>(),
+                            vm["verbose"].as<bool>());
   return 0;
 }

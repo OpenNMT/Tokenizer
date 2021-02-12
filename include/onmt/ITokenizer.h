@@ -42,6 +42,7 @@ namespace onmt
     virtual void tokenize_stream(std::istream& is,
                                  std::ostream& os,
                                  size_t num_threads = 1,
+                                 bool verbose = false,
                                  size_t buffer_size = 1000) const;
 
     virtual void detokenize_stream(std::istream& is, std::ostream& os) const;

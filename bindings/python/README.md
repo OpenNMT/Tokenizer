@@ -78,7 +78,12 @@ tokenizer.tokenize(text: str) -> Tuple[List[str], List[List[str]]]
 tokenizer.tokenize(text: str, as_token_objects=True) -> List[pyonmttok.Token]
 
 # Tokenize a file.
-tokenizer.tokenize_file(input_path: str, output_path: str, num_threads: int = 1)
+tokenizer.tokenize_file(
+    input_path: str,
+    output_path: str,
+    num_threads: int = 1,
+    verbose: bool = False,
+)
 ```
 
 #### Detokenization
