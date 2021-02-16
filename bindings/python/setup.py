@@ -11,27 +11,27 @@ library_dirs = []
 
 def _get_long_description():
     readme_path = "README.md"
-    with open(readme_path) as readme_file:
+    with open(readme_path, encoding="utf-8") as readme_file:
         return readme_file.read()
 
 def _maybe_add_library_root(lib_name, header_only=False):
-  if "%s_ROOT" % lib_name in os.environ:
-    root = os.environ["%s_ROOT" % lib_name]
-    include_dirs.append("%s/include" % root)
+    root = os.environ.get("%s_ROOT" % lib_name)
+    if root is None:
+        return
+    include_dirs.append(os.path.join(root, "include"))
     if not header_only:
-      lib_dir = "%s/lib64" % root
-      if not os.path.isdir(lib_dir):
-        lib_dir = "%s/lib" % root
-      library_dirs.append(lib_dir)
+        for lib_subdir in ("lib64", "lib"):
+            lib_dir = os.path.join(root, lib_subdir)
+            if os.path.isdir(lib_dir):
+                library_dirs.append(lib_dir)
+                break
 
 _maybe_add_library_root("TOKENIZER")
 
 cflags = ["-std=c++11", "-fvisibility=hidden"]
-if sys.platform == "darwin":
-    cflags.append("-mmacosx-version-min=10.9")
-
 ldflags = []
 if sys.platform == "darwin":
+    cflags.append("-mmacosx-version-min=10.9")
     ldflags.append("-Wl,-rpath,/usr/local/lib")
 
 tokenizer_module = Extension(
