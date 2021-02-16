@@ -4,8 +4,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <unicode/unistr.h>
-
 #include <onmt/Tokenizer.h>
 #include <onmt/BPE.h>
 #include <onmt/SentencePiece.h>
@@ -235,10 +233,12 @@ public:
       {
         const size_t word_index = pair.first;
         const onmt::Range& range = pair.second;
-        const icu::UnicodeString prefix(text.c_str(), range.first);
-        const icu::UnicodeString piece(text.c_str() + range.first, range.second - range.first + 1);
+        const std::string prefix(text.c_str(), range.first);
+        const std::string piece(text.c_str() + range.first, range.second - range.first + 1);
+        const size_t prefix_length = onmt::unicode::utf8len(prefix);
+        const size_t piece_length = onmt::unicode::utf8len(piece);
         unicode_ranges.emplace(word_index,
-                               onmt::Range(prefix.length(), prefix.length() + piece.length() - 1));
+                               onmt::Range(prefix_length, prefix_length + piece_length - 1));
       }
       ranges = std::move(unicode_ranges);
     }
