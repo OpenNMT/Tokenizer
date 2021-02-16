@@ -111,6 +111,12 @@ def test_segment_alphabet():
     tokens, _ = tokenizer.tokenize("測試 abc")
     assert tokens == ["測試", "abc"]
 
+def test_sp_tokenizer():
+    sp_model_path = os.path.join(_DATA_DIR, "sp-models", "wmtende.model")
+    tokenizer = pyonmttok.SentencePieceTokenizer(sp_model_path)
+    assert isinstance(tokenizer, pyonmttok.Tokenizer)
+    assert tokenizer.tokenize("Hello")[0] == ["▁H", "ello"]
+
 def test_sp_with_vocabulary(tmpdir):
     sp_model_path = os.path.join(_DATA_DIR, "sp-models", "wmtende.model")
     vocab_path = str(tmpdir.join("vocab.txt"))

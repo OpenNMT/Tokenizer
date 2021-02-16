@@ -145,6 +145,8 @@ public:
                                          std::shared_ptr<const onmt::SubwordEncoder>(subword_encoder)));
   }
 
+  virtual ~TokenizerWrapper() = default;
+
   py::dict get_options() const
   {
     const auto& options = _tokenizer->get_options();
@@ -309,6 +311,42 @@ public:
 
 private:
   std::shared_ptr<const onmt::Tokenizer> _tokenizer;
+};
+
+static onmt::Tokenizer* build_sp_tokenizer(const std::string& model_path,
+                                           const std::string& vocabulary_path,
+                                           int vocabulary_threshold,
+                                           int nbest_size,
+                                           float alpha)
+{
+  onmt::Tokenizer::Options options;
+  options.mode = onmt::Tokenizer::Mode::None;
+  options.no_substitution = true;
+  options.spacer_annotate = true;
+
+  auto* subword_encoder = new onmt::SentencePiece(model_path, nbest_size, alpha);
+  if (!vocabulary_path.empty())
+    subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold, &options);
+
+  return new onmt::Tokenizer(options,
+                             std::shared_ptr<const onmt::SubwordEncoder>(subword_encoder));
+}
+
+class SentencePieceTokenizerWrapper : public TokenizerWrapper
+{
+public:
+  SentencePieceTokenizerWrapper(const std::string& model_path,
+                                const std::string& vocabulary_path,
+                                int vocabulary_threshold,
+                                int nbest_size,
+                                float alpha)
+    : TokenizerWrapper(build_sp_tokenizer(model_path,
+                                          vocabulary_path,
+                                          vocabulary_threshold,
+                                          nbest_size,
+                                          alpha))
+  {
+  }
 };
 
 class SubwordLearnerWrapper
@@ -620,6 +658,15 @@ PYBIND11_MODULE(_ext, m)
          py::arg("output_path"))
     .def("__copy__", copy<TokenizerWrapper>)
     .def("__deepcopy__", deepcopy<TokenizerWrapper>)
+    ;
+
+  py::class_<SentencePieceTokenizerWrapper, TokenizerWrapper>(m, "SentencePieceTokenizer")
+    .def(py::init<const std::string&, const std::string&, int, int, float>(),
+         py::arg("model_path"),
+         py::arg("vocabulary_path")="",
+         py::arg("vocabulary_threshold")=0,
+         py::arg("nbest_size")=0,
+         py::arg("alpha")=0.1)
     ;
 
   py::class_<SubwordLearnerWrapper>(m, "SubwordLearner")
