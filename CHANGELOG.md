@@ -13,6 +13,7 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 * Python
   * `pyonmttok.BPELearner`
   * `pyonmttok.SentencePieceLearner`
+  * `pyonmttok.SentencePieceTokenizer`
   * `pyonmttok.Tokenizer`
 
 ---
@@ -22,6 +23,23 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 ### New features
 
 ### Fixes and improvements
+
+## [v1.24.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.24.0) (2021-02-16)
+
+### New features
+
+* Add `verbose` flag in file tokenization APIs to log progress every 100,000 lines
+* [Python] Add `options` property to `Tokenizer` instances
+* [Python] Add class `pyonmttok.SentencePieceTokenizer` to help creating a tokenizer compatible with SentencePiece
+
+### Fixes and improvements
+
+* Fix deserialization into `Token` objects that was sometimes incorrect
+* Fix Windows compilation
+* Fix Google Test integration that was sometimes installed as part of `make install`
+* [Python] Update pybind11 to 2.6.2
+* [Python] Update ICU to 66.1
+* [Python] Compile ICU with optimization flags
 
 ## [v1.23.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.23.0) (2020-12-30)
 
