@@ -59,6 +59,15 @@ tokenizer = pyonmttok.Tokenizer(
     segment_alphabet_change: bool = False,
     segment_alphabet: Optional[List[str]] = None)
 
+# SentencePiece-compatible tokenizer.
+tokenizer = pyonmttok.SentencePieceTokenizer(
+    model_path: str,
+    vocabulary_path: str = "",
+    vocabulary_threshold: int = 0,
+    nbest_size: int = 0,
+    alpha: float = 0.1,
+)
+
 # Copy constructor.
 tokenizer = pyonmttok.Tokenizer(tokenizer: pyonmttok.Tokenizer)
 
