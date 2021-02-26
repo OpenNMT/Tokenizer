@@ -176,14 +176,20 @@ public:
     if (as_token_objects)
     {
       std::vector<onmt::Token> tokens;
-      _tokenizer->tokenize(text, tokens);
+      {
+        py::gil_scoped_release release;
+        _tokenizer->tokenize(text, tokens);
+      }
       return to_py_list(tokens);
     }
 
     std::vector<std::string> words;
     std::vector<std::vector<std::string> > features;
 
-    _tokenizer->tokenize(text, words, features);
+    {
+      py::gil_scoped_release release;
+      _tokenizer->tokenize(text, words, features);
+    }
     return build_tokenization_result(words, features);
   }
 
