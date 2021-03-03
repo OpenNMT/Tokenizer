@@ -81,10 +81,18 @@ See the [documentation](../../docs/options.md) for a description of each tokeniz
 
 ```python
 # By default, tokenize returns the tokens and features.
-tokenizer.tokenize(text: str) -> Tuple[List[str], List[List[str]]]
+# When training=False, subword regularization such as BPE dropout is disabled.
+tokenizer.tokenize(
+    text: str,
+    training: bool = True,
+) -> Tuple[List[str], List[List[str]]]
 
 # The as_token_objects flag can alternatively return Token objects (see below).
-tokenizer.tokenize(text: str, as_token_objects=True) -> List[pyonmttok.Token]
+tokenizer.tokenize(
+    text: str,
+    as_token_objects=True,
+    training: bool = True,
+) -> List[pyonmttok.Token]
 
 # Tokenize a file.
 tokenizer.tokenize_file(
@@ -92,6 +100,7 @@ tokenizer.tokenize_file(
     output_path: str,
     num_threads: int = 1,
     verbose: bool = False,
+    training: bool = True,
 )
 ```
 

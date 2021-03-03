@@ -156,7 +156,7 @@ namespace onmt
     return pieces;
   }
 
-  std::vector<std::string> BPE::encode(const std::string& str) const
+  std::vector<std::string> BPE::encode(const std::string& str, bool training) const
   {
     const auto chars_info = unicode::get_characters_info(str);
     std::vector<std::string> chars = get_initial_pieces(chars_info, _case_insensitive);
@@ -182,7 +182,7 @@ namespace onmt
         chars.push_back(_end_of_word);
     }
 
-    apply_merges(chars);
+    apply_merges(chars, training);
 
     if (_prefix && starts_with(chars.front(), _begin_of_word))
     {
@@ -233,9 +233,9 @@ namespace onmt
     return chars;
   }
 
-  std::vector<Token> BPE::encode_and_annotate(const Token& token) const
+  std::vector<Token> BPE::encode_and_annotate(const Token& token, bool training) const
   {
-    std::vector<std::string> encoded = encode(token.surface);
+    std::vector<std::string> encoded = encode(token.surface, training);
     std::vector<Token> tokens;
     tokens.reserve(encoded.size());
 
@@ -273,7 +273,7 @@ namespace onmt
       return std::numeric_limits<int>::max();
   }
 
-  void BPE::apply_merges(std::vector<std::string>& chars) const
+  void BPE::apply_merges(std::vector<std::string>& chars, bool training) const
   {
     // Compute score for all pairs.
     std::vector<int> scores;
@@ -289,7 +289,7 @@ namespace onmt
 
       for (size_t i = 0; i < scores.size(); ++i)
       {
-        if (_dropout != 0)
+        if (training && _dropout != 0)
         {
           std::uniform_real_distribution<float> dist;
           const float sample = dist(get_random_generator());

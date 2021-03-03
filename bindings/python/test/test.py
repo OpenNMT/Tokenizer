@@ -178,7 +178,7 @@ def test_detok_with_ranges():
     assert ranges[0] == (0, 1)
     assert ranges[1] == (0, 1)
 
-def test_random_seed():
+def test_subword_regularization():
     pyonmttok.set_random_seed(42)
 
     tokenizer = pyonmttok.Tokenizer(
@@ -187,12 +187,14 @@ def test_random_seed():
         sp_nbest_size=10,
         sp_alpha=0.1)
     assert tokenizer.tokenize("appealing")[0] == ["▁app", "e", "al", "ing"]
+    assert tokenizer.tokenize("appealing", training=False)[0] == ["▁appealing"]
 
     tokenizer = pyonmttok.Tokenizer(
         "conservative",
         bpe_model_path=os.path.join(_DATA_DIR, "bpe-models", "testcode.v0.1"),
         bpe_dropout=0.3)
     assert tokenizer.tokenize("improvement")[0] == ["i", "m", "pr", "ove", "m", "e", "n", "t"]
+    assert tokenizer.tokenize("improvement", training=False)[0] == ["impr", "ovemen", "t"]
 
 def test_bpe_case_insensitive_issue_147():
     tokenizer = pyonmttok.Tokenizer(

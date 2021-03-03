@@ -444,35 +444,40 @@ namespace onmt
 
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
-                           std::vector<std::vector<std::string> >& features) const {
-    return tokenize(text, words, features, nullptr);
+                           std::vector<std::vector<std::string> >& features,
+                           bool training) const {
+    return tokenize(text, words, features, nullptr, training);
   }
 
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features,
-                           std::unordered_map<std::string, size_t>& alphabets) const {
-    return tokenize(text, words, features, &alphabets);
+                           std::unordered_map<std::string, size_t>& alphabets,
+                           bool training) const {
+    return tokenize(text, words, features, &alphabets, training);
   }
 
   void Tokenizer::tokenize(const std::string& text,
-                           std::vector<Token>& annotated_tokens) const {
-    return tokenize(text, annotated_tokens, nullptr);
+                           std::vector<Token>& annotated_tokens,
+                           bool training) const {
+    return tokenize(text, annotated_tokens, nullptr, training);
   }
 
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<std::string>& words,
                            std::vector<std::vector<std::string> >& features,
-                           std::unordered_map<std::string, size_t>* alphabets) const
+                           std::unordered_map<std::string, size_t>* alphabets,
+                           bool training) const
   {
     std::vector<Token> annotated_tokens;
-    tokenize(text, annotated_tokens, alphabets);
+    tokenize(text, annotated_tokens, alphabets, training);
     finalize_tokens(annotated_tokens, words, features);
   }
 
   void Tokenizer::tokenize(const std::string& text,
                            std::vector<Token>& annotated_tokens,
-                           std::unordered_map<std::string, size_t>* alphabets) const
+                           std::unordered_map<std::string, size_t>* alphabets,
+                           bool training) const
   {
     if (text.empty())
       return;
@@ -497,7 +502,7 @@ namespace onmt
     }
 
     if (_subword_encoder)
-      annotated_tokens = _subword_encoder->encode_and_annotate(annotated_tokens);
+      annotated_tokens = _subword_encoder->encode_and_annotate(annotated_tokens, training);
   }
 
   class TokensBuilder

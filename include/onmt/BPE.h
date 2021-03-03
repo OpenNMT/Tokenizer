@@ -18,8 +18,8 @@ namespace onmt
     BPE(const std::string& model_path, const float dropout = 0);
     BPE(const std::string& model_path, const std::string& joiner, const float dropout = 0);
 
-    std::vector<std::string> encode(const std::string& str) const override;
-    std::vector<Token> encode_and_annotate(const Token& token) const override;
+    std::vector<std::string> encode(const std::string& str, bool training = true) const override;
+    std::vector<Token> encode_and_annotate(const Token& token, bool training = true) const override;
 
     void set_vocabulary(const std::vector<std::string>& vocabulary,
                         const Tokenizer::Options* options = nullptr) override;
@@ -57,7 +57,7 @@ namespace onmt
     void load_model(const std::string& model_path);
 
     int get_score(const std::string& gram1, const std::string& gram2) const;
-    void apply_merges(std::vector<std::string>& chars) const;
+    void apply_merges(std::vector<std::string>& chars, bool training) const;
 
     bool in_vocabulary(const std::string& token) const;
     bool in_vocabulary(const onmt::Token& token) const;

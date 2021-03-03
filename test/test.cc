@@ -16,10 +16,11 @@ static std::string get_data(const std::string& path) {
 static void test_tok(ITokenizer& tokenizer,
                      const std::string& in,
                      const std::string& expected,
-                     bool detokenize = false) {
+                     bool detokenize = false,
+                     bool training = true) {
   std::vector<std::string> tokens;
   std::vector<std::vector<std::string>> features;
-  tokenizer.tokenize(in, tokens, features);
+  tokenizer.tokenize(in, tokens, features, training);
   EXPECT_EQ(SpaceTokenizer::get_instance().detokenize(tokens, features), expected);
   if (detokenize) {
     EXPECT_EQ(tokenizer.detokenize(tokens, features), in);
@@ -604,6 +605,7 @@ TEST(TokenizerTest, BPEDropout) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       new BPE(get_data("bpe-models/codes_suffix_case_insensitive.fr"), 1.0));
   test_tok(tokenizer, "seulement", "s e u l e m e n t");
+  test_tok(tokenizer, "seulement", "seulement", /*detokenize=*/false, /*training=*/false);
 }
 
 TEST(TokenizerTest, BPEVocabularyWithTrailingJoiner) {

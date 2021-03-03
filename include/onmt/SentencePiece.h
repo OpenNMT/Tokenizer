@@ -27,8 +27,8 @@ namespace onmt
     void reset_vocabulary() override;
     void enable_regularization(int nbest_size, float alpha);
 
-    std::vector<std::string> encode(const std::string& str) const override;
-    std::vector<Token> encode_and_annotate(const Token& token) const override;
+    std::vector<std::string> encode(const std::string& str, bool training = true) const override;
+    std::vector<Token> encode_and_annotate(const Token& token, bool training = true) const override;
 
   private:
     const std::unique_ptr<sentencepiece::SentencePieceProcessor> _processor;

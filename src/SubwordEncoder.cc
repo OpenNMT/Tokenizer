@@ -56,7 +56,8 @@ namespace onmt
   {
   }
 
-  std::vector<Token> SubwordEncoder::encode_and_annotate(const std::vector<Token>& tokens) const
+  std::vector<Token> SubwordEncoder::encode_and_annotate(const std::vector<Token>& tokens,
+                                                         bool training) const
   {
     std::vector<Token> segments;
     segments.reserve(tokens.size() * 2);
@@ -68,7 +69,7 @@ namespace onmt
         continue;
       }
 
-      std::vector<Token> sub_segments = encode_and_annotate(token);
+      std::vector<Token> sub_segments = encode_and_annotate(token, training);
       segments.insert(segments.end(),
                       std::make_move_iterator(sub_segments.begin()),
                       std::make_move_iterator(sub_segments.end()));

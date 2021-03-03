@@ -70,11 +70,11 @@ namespace onmt
     _alpha = alpha;
   }
 
-  std::vector<std::string> SentencePiece::encode(const std::string& str) const
+  std::vector<std::string> SentencePiece::encode(const std::string& str, bool training) const
   {
     std::vector<std::string> pieces;
 
-    if (_nbest_size != 0)
+    if (training && _nbest_size != 0)
       _processor->SampleEncode(str, _nbest_size, _alpha, &pieces);
     else
       _processor->Encode(str, &pieces);
@@ -82,9 +82,9 @@ namespace onmt
     return pieces;
   }
 
-  std::vector<Token> SentencePiece::encode_and_annotate(const Token& token) const
+  std::vector<Token> SentencePiece::encode_and_annotate(const Token& token, bool training) const
   {
-    std::vector<std::string> pieces = encode(token.surface);
+    std::vector<std::string> pieces = encode(token.surface, training);
 
     // SentencePiece sometimes returns no pieces for a non empty input. In this case
     // we simply return the original token.
