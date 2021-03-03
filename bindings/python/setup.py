@@ -47,12 +47,12 @@ setup(
     name="pyonmttok",
     version="1.24.0",
     license="MIT",
-    description="OpenNMT tokenization library",
+    description="Fast and customizable text tokenization library with BPE and SentencePiece support",
     long_description=_get_long_description(),
     long_description_content_type="text/markdown",
     author="OpenNMT",
     author_email="guillaume.klein@systrangroup.com",
-    url="http://opennmt.net",
+    url="https://opennmt.net",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
@@ -69,9 +69,10 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
     project_urls={
-        "Forum": "http://forum.opennmt.net/",
+        "Forum": "https://forum.opennmt.net/",
         "Source": "https://github.com/OpenNMT/Tokenizer/"
     },
+    keywords="tokenization opennmt unicode bpe sentencepiece subword",
     packages=find_packages(),
     python_requires=">=3.5",
     setup_requires=["pytest-runner"],
