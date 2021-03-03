@@ -366,7 +366,7 @@ namespace onmt
                                   const std::vector<std::vector<std::string>>& features,
                                   std::vector<Token>& tokens) const
   {
-    tokenize(detokenize(words, features), tokens);
+    tokenize(detokenize(words, features), tokens, /*training=*/false);
   }
 
   void Tokenizer::parse_tokens(const std::vector<std::string>& words,
