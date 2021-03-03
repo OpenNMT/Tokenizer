@@ -214,7 +214,10 @@ public:
     }
 
     std::vector<onmt::Token> tokens;
-    _tokenizer->annotate_tokens(words_vec, features_vec, tokens);
+    {
+      py::gil_scoped_release release;
+      _tokenizer->annotate_tokens(words_vec, features_vec, tokens);
+    }
     return to_py_list(tokens);
   }
 
