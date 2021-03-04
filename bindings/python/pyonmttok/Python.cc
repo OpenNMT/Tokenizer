@@ -14,25 +14,6 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 template <typename T>
-std::vector<T> to_std_vector(const py::list& list)
-{
-  std::vector<T> vec;
-  vec.reserve(list.size());
-  for (const auto& item : list)
-    vec.emplace_back(item.cast<T>());
-  return vec;
-}
-
-template <typename T>
-py::list to_py_list(const std::vector<T>& vec)
-{
-  py::list list(vec.size());
-  for (size_t i = 0; i < vec.size(); ++i)
-    list[i] = vec[i];
-  return list;
-}
-
-template <typename T>
 T copy(const T& v)
 {
   return v;
@@ -44,25 +25,6 @@ T deepcopy(const T& v, const py::object& dict)
   return v;
 }
 
-
-static py::tuple
-build_tokenization_result(const std::vector<std::string>& words,
-                          const std::vector<std::vector<std::string>>& features)
-{
-  py::list words_list = to_py_list(words);
-
-  if (features.empty())
-    return py::make_tuple(words_list, py::none());
-  else
-  {
-    std::vector<py::list> features_tmp;
-    features_tmp.reserve(features.size());
-    for (const auto& feature : features)
-      features_tmp.emplace_back(to_py_list(feature));
-
-    return py::make_tuple(words_list, to_py_list(features_tmp));
-  }
-}
 
 class TokenizerWrapper
 {
@@ -135,8 +97,8 @@ public:
     options.segment_case = segment_case;
     options.segment_numbers = segment_numbers;
     options.segment_alphabet_change = segment_alphabet_change;
-    if (!segment_alphabet.is(py::none()))
-      options.segment_alphabet = to_std_vector<std::string>(segment_alphabet.cast<py::list>());
+    if (!segment_alphabet.is_none())
+      options.segment_alphabet = segment_alphabet.cast<std::vector<std::string>>();
 
     if (subword_encoder && !vocabulary_path.empty())
       subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold, &options);
@@ -167,7 +129,7 @@ public:
       "segment_case"_a=options.segment_case,
       "segment_numbers"_a=options.segment_numbers,
       "segment_alphabet_change"_a=options.segment_alphabet_change,
-      "segment_alphabet"_a=to_py_list(options.segment_alphabet)
+      "segment_alphabet"_a=options.segment_alphabet
       );
   }
 
@@ -180,7 +142,7 @@ public:
         py::gil_scoped_release release;
         _tokenizer->tokenize(text, tokens);
       }
-      return to_py_list(tokens);
+      return py::cast(tokens);
     }
 
     std::vector<std::string> words;
@@ -190,35 +152,31 @@ public:
       py::gil_scoped_release release;
       _tokenizer->tokenize(text, words, features);
     }
-    return build_tokenization_result(words, features);
+
+    return py::make_tuple(py::cast(words), features.empty() ? py::none() : py::cast(features));
   }
 
-  py::tuple serialize_tokens(const py::list& tokens) const
+  py::tuple serialize_tokens(const std::vector<onmt::Token>& tokens) const
   {
-    std::vector<onmt::Token> tokens_vec = to_std_vector<onmt::Token>(tokens);
     std::vector<std::string> words;
     std::vector<std::vector<std::string>> features;
-    _tokenizer->finalize_tokens(tokens_vec, words, features);
-    return build_tokenization_result(words, features);
+    _tokenizer->finalize_tokens(tokens, words, features);
+    return py::make_tuple(py::cast(words), features.empty() ? py::none() : py::cast(features));
   }
 
-  py::list deserialize_tokens(const py::list& words, const py::object& features) const
+  std::vector<onmt::Token> deserialize_tokens(const std::vector<std::string>& words_vec,
+                                              const py::object& features) const
   {
-    std::vector<std::string> words_vec = to_std_vector<std::string>(words);
-    std::vector<std::vector<std::string>> features_vec;
-
-    if (!features.is(py::none()))
-    {
-      for (const auto& list : features)
-        features_vec.emplace_back(to_std_vector<std::string>(list.cast<py::list>()));
-    }
+    const auto features_vec = (features.is_none()
+                               ? std::vector<std::vector<std::string>>()
+                               : features.cast<std::vector<std::vector<std::string>>>());
 
     std::vector<onmt::Token> tokens;
     {
       py::gil_scoped_release release;
       _tokenizer->annotate_tokens(words_vec, features_vec, tokens);
     }
-    return to_py_list(tokens);
+    return tokens;
   }
 
   py::tuple detokenize_with_ranges(const py::list& words,
@@ -230,10 +188,10 @@ public:
     if (words.size() > 0)
     {
       if (py::isinstance<onmt::Token>(words[0]))
-        text = _tokenizer->detokenize(to_std_vector<onmt::Token>(words),
+        text = _tokenizer->detokenize(words.cast<std::vector<onmt::Token>>(),
                                       ranges, merge_ranges);
       else
-        text = _tokenizer->detokenize(to_std_vector<std::string>(words),
+        text = _tokenizer->detokenize(words.cast<std::vector<std::string>>(),
                                       ranges, merge_ranges);
     }
 
@@ -271,16 +229,12 @@ public:
       return "";
 
     if (py::isinstance<onmt::Token>(words[0]))
-      return _tokenizer->detokenize(to_std_vector<onmt::Token>(words));
+      return _tokenizer->detokenize(words.cast<std::vector<onmt::Token>>());
 
-    std::vector<std::string> words_vec = to_std_vector<std::string>(words);
-    std::vector<std::vector<std::string> > features_vec;
-
-    if (!features.is(py::none()))
-    {
-      for (const auto& list : features)
-        features_vec.emplace_back(to_std_vector<std::string>(list.cast<py::list>()));
-    }
+    const auto words_vec = words.cast<std::vector<std::string>>();
+    const auto features_vec = (features.is_none()
+                               ? std::vector<std::vector<std::string>>()
+                               : features.cast<std::vector<std::vector<std::string>>>());
 
     return _tokenizer->detokenize(words_vec, features_vec);
   }
@@ -498,8 +452,8 @@ static onmt::Token create_token(std::string surface,
   token.join_right = join_right;
   token.spacer = spacer;
   token.preserve = preserve;
-  if (!features.is(py::none()))
-    token.features = to_std_vector<std::string>(features.cast<py::list>());
+  if (!features.is_none())
+    token.features = features.cast<std::vector<std::string>>();
   return token;
 }
 
@@ -518,18 +472,11 @@ static std::string repr_token(const onmt::Token& token) {
   if (token.preserve)
     repr += ", preserve=True";
   if (token.has_features())
-    repr += ", features=" + std::string(py::repr(to_py_list(token.features)));
+    repr += ", features=" + std::string(py::repr(py::cast(token.features)));
   if (token.casing != onmt::Casing::None)
     repr += ", casing=" + std::string(py::str(py::cast(token.casing)));
   repr += ")";
   return repr;
-}
-
-static inline py::tuple list_to_tuple(py::list list) {
-  py::tuple tuple(list.size());
-  for (size_t i = 0; i < list.size(); ++i)
-    tuple[i] = list[i];
-  return tuple;
 }
 
 static ssize_t hash_token(const onmt::Token& token) {
@@ -540,7 +487,7 @@ static ssize_t hash_token(const onmt::Token& token) {
                                  token.join_right,
                                  token.spacer,
                                  token.preserve,
-                                 list_to_tuple(py::cast(token.features))));
+                                 py::tuple(py::cast(token.features))));
 }
 
 PYBIND11_MODULE(_ext, m)
