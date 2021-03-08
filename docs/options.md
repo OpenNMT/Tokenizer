@@ -88,7 +88,7 @@ Hello world !
 
 ### `case_markup` (boolean, default: `false`)
 
-Lowercase text input and inject case markups as additional tokens. This option also enables `segment_case`.
+Lowercase text input and inject case markups as additional tokens. This option also enables `segment_case` and is not compatible with the "none" and "space" tokenization modes.
 
 ```bash
 $ echo "Hello world!" | cli/tokenize --case_markup
