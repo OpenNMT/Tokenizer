@@ -107,7 +107,12 @@ namespace onmt
     if (joiner.empty())
       joiner = joiner_marker;
     if (case_markup)
+    {
+      if (mode == Tokenizer::Mode::None || mode == Tokenizer::Mode::Space)
+        throw std::invalid_argument("case_markup also enables segment_case which is not "
+                                    "compatible with 'none' and 'space' tokenization modes");
       segment_case = true;
+    }
 
     // Check options consistency.
     if (case_feature && case_markup)
