@@ -8,11 +8,19 @@ This file documents the options of the Tokenizer interface which can be used in:
 
 *The exact name format of each option may be different depending on the API used.*
 
-## Terminology
+**Terminology:**
 
-* **joiner**: special character indicating that the surrounding tokens should be merged when detokenized
-* **spacer**: special character indicating that a space should be introduced when detokenized
-* **placeholder** (or **protected sequence**): sequence of characters delimited by ｟ and ｠ that should not be segmented
+* *joiner*: special character indicating that the surrounding tokens should be merged when detokenized
+* *spacer*: special character indicating that a space should be introduced when detokenized
+* *placeholder* (or *protected sequence*): sequence of characters delimited by ｟ and ｠ that should not be segmented
+
+**Table of contents:**
+
+1. [General](#general)
+1. [Case annotation](#case-annotation)
+1. [Subword encoding](#subword-encoding)
+1. [Reversible tokenization](#reversible-tokenization)
+1. [Segmentation](#segmentation)
 
 ## General
 
@@ -45,7 +53,7 @@ It costs £2,000.
 
 **Notes:**
 
-* `space` and `none` modes are incompatible with options listed in the *Segmenting* section.
+* `space` and `none` modes are incompatible with options listed in the [Segmentation](#segmentation) section.
 * In all modes, the text is at least segmented on placeholders:
 
 ```bash
@@ -137,7 +145,9 @@ Path to the BPE model.
 
 ### `bpe_dropout` (float, default: `0`)
 
-Dropout BPE merge operations with this probability, as described in [Provilkov et al. 2019](https://www.aclweb.org/anthology/2020.acl-main.170/). To be used on training data only.
+Dropout BPE merge operations with this probability, as described in [Provilkov et al. 2019](https://www.aclweb.org/anthology/2020.acl-main.170/).
+
+Note: BPE dropout should be used on training data only. To disable BPE dropout during inference, you can set `training=False` when calling the tokenization methods.
 
 ### `sp_model_path` (string, default: `""`)
 
@@ -155,7 +165,9 @@ H ￭ello world ￭!
 
 ### `sp_nbest_size` (int, default: `0`)
 
-Number of candidates for the SentencePiece sampling API. When the value is 0, the standard SentencePiece encoding is used.
+Number of candidates for the SentencePiece sampling API, as described in [Kudo 2018](https://www.aclweb.org/anthology/P18-1007/). When the value is 0, the standard SentencePiece encoding is used.
+
+Note: Subword sampling should be used on training data only. To disable subword sampling during inference, you can set `training=False` when calling the tokenization methods.
 
 ```bash
 $ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model --sp_nbest_size 64
@@ -167,7 +179,7 @@ $ echo "Hello world!" | cli/tokenize --mode none --sp_model_path wmtende.model -
 
 ### `sp_alpha` (float, default: `0.1`)
 
-Smoothing parameter for the SentencePiece sampling API.
+Smoothing parameter for the SentencePiece sampling API, as described in [Kudo 2018](https://www.aclweb.org/anthology/P18-1007/).
 
 ### `vocabulary_path` (string, default: `""`)
 
@@ -181,6 +193,8 @@ The following line formats are accepted:
 * `<token><tab><frequency>`
 * `<token>` (the token frequency is set to 1)
 
+where `<frequency>` is a positive integer.
+
 ### `vocabulary_threshold` (int, default: `0`)
 
 When using `vocabulary_path`, any words with a frequency lower than `vocabulary_threshold` will be treated as OOV.
@@ -191,7 +205,7 @@ These options inject special characters to make the tokenization reversible.
 
 ### `joiner_annotate` (boolean, default: `false`)
 
-Mark joints with joiner characters (mutually exclusive with `spacer_annotate`). When possible, joiners are attached to the least important token.
+Mark joints with joiner characters (mutually exclusive with `spacer_annotate`).
 
 ```bash
 $ echo "Hello World!" | cli/tokenize --joiner_annotate
@@ -241,7 +255,7 @@ H e l l o ▁ W o r l d !
 
 ### `preserve_placeholders` (boolean, default: `false`)
 
-Do not attach joiners or spacers to placeholders.
+Do not attach joiners or spacers to placeholders. This should generally be enabled to not duplicate placeholders in the NMT vocabulary.
 
 ```bash
 $ echo "Hello｟World｠" | cli/tokenize --joiner_annotate
@@ -293,7 +307,9 @@ $ echo "pre￭ tokenization." | cli/tokenize --joiner_annotate --support_prior_j
 pre￭ tokenization ￭.
 ```
 
-## Segmenting
+## Segmentation
+
+These options enable additional segmentation rules. They are ignored when the tokenization mode is "none" or "space".
 
 ### `segment_case` (boolean, default: `false`)
 
