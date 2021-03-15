@@ -1,4 +1,8 @@
-# Python API
+# pyonmttok
+
+**pyonmttok** is the Python wrapper for [OpenNMT/Tokenizer](https://github.com/OpenNMT/Tokenizer), a fast and customizable text tokenization library with BPE and SentencePiece support.
+
+**Installation:**
 
 ```bash
 pip install pyonmttok
@@ -6,6 +10,7 @@ pip install pyonmttok
 
 **Requirements:**
 
+* OS: Linux, macOS
 * Python version: >= 3.5
 
 **Table of contents**
@@ -25,6 +30,8 @@ pip install pyonmttok
 >>> tokens, _ = tokenizer.tokenize("Hello World!")
 >>> tokens
 ['Hello', 'World', '￭!']
+>>> tokenizer.detokenize(tokens)
+'Hello World!'
 ```
 
 ### Interface
@@ -75,7 +82,7 @@ tokenizer = pyonmttok.Tokenizer(tokenizer: pyonmttok.Tokenizer)
 tokenizer.options
 ```
 
-See the [documentation](../../docs/options.md) for a description of each tokenization option.
+See the [documentation](https://github.com/OpenNMT/Tokenizer/blob/master/docs/options.md) for a description of each tokenization option.
 
 #### Tokenization
 
@@ -90,7 +97,7 @@ tokenizer.tokenize(
 # The as_token_objects flag can alternatively return Token objects (see below).
 tokenizer.tokenize(
     text: str,
-    as_token_objects=True,
+    as_token_objects: bool = True,
     training: bool = True,
 ) -> List[pyonmttok.Token]
 
@@ -107,7 +114,7 @@ tokenizer.tokenize_file(
 #### Detokenization
 
 ```python
-# The detokenize method converts tokens back to a string.
+# The detokenize method converts a list of tokens back to a string.
 tokenizer.detokenize(
     tokens: Union[List[str], List[pyonmttok.Token]],
     features: Optional[List[List[str]]] = None
