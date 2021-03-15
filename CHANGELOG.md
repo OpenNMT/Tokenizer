@@ -24,6 +24,19 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.25.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.25.0) (2021-03-15)
+
+### New features
+
+* Add `training` flag in tokenization methods to disable subword regularization during inference
+* [Python] Implement `__len__` method in the `Token` class
+
+### Fixes and improvements
+
+* Raise an error when enabling `case_markup` with incompatible tokenization modes "space" and "none"
+* [Python] Improve parallelization when `Tokenizer.tokenize` is called from multiple Python threads (the Python GIL is now released)
+* [Python] Cleanup some manual Python <-> C++ types conversion
+
 ## [v1.24.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.24.0) (2021-02-16)
 
 ### New features
