@@ -15,7 +15,8 @@ namespace onmt
 
   void SpaceTokenizer::tokenize(const std::string& text,
                                 std::vector<std::string>& words,
-                                std::vector<std::vector<std::string> >& features) const
+                                std::vector<std::vector<std::string> >& features,
+                                bool) const
   {
     words.reserve(text.length());
 

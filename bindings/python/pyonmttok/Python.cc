@@ -133,14 +133,16 @@ public:
       );
   }
 
-  py::object tokenize(const std::string& text, const bool as_token_objects) const
+  py::object tokenize(const std::string& text,
+                      const bool as_token_objects,
+                      const bool training) const
   {
     if (as_token_objects)
     {
       std::vector<onmt::Token> tokens;
       {
         py::gil_scoped_release release;
-        _tokenizer->tokenize(text, tokens);
+        _tokenizer->tokenize(text, tokens, training);
       }
       return py::cast(tokens);
     }
@@ -150,7 +152,7 @@ public:
 
     {
       py::gil_scoped_release release;
-      _tokenizer->tokenize(text, words, features);
+      _tokenizer->tokenize(text, words, features, training);
     }
 
     return py::make_tuple(py::cast(words), features.empty() ? py::none() : py::cast(features));
@@ -242,7 +244,8 @@ public:
   void tokenize_file(const std::string& input_path,
                      const std::string& output_path,
                      int num_threads,
-                     bool verbose)
+                     bool verbose,
+                     bool training)
   {
     std::ifstream in(input_path);
     if (!in)
@@ -251,7 +254,7 @@ public:
     if (!out)
       throw std::invalid_argument("Failed to open output file " + output_path);
     py::gil_scoped_release release;
-    _tokenizer->tokenize_stream(in, out, num_threads, verbose);
+    _tokenizer->tokenize_stream(in, out, num_threads, verbose, training);
   }
 
   void detokenize_file(const std::string& input_path,
@@ -594,7 +597,8 @@ PYBIND11_MODULE(_ext, m)
     .def_property_readonly("options", &TokenizerWrapper::get_options)
     .def("tokenize", &TokenizerWrapper::tokenize,
          py::arg("text"),
-         py::arg("as_token_objects")=false)
+         py::arg("as_token_objects")=false,
+         py::arg("training")=true)
     .def("serialize_tokens", &TokenizerWrapper::serialize_tokens,
          py::arg("tokens"))
     .def("deserialize_tokens", &TokenizerWrapper::deserialize_tokens,
@@ -603,7 +607,8 @@ PYBIND11_MODULE(_ext, m)
          py::arg("input_path"),
          py::arg("output_path"),
          py::arg("num_threads")=1,
-         py::arg("verbose")=false)
+         py::arg("verbose")=false,
+         py::arg("training")=true)
     .def("detokenize", &TokenizerWrapper::detokenize,
          py::arg("tokens"), py::arg("features")=py::none())
     .def("detokenize_with_ranges", &TokenizerWrapper::detokenize_with_ranges,

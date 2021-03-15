@@ -140,15 +140,18 @@ namespace onmt
   void ITokenizer::tokenize(const std::string& text,
                             std::vector<std::string>& words,
                             std::vector<std::vector<std::string> >& features,
-                            std::unordered_map<std::string, size_t>&) const
+                            std::unordered_map<std::string, size_t>&,
+                            bool training) const
   {
-    tokenize(text, words, features);
+    tokenize(text, words, features, training);
   }
 
-  void ITokenizer::tokenize(const std::string& text, std::vector<std::string>& words) const
+  void ITokenizer::tokenize(const std::string& text,
+                            std::vector<std::string>& words,
+                            bool training) const
   {
     std::vector<std::vector<std::string> > features;
-    tokenize(text, words, features);
+    tokenize(text, words, features, training);
   }
 
   std::string ITokenizer::detokenize(const std::vector<std::string>& words) const
@@ -175,14 +178,15 @@ namespace onmt
                                    std::ostream& out,
                                    size_t num_threads,
                                    bool verbose,
+                                   bool training,
                                    size_t buffer_size) const
   {
     using Result = std::pair<std::vector<std::string>, std::vector<std::vector<std::string>>>;
-    auto function = [this](const std::string& text)
+    auto function = [this, training](const std::string& text)
                     {
                       std::vector<std::string> words;
                       std::vector<std::vector<std::string>> features;
-                      this->tokenize(text, words, features);
+                      this->tokenize(text, words, features, training);
                       return Result(std::move(words), std::move(features));
                     };
     auto writer = [](std::ostream& os, const Result& result)

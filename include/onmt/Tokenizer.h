@@ -77,15 +77,17 @@ namespace onmt
 
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
-                  std::vector<std::vector<std::string> >& features) const override;
-
+                  std::vector<std::vector<std::string> >& features,
+                  bool training = true) const override;
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
                   std::vector<std::vector<std::string> >& features,
-                  std::unordered_map<std::string, size_t>& alphabets) const override;
-
+                  std::unordered_map<std::string, size_t>& alphabets,
+                  bool training = true) const override;
     void tokenize(const std::string& text,
-                  std::vector<Token>& annotated_tokens) const;
+                  std::vector<Token>& annotated_tokens,
+                  bool training = true) const;
+
     Token annotate_token(const std::string& word) const;
     void annotate_tokens(const std::vector<std::string>& words,
                          const std::vector<std::vector<std::string>>& features,
@@ -127,11 +129,13 @@ namespace onmt
 
     void tokenize(const std::string& text,
                   std::vector<Token>& annotated_tokens,
-                  std::unordered_map<std::string, size_t>* alphabets) const;
+                  std::unordered_map<std::string, size_t>* alphabets,
+                  bool training) const;
     void tokenize(const std::string& text,
                   std::vector<std::string>& words,
                   std::vector<std::vector<std::string> >& features,
-                  std::unordered_map<std::string, size_t>* alphabets) const;
+                  std::unordered_map<std::string, size_t>* alphabets,
+                  bool training) const;
     std::string detokenize(const std::vector<Token>& tokens,
                            Ranges* ranges,
                            bool merge_ranges = false,
