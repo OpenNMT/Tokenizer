@@ -11,7 +11,9 @@ namespace onmt
                        size_t letter_index);
 
   std::pair<std::string, Casing> lowercase_token(const std::string& token);
-  std::string restore_token_casing(const std::string& token, Casing casing);
+  std::string restore_token_casing(const std::string& token,
+                                   Casing casing,
+                                   const std::string& lang = "");
 
   char casing_to_char(Casing type);
   Casing char_to_casing(char feature);

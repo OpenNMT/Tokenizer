@@ -1,5 +1,7 @@
 #include "onmt/Tokenizer.h"
 
+#include <unicode/locid.h>
+
 #include "onmt/BPE.h"
 #include "onmt/SentencePiece.h"
 #include "onmt/unicode/Unicode.h"
@@ -131,6 +133,9 @@ namespace onmt
       if (!add_alphabet_to_segment(alphabet))
         throw std::invalid_argument("invalid Unicode script: " + alphabet);
     }
+
+    if (!lang.empty() && icu::Locale(lang.c_str()).isBogus())
+      throw std::invalid_argument("lang argument should be a valid ISO language code");
   }
 
   bool Tokenizer::Options::add_alphabet_to_segment(const std::string& alphabet)
@@ -311,7 +316,7 @@ namespace onmt
       if (!token.is_placeholder())
       {
         if (token.casing != Casing::None && token.casing != Casing::Lowercase)
-          prep_word = restore_token_casing(prep_word, token.casing);
+          prep_word = restore_token_casing(prep_word, token.casing, _options.lang);
         unescape_characters(prep_word);
       }
 

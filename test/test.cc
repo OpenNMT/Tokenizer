@@ -469,6 +469,22 @@ TEST(TokenizerTest, CaseMarkupDetokNestedMarkers) {
              "｟mrk_begin_case_region_U｠ hello ｟mrk_case_modifier_C｠ ｟mrk_end_case_region_U｠ world", "HELLO world");
 }
 
+TEST(TokenizerTest, CaseMarkupWithLocaleEl) {
+  Tokenizer::Options options;
+  options.lang = "el";
+  Tokenizer tokenizer(options);
+  test_detok(tokenizer,
+             "｟mrk_begin_case_region_U｠ μετα απο αυτο , γύρισε σπίτι ｟mrk_end_case_region_U｠",
+             "ΜΕΤΑ ΑΠΟ ΑΥΤΟ , ΓΥΡΙΣΕ ΣΠΙΤΙ");
+}
+
+TEST(TokenizerTest, CaseMarkupWithLocaleNl) {
+  Tokenizer::Options options;
+  options.lang = "nl";
+  Tokenizer tokenizer(options);
+  test_detok(tokenizer, "｟mrk_case_modifier_C｠ ijssel", "IJssel");
+}
+
 TEST(TokenizerTest, SegmentCase) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative,
                       Tokenizer::Flags::CaseFeature | Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SegmentCase);

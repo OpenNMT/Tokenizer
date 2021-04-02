@@ -9,6 +9,8 @@ int main(int argc, char* argv[])
   cxxopts::Options cmd_options("detokenize");
   cmd_options.add_options()
     ("h,help", "Show this help")
+    ("lang", "ISO language code of the input",
+     cxxopts::value<std::string>()->default_value(""))
     ("joiner", "Set the joiner token",
      cxxopts::value<std::string>()->default_value(onmt::Tokenizer::joiner_marker))
     ("spacer_annotate", "Run spacer detokenization instead of joiner detokenization",
@@ -26,6 +28,7 @@ int main(int argc, char* argv[])
   }
 
   onmt::Tokenizer::Options options;
+  options.lang = vm["lang"].as<std::string>();
   options.case_feature = vm["case_feature"].as<bool>();
   options.spacer_annotate = vm["spacer_annotate"].as<bool>();
   options.joiner = vm["joiner"].as<std::string>();

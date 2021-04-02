@@ -137,6 +137,18 @@ $ echo "A-BC/D" | cli/tokenize --case_markup --soft_case_regions
 ｟mrk_begin_case_region_U｠ a- bc / d ｟mrk_end_case_region_U｠
 ```
 
+### `lang` (string, default: `""`)
+
+[ISO language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the text passed to the tokenizer. When set, the tokenizer may enable language specific rules for example when recasing tokens during detokenization:
+
+```bash
+$ echo "｟mrk_case_modifier_C｠ ijssel" | cli/detokenize --lang nl
+IJssel
+
+$ echo "｟mrk_begin_case_region_U｠ γύρισε σπίτι ｟mrk_end_case_region_U｠" | cli/detokenize --lang el
+ΓΥΡΙΣΕ ΣΠΙΤΙ
+```
+
 ## Subword encoding
 
 ### `bpe_model_path` (string, default: `""`)

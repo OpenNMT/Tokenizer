@@ -9,6 +9,8 @@ inline void add_tokenization_options(cxxopts::Options& options)
   options.add_options("General tokenization")
     ("m,mode", "Set the tokenization mode (can be: conservative, aggressive, char, space, none)",
      cxxopts::value<std::string>()->default_value("conservative"))
+    ("lang", "ISO language code of the input",
+     cxxopts::value<std::string>()->default_value(""))
     ("no_substitution", "Do not replace special characters found in the input text",
      cxxopts::value<bool>()->default_value("false"))
     ;
@@ -58,6 +60,7 @@ inline onmt::Tokenizer::Options build_tokenization_options(const cxxopts::ParseR
 {
   onmt::Tokenizer::Options options;
   options.mode = onmt::Tokenizer::str_to_mode(args["mode"].as<std::string>());
+  options.lang = args["lang"].as<std::string>();
   options.no_substitution = args["no_substitution"].as<bool>();
   options.case_feature = args["case_feature"].as<bool>();
   options.case_markup = args["case_markup"].as<bool>();

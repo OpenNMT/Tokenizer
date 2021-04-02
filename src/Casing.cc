@@ -2,6 +2,10 @@
 
 #include <algorithm>
 
+#include <unicode/locid.h>
+#include <unicode/unistr.h>
+#include <unicode/stringoptions.h>
+
 #include "onmt/Tokenizer.h"
 #include "Utils.h"
 
@@ -78,7 +82,7 @@ namespace onmt
     return std::make_pair(std::move(new_token), std::move(current_casing));
   }
 
-  std::string restore_token_casing(const std::string& token, Casing casing)
+  std::string restore_token_casing(const std::string& token, Casing casing, const std::string& lang)
   {
     if (token.empty() || casing == Casing::Lowercase || casing == Casing::None)
       return token;
@@ -87,6 +91,19 @@ namespace onmt
 
     std::string new_token;
     new_token.reserve(token.size());
+
+    if (!lang.empty())
+    {
+      // Apply lang specific recasing.
+      icu::Locale locale(lang.c_str());
+      auto utoken = icu::UnicodeString::fromUTF8(token);
+      if (casing == Casing::Capitalized)
+        utoken.toTitle(nullptr, locale, U_TITLECASE_WHOLE_STRING);
+      else
+        utoken.toUpper(locale);
+      utoken.toUTF8String(new_token);
+      return new_token;
+    }
 
     for (const auto& c : unicode::get_characters_info(token))
     {
