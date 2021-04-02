@@ -90,7 +90,6 @@ namespace onmt
       throw std::invalid_argument("Can't restore mixed casing");
 
     std::string new_token;
-    new_token.reserve(token.size());
 
     if (!lang.empty())
     {
@@ -105,6 +104,7 @@ namespace onmt
       return new_token;
     }
 
+    new_token.reserve(token.size());
     for (const auto& c : unicode::get_characters_info(token))
     {
       if (new_token.empty() || casing == Casing::Uppercase)
