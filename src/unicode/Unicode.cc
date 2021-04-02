@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 
+#include <unicode/locid.h>
 #include <unicode/uchar.h>
 #include <unicode/unistr.h>
 #include <unicode/uscript.h>
@@ -247,6 +248,18 @@ namespace onmt
         });
 
       return chars;
+    }
+
+    bool is_valid_language(const char* language)
+    {
+      for (const char* const* available_languages = icu::Locale::getISOLanguages();
+           *available_languages;
+           ++available_languages)
+      {
+        if (strcmp(*available_languages, language) == 0)
+          return true;
+      }
+      return false;
     }
 
     // The functions below are made backward compatible with the Kangxi and Kanbun script names

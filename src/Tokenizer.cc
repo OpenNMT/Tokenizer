@@ -1,7 +1,5 @@
 #include "onmt/Tokenizer.h"
 
-#include <unicode/locid.h>
-
 #include "onmt/BPE.h"
 #include "onmt/SentencePiece.h"
 #include "onmt/unicode/Unicode.h"
@@ -134,7 +132,7 @@ namespace onmt
         throw std::invalid_argument("invalid Unicode script: " + alphabet);
     }
 
-    if (!lang.empty() && icu::Locale(lang.c_str()).isBogus())
+    if (!lang.empty() && !unicode::is_valid_language(lang.c_str()))
       throw std::invalid_argument("lang argument should be a valid ISO language code");
   }
 
