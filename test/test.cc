@@ -474,8 +474,8 @@ TEST(TokenizerTest, CaseMarkupWithLocaleEl) {
   options.lang = "el";
   Tokenizer tokenizer(options);
   test_detok(tokenizer,
-             "｟mrk_begin_case_region_U｠ μετα απο αυτο , γύρισε σπίτι ｟mrk_end_case_region_U｠",
-             "ΜΕΤΑ ΑΠΟ ΑΥΤΟ , ΓΥΡΙΣΕ ΣΠΙΤΙ");
+             "｟mrk_begin_case_region_U｠ την άνοιξη , απρίλιο ή μάιο , θα καταναλώσω μεγαλύτερες ποσότητες πρωτεΐνης ｟mrk_end_case_region_U｠",
+             "ΤΗΝ ΑΝΟΙΞΗ , ΑΠΡΙΛΙΟ Ή ΜΑΪΟ , ΘΑ ΚΑΤΑΝΑΛΩΣΩ ΜΕΓΑΛΥΤΕΡΕΣ ΠΟΣΟΤΗΤΕΣ ΠΡΩΤΕΪΝΗΣ");
 }
 
 TEST(TokenizerTest, CaseMarkupWithLocaleNl) {
