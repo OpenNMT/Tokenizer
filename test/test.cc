@@ -471,8 +471,11 @@ TEST(TokenizerTest, CaseMarkupDetokNestedMarkers) {
 
 TEST(TokenizerTest, CaseMarkupWithLocaleEl) {
   Tokenizer::Options options;
+  options.case_markup = true;
   options.lang = "el";
   Tokenizer tokenizer(options);
+  test_tok(tokenizer, "ΣIΓΜΑ", "｟mrk_begin_case_region_U｠ σiγμα ｟mrk_end_case_region_U｠");
+  test_tok(tokenizer, "ΤΕΛΙΚΟΣ", "｟mrk_begin_case_region_U｠ τελικος ｟mrk_end_case_region_U｠");
   test_detok(tokenizer,
              "｟mrk_begin_case_region_U｠ την άνοιξη , απρίλιο ή μάιο , θα καταναλώσω μεγαλύτερες ποσότητες πρωτεΐνης ｟mrk_end_case_region_U｠",
              "ΤΗΝ ΑΝΟΙΞΗ , ΑΠΡΙΛΙΟ Ή ΜΑΪΟ , ΘΑ ΚΑΤΑΝΑΛΩΣΩ ΜΕΓΑΛΥΤΕΡΕΣ ΠΟΣΟΤΗΤΕΣ ΠΡΩΤΕΪΝΗΣ");
@@ -480,6 +483,7 @@ TEST(TokenizerTest, CaseMarkupWithLocaleEl) {
 
 TEST(TokenizerTest, CaseMarkupWithLocaleNl) {
   Tokenizer::Options options;
+  options.case_markup = true;
   options.lang = "nl";
   Tokenizer tokenizer(options);
   test_detok(tokenizer, "｟mrk_case_modifier_C｠ ijssel", "IJssel");

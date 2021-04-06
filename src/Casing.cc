@@ -58,11 +58,27 @@ namespace onmt
   }
 
 
-  std::pair<std::string, Casing> lowercase_token(const std::string& token)
+  std::pair<std::string, Casing> lowercase_token(const std::string& token, const std::string& lang)
   {
     Casing current_casing = Casing::None;
     size_t letter_index = 0;
     std::string new_token;
+
+    if (!lang.empty())
+    {
+      // First resolve the casing of the token.
+      for (const auto& c : unicode::get_characters_info(token))
+      {
+        if (c.char_type == unicode::CharType::Letter)
+          current_casing = update_casing(current_casing, c.case_type, letter_index++);
+      }
+
+      // Then apply language specific lowercasing with ICU.
+      icu::Locale locale(lang.c_str());
+      icu::UnicodeString::fromUTF8(token).toLower(locale).toUTF8String(new_token);
+      return std::make_pair(std::move(new_token), std::move(current_casing));
+    }
+
     new_token.reserve(token.size());
 
     for (const auto& c : unicode::get_characters_info(token))
@@ -93,7 +109,7 @@ namespace onmt
 
     if (!lang.empty())
     {
-      // Apply lang specific recasing.
+      // Apply language specific recasing with ICU.
       icu::Locale locale(lang.c_str());
       auto utoken = icu::UnicodeString::fromUTF8(token);
       if (casing == Casing::Capitalized)
@@ -105,6 +121,7 @@ namespace onmt
     }
 
     new_token.reserve(token.size());
+
     for (const auto& c : unicode::get_characters_info(token))
     {
       if (new_token.empty() || casing == Casing::Uppercase)

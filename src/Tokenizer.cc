@@ -506,7 +506,10 @@ namespace onmt
     if (_options.case_markup || _options.case_feature)
     {
       for (auto& token : annotated_tokens)
-        token.lowercase();
+      {
+        if (!token.is_placeholder())
+          std::tie(token.surface, token.casing) = lowercase_token(token.surface, _options.lang);
+      }
     }
 
     if (_subword_encoder)
