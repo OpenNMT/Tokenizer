@@ -4,7 +4,6 @@
 #include <cstring>
 
 #include <unicode/uchar.h>
-#include <unicode/unistr.h>
 #include <unicode/uscript.h>
 
 #include "../Utils.h"
@@ -17,49 +16,29 @@ namespace onmt
 
     std::string cp_to_utf8(code_point_t uc)
     {
-      icu::UnicodeString uni_str(uc);
-      std::string str;
-      uni_str.toUTF8String(str);
-      return str;
+      uint8_t s[U8_MAX_LENGTH + 1];
+      int32_t offset = 0;
+      UBool error = false;
+      U8_APPEND(s, offset, U8_MAX_LENGTH + 1, uc, error);
+      if (error)
+        return "";
+      s[offset] = 0;
+      return std::string(reinterpret_cast<char*>(s));
     }
 
     code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l)
     {
-      // TODO: use ICU to implement this function.
-      // This was previously done in https://github.com/OpenNMT/Tokenizer/commit/3d255ce3
-      // but it was causing memory issues with ICU 57.1. Was the implementation incorrect
-      // or was there a bug in this specific ICU version?
-      if (*s == 0 || *s >= 0xfe)
-        return 0;
-      if (*s <= 0x7f)
+      UChar32 c = -1;
+      int32_t offset = 0;
+      U8_NEXT(s, offset, -1, c);
+      if (c < 0)
       {
-        l = 1;
-        return *s;
+        l = 0;
+        c = 0;
       }
-      if (!s[1])
-        return 0;
-      if (*s < 0xe0)
-      {
-        l = 2;
-        return ((s[0] & 0x1f) << 6) + ((s[1] & 0x3f));
-      }
-      if (!s[2])
-        return 0;
-      if (*s < 0xf0)
-      {
-        l = 3;
-        return ((s[0] & 0x0f) << 12) + ((s[1] & 0x3f) << 6) + ((s[2] & 0x3f));
-      }
-      if (!s[3])
-        return 0;
-      if (*s < 0xf8)
-      {
-        l = 4;
-        return (((s[0] & 0x07) << 18) + ((s[1] & 0x3f) << 12) + ((s[2] & 0x3f) << 6)
-                + ((s[3] & 0x3f)));
-      }
-
-      return 0; // Incorrect unicode
+      else
+        l = offset;
+      return c;
     }
 
     std::vector<std::string> split_utf8(const std::string& str, const std::string& sep)
