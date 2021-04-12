@@ -40,6 +40,7 @@ public:
   }
 
   TokenizerWrapper(const std::string& mode,
+                   const std::string& lang,
                    const std::string& bpe_model_path,
                    const std::string& bpe_vocab_path,
                    int bpe_vocab_threshold,
@@ -82,6 +83,7 @@ public:
 
     onmt::Tokenizer::Options options;
     options.mode = onmt::Tokenizer::str_to_mode(mode);
+    options.lang = lang;
     options.no_substitution = no_substitution;
     options.case_feature = case_feature;
     options.case_markup = case_markup;
@@ -114,6 +116,7 @@ public:
     const auto& options = _tokenizer->get_options();
     return py::dict(
       "mode"_a=onmt::Tokenizer::mode_to_str(options.mode),
+      "lang"_a=options.lang,
       "no_substitution"_a=options.no_substitution,
       "case_feature"_a=options.case_feature,
       "case_markup"_a=options.case_markup,
@@ -566,9 +569,10 @@ PYBIND11_MODULE(_ext, m)
 
   py::class_<TokenizerWrapper>(m, "Tokenizer")
     .def(py::init<const TokenizerWrapper&>(), py::arg("tokenizer"))
-    .def(py::init<const std::string&, const std::string&, const std::string&, int, float, std::string, int, const std::string&, int, float, const std::string&, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, const py::object&>(),
+    .def(py::init<const std::string&, const std::string&, const std::string&, const std::string&, int, float, std::string, int, const std::string&, int, float, const std::string&, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, const py::object&>(),
          py::arg("mode"),
          py::kw_only(),
+         py::arg("lang")="",
          py::arg("bpe_model_path")="",
          py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
          py::arg("bpe_vocab_threshold")=50,  // Keep for backward compatibility.

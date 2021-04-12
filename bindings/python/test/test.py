@@ -43,6 +43,10 @@ def test_invalid_mode():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("xxx")
 
+def test_invalid_lang():
+    with pytest.raises(ValueError, match="ISO"):
+        pyonmttok.Tokenizer("conservative", lang="xxx")
+
 def test_invalid_sentencepiece_model():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("none", sp_model_path="xxx")

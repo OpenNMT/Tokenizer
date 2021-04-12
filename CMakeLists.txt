@@ -46,7 +46,7 @@ else()
 endif()
 
 if(NOT DEFINED ICU_INCLUDE_DIRS OR NOT DEFINED ICU_LIBRARIES)
-  find_package(ICU REQUIRED)
+  find_package(ICU REQUIRED COMPONENTS uc data)
 endif()
 
 set(INCLUDE_DIRECTORIES

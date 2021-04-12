@@ -34,6 +34,7 @@ namespace onmt
     struct Options
     {
       Mode mode = Mode::Conservative;
+      std::string lang;
       bool no_substitution = false;
       bool case_feature = false;
       bool case_markup = false;

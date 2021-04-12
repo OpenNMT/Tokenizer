@@ -131,6 +131,9 @@ namespace onmt
       if (!add_alphabet_to_segment(alphabet))
         throw std::invalid_argument("invalid Unicode script: " + alphabet);
     }
+
+    if (!lang.empty() && !unicode::is_valid_language(lang.c_str()))
+      throw std::invalid_argument("lang argument should be a valid ISO language code");
   }
 
   bool Tokenizer::Options::add_alphabet_to_segment(const std::string& alphabet)
@@ -311,7 +314,7 @@ namespace onmt
       if (!token.is_placeholder())
       {
         if (token.casing != Casing::None && token.casing != Casing::Lowercase)
-          prep_word = restore_token_casing(prep_word, token.casing);
+          prep_word = restore_token_casing(prep_word, token.casing, _options.lang);
         unescape_characters(prep_word);
       }
 
@@ -503,7 +506,10 @@ namespace onmt
     if (_options.case_markup || _options.case_feature)
     {
       for (auto& token : annotated_tokens)
-        token.lowercase();
+      {
+        if (!token.is_placeholder())
+          std::tie(token.surface, token.casing) = lowercase_token(token.surface, _options.lang);
+      }
     }
 
     if (_subword_encoder)

@@ -137,6 +137,31 @@ $ echo "A-BC/D" | cli/tokenize --case_markup --soft_case_regions
 ｟mrk_begin_case_region_U｠ a- bc / d ｟mrk_end_case_region_U｠
 ```
 
+### `lang` (string, default: `""`)
+
+[ISO language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the text passed to the tokenizer. When set, the tokenizer may enable language-specific rules to improve the tokenization or detokenization correctness. For example, we use the [ICU library](http://site.icu-project.org/) to enable [language-specific case mappings](https://unicode-org.github.io/icu/userguide/transforms/casemappings.html#full-language-specific-case-mapping) such as the following:
+
+* In Dutch, the "ij" digraph becomes "IJ" even with capitalization:
+
+```bash
+$ echo "｟mrk_case_modifier_C｠ ijssel" | cli/detokenize --lang nl
+IJssel
+```
+
+* In Greek, most vowels loose their accent when the whole word is in uppercase:
+
+```bash
+$ echo "｟mrk_begin_case_region_U｠ γύρισε σπίτι ｟mrk_end_case_region_U｠" | cli/detokenize --lang el
+ΓΥΡΙΣΕ ΣΠΙΤΙ
+```
+
+* In Greek, the lowercase version of sigma "Σ" depends on the context:
+
+```bash
+$ echo "ΣΙΓΜΑ ΤΕΛΙΚΟΣ" | cli/tokenize --lang el --case_markup --soft_case_regions
+｟mrk_begin_case_region_U｠ σιγμα τελικος ｟mrk_end_case_region_U｠
+```
+
 ## Subword encoding
 
 ### `bpe_model_path` (string, default: `""`)
