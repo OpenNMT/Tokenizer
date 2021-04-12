@@ -17,14 +17,13 @@ namespace onmt
 
     std::string cp_to_utf8(code_point_t uc)
     {
-      uint8_t s[U8_MAX_LENGTH + 1];
+      uint8_t s[U8_MAX_LENGTH];
       int32_t offset = 0;
       UBool error = false;
-      U8_APPEND(s, offset, U8_MAX_LENGTH + 1, uc, error);
+      U8_APPEND(s, offset, U8_MAX_LENGTH, uc, error);
       if (error)
-        return "";
-      s[offset] = 0;
-      return std::string(reinterpret_cast<char*>(s));
+        return std::string();
+      return std::string(reinterpret_cast<std::string::value_type*>(s), offset);
     }
 
     code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l)
