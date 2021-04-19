@@ -24,6 +24,16 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.26.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.26.0) (2021-04-19)
+
+### New features
+
+* Add `lang` tokenization option to apply language-specific case mappings
+
+### Fixes and improvements
+
+* Use ICU to convert strings to Unicode values instead of a custom implementation
+
 ## [v1.25.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.25.0) (2021-03-15)
 
 ### New features
