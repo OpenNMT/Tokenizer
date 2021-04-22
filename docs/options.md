@@ -162,6 +162,8 @@ $ echo "ΣΙΓΜΑ ΤΕΛΙΚΟΣ" | cli/tokenize --lang el --case_markup --soft
 ｟mrk_begin_case_region_U｠ σιγμα τελικος ｟mrk_end_case_region_U｠
 ```
 
+Note: when compiling from source, this option requires ICU version 60 or greater.
+
 ## Subword encoding
 
 ### `bpe_model_path` (string, default: `""`)

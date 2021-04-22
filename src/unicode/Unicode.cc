@@ -228,6 +228,11 @@ namespace onmt
       return chars;
     }
 
+    bool support_language_rules()
+    {
+      return U_ICU_VERSION_MAJOR_NUM >= 60;
+    }
+
     bool is_valid_language(const char* language)
     {
       for (const char* const* available_languages = icu::Locale::getISOLanguages();
