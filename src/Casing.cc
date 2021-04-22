@@ -2,9 +2,12 @@
 
 #include <algorithm>
 
-#include <unicode/locid.h>
-#include <unicode/unistr.h>
-#include <unicode/stringoptions.h>
+#include <unicode/uvernum.h>
+#if U_ICU_VERSION_MAJOR_NUM >= 60
+#  include <unicode/locid.h>
+#  include <unicode/unistr.h>
+#  include <unicode/stringoptions.h>
+#endif
 
 #include "onmt/Tokenizer.h"
 #include "Utils.h"
@@ -64,6 +67,7 @@ namespace onmt
     size_t letter_index = 0;
     std::string new_token;
 
+#if U_ICU_VERSION_MAJOR_NUM >= 60
     if (!lang.empty())
     {
       // First resolve the casing of the token.
@@ -78,6 +82,9 @@ namespace onmt
       icu::UnicodeString::fromUTF8(token).toLower(locale).toUTF8String(new_token);
       return std::make_pair(std::move(new_token), std::move(current_casing));
     }
+#else
+    (void)lang;
+#endif
 
     new_token.reserve(token.size());
 
@@ -107,6 +114,7 @@ namespace onmt
 
     std::string new_token;
 
+#if U_ICU_VERSION_MAJOR_NUM >= 60
     if (!lang.empty())
     {
       // Apply language specific recasing with ICU.
@@ -119,6 +127,9 @@ namespace onmt
       utoken.toUTF8String(new_token);
       return new_token;
     }
+#else
+    (void)lang;
+#endif
 
     new_token.reserve(token.size());
 

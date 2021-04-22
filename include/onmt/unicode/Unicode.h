@@ -43,6 +43,7 @@ namespace onmt
     OPENNMTTOKENIZER_EXPORT code_point_t get_upper(code_point_t u);
     OPENNMTTOKENIZER_EXPORT code_point_t get_lower(code_point_t u);
 
+    OPENNMTTOKENIZER_EXPORT bool support_language_rules();
     OPENNMTTOKENIZER_EXPORT bool is_valid_language(const char* language);
 
     OPENNMTTOKENIZER_EXPORT int get_script_code(const char* script_name);
