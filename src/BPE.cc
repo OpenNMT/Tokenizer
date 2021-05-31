@@ -342,24 +342,21 @@ namespace onmt
     return _bpe_vocab.find(token) != _bpe_vocab.end();
   }
 
-  bool BPE::in_vocabulary(const onmt::Token& token) const
+  bool BPE::in_vocabulary(const onmt::Token& token, const bool first, const bool last) const
   {
     std::string surface = token.surface;
 
-    if (!token.preserve)
+    if (_tokenization_options.joiner_annotate && !_tokenization_options.joiner_new)
     {
-      if (_tokenization_options.joiner_annotate && !_tokenization_options.joiner_new)
-      {
-        if (token.join_left)
-          surface = _tokenization_options.joiner + surface;
-        if (token.join_right)
-          surface = surface + _tokenization_options.joiner;
-      }
-      else if (_tokenization_options.spacer_annotate && !_tokenization_options.spacer_new)
-      {
-        if (!token.join_left)
-          surface = Tokenizer::spacer_marker + surface;
-      }
+      if (token.join_left && (!first || !token.preserve))
+        surface = _tokenization_options.joiner + surface;
+      if (token.join_right && (!last || !token.preserve))
+        surface = surface + _tokenization_options.joiner;
+    }
+    else if (_tokenization_options.spacer_annotate && !_tokenization_options.spacer_new)
+    {
+      if (!token.join_left && (!first || !token.preserve))
+        surface = Tokenizer::spacer_marker + surface;
     }
 
     return in_vocabulary(surface);
@@ -374,16 +371,15 @@ namespace onmt
 
     for (size_t i = 0; i < pieces.size(); ++i)
     {
+      const bool first = (i == 0);
+      const bool last = (i + 1 == pieces.size());
+
       Token& piece = pieces[i];
 
-      if (in_vocabulary(piece))
+      if (in_vocabulary(piece, first, last))
         pieces_in_vocab.emplace_back(std::move(piece));
       else
-      {
-        const bool first = (i == 0);
-        const bool last = (i + 1 == pieces.size());
         recursive_split(std::move(piece), pieces_in_vocab, first, last);
-      }
     }
 
     return pieces_in_vocab;
@@ -425,7 +421,7 @@ namespace onmt
       left_piece.join_right = true;
       left_piece.preserve = first && piece.preserve;
 
-      if (in_vocabulary(left_piece))
+      if (in_vocabulary(left_piece, first, false))
         pieces_in_vocab.emplace_back(std::move(left_piece));
       else
         recursive_split(std::move(left_piece), pieces_in_vocab, first, false);
@@ -437,7 +433,7 @@ namespace onmt
       right_piece.join_right = !last || piece.join_right;
       right_piece.preserve = last && piece.preserve;
 
-      if (in_vocabulary(right_piece))
+      if (in_vocabulary(right_piece, false, last))
         pieces_in_vocab.emplace_back(std::move(right_piece));
       else
         recursive_split(std::move(right_piece), pieces_in_vocab, false, last);

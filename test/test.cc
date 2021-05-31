@@ -651,6 +651,34 @@ TEST(TokenizerTest, BPEVocabularyWithLeadingJoiner) {
   test_tok(tokenizer, "A100", "A ￭1￭ 0￭ 0");
 }
 
+TEST(TokenizerTest, BPEVocabularyWithPreservedTokens) {
+  Tokenizer::Options options;
+  options.joiner_annotate = true;
+  options.joiner = "￭";
+
+  BPE bpe(get_data("bpe-models/bpe_code.v0.2"));
+  bpe.set_vocabulary({"wel"}, &options);
+
+  Token token("welle");
+  token.preserve = true;
+  token.join_right = true;
+  auto subwords = bpe.encode_and_annotate(token);
+
+  ASSERT_EQ(subwords.size(), 5);
+
+  EXPECT_EQ(subwords[0].surface, "w");
+  EXPECT_TRUE(subwords[0].join_right);
+  EXPECT_FALSE(subwords[0].preserve);
+
+  EXPECT_EQ(subwords[1].surface, "e");
+  EXPECT_TRUE(subwords[1].join_right);
+  EXPECT_FALSE(subwords[1].preserve);
+
+  EXPECT_EQ(subwords[2].surface, "l");
+  EXPECT_TRUE(subwords[2].join_right);
+  EXPECT_FALSE(subwords[2].preserve);
+}
+
 TEST(TokenizerTest, BPEVocabularyWithSpacer) {
   Tokenizer::Options options;
   options.mode = Tokenizer::Mode::Space;

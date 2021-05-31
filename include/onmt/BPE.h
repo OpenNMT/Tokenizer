@@ -60,7 +60,7 @@ namespace onmt
     void apply_merges(std::vector<std::string>& chars, bool training) const;
 
     bool in_vocabulary(const std::string& token) const;
-    bool in_vocabulary(const onmt::Token& token) const;
+    bool in_vocabulary(const onmt::Token& token, const bool first, const bool last) const;
     std::vector<Token> check_vocab_and_split(std::vector<Token> pieces) const;
     void recursive_split(Token piece,
                          std::vector<Token>& pieces_in_vocab,
