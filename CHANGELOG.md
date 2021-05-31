@@ -24,6 +24,13 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.26.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.26.1) (2021-05-31)
+
+### Fixes and improvements
+
+* Fix application of the BPE vocabulary when using `preserve_segmented_tokens` and a subword appears without joiner in the vocabulary
+* Fix compilation with ICU versions older than 60
+
 ## [v1.26.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.26.0) (2021-04-19)
 
 ### New features
