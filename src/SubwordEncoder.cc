@@ -80,11 +80,14 @@ namespace onmt
 
   void SubwordEncoder::propagate_token_properties(const Token& token, std::vector<Token>& tokens)
   {
-    tokens.front().join_left = token.join_left;
-    tokens.back().join_right = token.join_right;
+    auto& first = tokens.front();
+    auto& last = tokens.back();
 
-    tokens.front().preserve = token.join_left && token.preserve;
-    tokens.back().preserve = token.join_right && token.preserve;
+    first.join_left = token.join_left;
+    last.join_right = token.join_right;
+
+    first.preserve = (token.join_left && token.preserve) || (first.preserve && first.spacer);
+    last.preserve = token.join_right && token.preserve;
 
     if (token.casing != Casing::None)
     {
