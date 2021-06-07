@@ -831,6 +831,14 @@ TEST(TokenizerTest, SentencePieceAlt) {
                      "▁Ba m ford ▁is ▁appealing ▁the ▁sentence ▁and ▁has ▁been ▁granted ▁bail ▁of ▁ 50,000 ▁ba ht .");
 }
 
+TEST(TokenizerTest, SentencePieceLeadingSpacer) {
+  Tokenizer tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
+                      get_data("sp-models/wmtende.model"));
+  test_tok_and_detok(tokenizer,
+                     "Experts say violence that left 14 adults and seven children dead is nothing more than random chance, not a sign of growing violence in America.",
+                     "▁ Expert s ▁say ▁violence ▁that ▁left ▁14 ▁adults ▁and ▁seven ▁children ▁dead ▁is ▁nothing ▁more ▁than ▁random ▁chance , ▁not ▁a ▁sign ▁of ▁growing ▁violence ▁in ▁America .");
+}
+
 TEST(TokenizerTest, SentencePieceWithJoiners) {
   Tokenizer tokenizer(Tokenizer::Mode::None,
                       Tokenizer::Flags::JoinerAnnotate | Tokenizer::Flags::SentencePieceModel,
