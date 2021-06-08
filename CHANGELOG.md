@@ -24,6 +24,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.26.2](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.26.2) (2021-06-08)
+
+### Fixes and improvements
+
+* Fix a divergence with the SentencePiece output when the spacer is detached from the word
+
 ## [v1.26.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.26.1) (2021-05-31)
 
 ### Fixes and improvements

@@ -45,7 +45,7 @@ tokenizer_module = Extension(
 
 setup(
     name="pyonmttok",
-    version="1.26.1",
+    version="1.26.2",
     license="MIT",
     description="Fast and customizable text tokenization library with BPE and SentencePiece support",
     long_description=_get_long_description(),
