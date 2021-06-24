@@ -87,7 +87,8 @@ namespace onmt
     last.join_right = token.join_right;
 
     first.preserve = (token.join_left && token.preserve) || (first.preserve && first.spacer);
-    last.preserve = token.join_right && token.preserve;
+    if (tokens.size() > 1)
+      last.preserve = token.join_right && token.preserve;
 
     if (token.casing != Casing::None)
     {
