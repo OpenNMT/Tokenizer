@@ -834,9 +834,8 @@ TEST(TokenizerTest, SentencePieceAlt) {
 TEST(TokenizerTest, SentencePieceLeadingSpacer) {
   Tokenizer tokenizer(Tokenizer::Mode::None, Tokenizer::Flags::SentencePieceModel,
                       get_data("sp-models/wmtende.model"));
-  test_tok_and_detok(tokenizer,
-                     "Experts say violence that left 14 adults and seven children dead is nothing more than random chance, not a sign of growing violence in America.",
-                     "▁ Expert s ▁say ▁violence ▁that ▁left ▁14 ▁adults ▁and ▁seven ▁children ▁dead ▁is ▁nothing ▁more ▁than ▁random ▁chance , ▁not ▁a ▁sign ▁of ▁growing ▁violence ▁in ▁America .");
+  test_tok_and_detok(tokenizer, "Experts", "▁ Expert s");
+  test_tok_and_detok(tokenizer, "Expert", "▁ Expert");
 }
 
 TEST(TokenizerTest, SentencePieceWithJoiners) {
