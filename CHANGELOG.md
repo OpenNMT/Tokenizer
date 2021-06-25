@@ -24,6 +24,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.26.4](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.26.4) (2021-06-25)
+
+### Fixes and improvements
+
+* Fix regression introduced in last version for preserved tokens that are not segmented by BPE
+
 ## [v1.26.3](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.26.3) (2021-06-24)
 
 ### Fixes and improvements
