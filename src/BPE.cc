@@ -252,7 +252,7 @@ namespace onmt
       else
       {
         subword.join_right = token.join_right;
-        subword.preserve = token.join_right && token.preserve;
+        subword.preserve = subword.preserve || (token.join_right && token.preserve);
       }
       tokens.emplace_back(std::move(subword));
     }
@@ -419,7 +419,7 @@ namespace onmt
       Token left_piece(pair.first.substr(left_offset));
       left_piece.join_left = first && piece.join_left;
       left_piece.join_right = true;
-      left_piece.preserve = first && piece.preserve;
+      left_piece.preserve = first && piece.join_left && piece.preserve;
 
       if (in_vocabulary(left_piece, first, false))
         pieces_in_vocab.emplace_back(std::move(left_piece));
@@ -431,7 +431,7 @@ namespace onmt
       Token right_piece(pair.second.substr(0, pair.second.size() - right_offset));
       right_piece.join_left = false;
       right_piece.join_right = !last || piece.join_right;
-      right_piece.preserve = last && piece.preserve;
+      right_piece.preserve = last && piece.join_right && piece.preserve;
 
       if (in_vocabulary(right_piece, false, last))
         pieces_in_vocab.emplace_back(std::move(right_piece));
