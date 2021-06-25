@@ -130,6 +130,15 @@ namespace onmt
       }
     }
 
+    auto& first = tokens.front();
+    auto& last = tokens.back();
+    first.join_left = token.join_left;
+    last.join_right = token.join_right;
+    if (token.join_left && token.preserve)
+      first.preserve = true;
+    if (token.join_right && token.preserve)
+      last.preserve = true;
+
     propagate_token_properties(token, tokens);
     return tokens;
   }

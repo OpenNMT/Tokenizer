@@ -581,6 +581,7 @@ TEST(TokenizerTest, PreserveSegmentCaseBPE) {
                       | Tokenizer::Flags::PreserveSegmentedTokens,
                       get_data("bpe-models/fr500"));
   test_tok_and_detok(tokenizer, "BonjourMonde", "B￭ on￭ jou￭ r ￭ M￭ on￭ de");
+  test_tok_and_detok(tokenizer, "aB", "a ￭ B");
 }
 
 TEST(TokenizerTest, BPEBasic) {
