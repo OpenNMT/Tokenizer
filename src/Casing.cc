@@ -26,13 +26,21 @@ namespace onmt
     switch (current_casing)
     {
     case Casing::None:
-      if (letter_case == unicode::CaseType::Lower)
-        return Casing::Lowercase;
-      if (letter_case == unicode::CaseType::Upper)
-        return Casing::Capitalized;
+      if (letter_index == 0)
+      {
+        if (letter_case == unicode::CaseType::Lower)
+          return Casing::Lowercase;
+        if (letter_case == unicode::CaseType::Upper)
+          return Casing::Capitalized;
+      }
+      else
+      {
+        if (letter_case != unicode::CaseType::None)
+          return Casing::Mixed;
+      }
       break;
     case Casing::Lowercase:
-      if (letter_case == unicode::CaseType::Upper)
+      if (letter_case != unicode::CaseType::Lower)
         return Casing::Mixed;
       break;
     case Casing::Capitalized:
@@ -45,12 +53,12 @@ namespace onmt
       }
       else
       {
-        if (letter_case == unicode::CaseType::Upper)
+        if (letter_case != unicode::CaseType::Lower)
           return Casing::Mixed;
       }
       break;
     case Casing::Uppercase:
-      if (letter_case == unicode::CaseType::Lower)
+      if (letter_case != unicode::CaseType::Upper)
         return Casing::Mixed;
       break;
     default:
