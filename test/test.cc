@@ -439,6 +439,14 @@ TEST(TokenizerTest, CaseMarkupWithBPE) {
                      "BONJOUR monde", "｟mrk_begin_case_region_U｠ bon￭ j￭ our ｟mrk_end_case_region_U｠ mon￭ de");
 }
 
+TEST(TokenizerTest, CaseMarkupWithMixedScripts) {
+  Tokenizer tokenizer(Tokenizer::Mode::Conservative,
+                      Tokenizer::Flags::CaseMarkup | Tokenizer::Flags::JoinerAnnotate);
+  test_tok_and_detok(tokenizer,
+                     "「我々は、うまくやっていることを証明した」とヒョンCEOは話す。",
+                     "「￭ 我々は ￭、￭ うまくやっていることを証明した ￭」￭ とヒョン￭ ｟mrk_begin_case_region_U｠ ceo￭ ｟mrk_end_case_region_U｠ は話す ￭。");
+}
+
 TEST(TokenizerTest, CaseMarkupDetokWithPlaceholders) {
   Tokenizer tokenizer(Tokenizer::Mode::Conservative, Tokenizer::Flags::CaseMarkup);
   test_detok(tokenizer, "｟mrk_case_modifier_C｠ ｟abc｠", "｟abc｠");
