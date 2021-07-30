@@ -129,7 +129,7 @@ namespace onmt
     for (const std::string& alphabet : segment_alphabet)
     {
       if (!add_alphabet_to_segment(alphabet))
-        throw std::invalid_argument("invalid Unicode script: " + alphabet);
+        throw std::invalid_argument("invalid Unicode script in segment_alphabet list: " + alphabet);
     }
 
     if (!lang.empty())
@@ -137,7 +137,7 @@ namespace onmt
       if (!unicode::support_language_rules())
         throw std::invalid_argument("this build does not support language-specific rules");
       if (!unicode::is_valid_language(lang.c_str()))
-        throw std::invalid_argument("lang argument should be a valid ISO language code");
+        throw std::invalid_argument("lang is not a valid ISO language code: " + lang);
     }
   }
 
