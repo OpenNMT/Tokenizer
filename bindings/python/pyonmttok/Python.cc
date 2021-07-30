@@ -34,8 +34,8 @@ public:
   {
   }
 
-  TokenizerWrapper(const onmt::Tokenizer* tokenizer)
-    : _tokenizer(tokenizer)
+  TokenizerWrapper(std::shared_ptr<const onmt::Tokenizer> tokenizer)
+    : _tokenizer(std::move(tokenizer))
   {
   }
 
@@ -67,12 +67,12 @@ public:
                    bool support_prior_joiners,
                    const py::object& segment_alphabet)
   {
-    onmt::SubwordEncoder* subword_encoder = nullptr;
+    std::shared_ptr<onmt::SubwordEncoder> subword_encoder;
 
     if (!sp_model_path.empty())
-      subword_encoder = new onmt::SentencePiece(sp_model_path, sp_nbest_size, sp_alpha);
+      subword_encoder = std::make_shared<onmt::SentencePiece>(sp_model_path, sp_nbest_size, sp_alpha);
     else if (!bpe_model_path.empty())
-      subword_encoder = new onmt::BPE(bpe_model_path, bpe_dropout);
+      subword_encoder = std::make_shared<onmt::BPE>(bpe_model_path, bpe_dropout);
 
     if (vocabulary_path.empty())
     {
@@ -105,8 +105,7 @@ public:
     if (subword_encoder && !vocabulary_path.empty())
       subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold, &options);
 
-    _tokenizer.reset(new onmt::Tokenizer(options,
-                                         std::shared_ptr<const onmt::SubwordEncoder>(subword_encoder)));
+    _tokenizer = std::make_shared<onmt::Tokenizer>(options, subword_encoder);
   }
 
   virtual ~TokenizerWrapper() = default;
@@ -282,23 +281,22 @@ private:
   std::shared_ptr<const onmt::Tokenizer> _tokenizer;
 };
 
-static onmt::Tokenizer* build_sp_tokenizer(const std::string& model_path,
-                                           const std::string& vocabulary_path,
-                                           int vocabulary_threshold,
-                                           int nbest_size,
-                                           float alpha)
+static std::shared_ptr<onmt::Tokenizer> build_sp_tokenizer(const std::string& model_path,
+                                                           const std::string& vocabulary_path,
+                                                           int vocabulary_threshold,
+                                                           int nbest_size,
+                                                           float alpha)
 {
   onmt::Tokenizer::Options options;
   options.mode = onmt::Tokenizer::Mode::None;
   options.no_substitution = true;
   options.spacer_annotate = true;
 
-  auto* subword_encoder = new onmt::SentencePiece(model_path, nbest_size, alpha);
+  auto subword_encoder = std::make_shared<onmt::SentencePiece>(model_path, nbest_size, alpha);
   if (!vocabulary_path.empty())
     subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold, &options);
 
-  return new onmt::Tokenizer(options,
-                             std::shared_ptr<const onmt::SubwordEncoder>(subword_encoder));
+  return std::make_shared<onmt::Tokenizer>(options, subword_encoder);
 }
 
 class SentencePieceTokenizerWrapper : public TokenizerWrapper
@@ -360,14 +358,15 @@ public:
       _learner->learn(model_path, nullptr, verbose);
     }
 
-    auto* new_subword_encoder = create_subword_encoder(model_path);
-    auto* new_tokenizer = new onmt::Tokenizer(*_tokenizer);
-    new_tokenizer->set_subword_encoder(std::shared_ptr<const onmt::SubwordEncoder>(new_subword_encoder));
-    return TokenizerWrapper(new_tokenizer);
+    auto new_subword_encoder = create_subword_encoder(model_path);
+    auto new_tokenizer = std::make_shared<onmt::Tokenizer>(*_tokenizer);
+    new_tokenizer->set_subword_encoder(new_subword_encoder);
+    return TokenizerWrapper(std::move(new_tokenizer));
   }
 
 protected:
-  virtual onmt::SubwordEncoder* create_subword_encoder(const std::string& model_path) const = 0;
+  virtual std::shared_ptr<onmt::SubwordEncoder>
+  create_subword_encoder(const std::string& model_path) const = 0;
 
 private:
   std::shared_ptr<const onmt::Tokenizer> _tokenizer;
@@ -391,9 +390,10 @@ public:
   }
 
 protected:
-  onmt::SubwordEncoder* create_subword_encoder(const std::string& model_path) const override
+  std::shared_ptr<onmt::SubwordEncoder>
+  create_subword_encoder(const std::string& model_path) const override
   {
-    return new onmt::BPE(model_path);
+    return std::make_shared<onmt::BPE>(model_path);
   }
 };
 
@@ -433,10 +433,11 @@ public:
   }
 
 protected:
-  onmt::SubwordEncoder* create_subword_encoder(const std::string& model_path) const override
+  std::shared_ptr<onmt::SubwordEncoder>
+  create_subword_encoder(const std::string& model_path) const override
   {
     std::string sp_model = _keep_vocab ? model_path + ".model" : model_path;
-    return new onmt::SentencePiece(sp_model);
+    return std::make_shared<onmt::SentencePiece>(sp_model);
   }
 
 private:
