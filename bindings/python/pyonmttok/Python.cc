@@ -15,23 +15,6 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-static onmt::Ranges to_unicode_ranges(const std::string& text, const onmt::Ranges& ranges)
-{
-  onmt::Ranges unicode_ranges;
-  for (const auto& pair : ranges)
-  {
-    const size_t word_index = pair.first;
-    const onmt::Range& range = pair.second;
-    const std::string prefix(text.c_str(), range.first);
-    const std::string piece(text.c_str() + range.first, range.second - range.first + 1);
-    const size_t prefix_length = onmt::unicode::utf8len(prefix);
-    const size_t piece_length = onmt::unicode::utf8len(piece);
-    unicode_ranges.emplace(word_index,
-                           onmt::Range(prefix_length, prefix_length + piece_length - 1));
-  }
-  return unicode_ranges;
-}
-
 
 class TokenizerWrapper
 {
@@ -190,11 +173,7 @@ public:
                          bool merge_ranges,
                          bool with_unicode_ranges) const
   {
-    onmt::Ranges ranges;
-    std::string text = _tokenizer->detokenize(tokens, ranges, merge_ranges);
-    if (with_unicode_ranges)
-      ranges = to_unicode_ranges(text, ranges);
-    return std::make_pair(std::move(text), std::move(ranges));
+    return detokenize_with_ranges_impl(tokens, merge_ranges, with_unicode_ranges);
   }
 
   std::pair<std::string, onmt::Ranges>
@@ -202,11 +181,7 @@ public:
                          bool merge_ranges,
                          bool with_unicode_ranges) const
   {
-    onmt::Ranges ranges;
-    std::string text = _tokenizer->detokenize(tokens, ranges, merge_ranges);
-    if (with_unicode_ranges)
-      ranges = to_unicode_ranges(text, ranges);
-    return std::make_pair(std::move(text), std::move(ranges));
+    return detokenize_with_ranges_impl(tokens, merge_ranges, with_unicode_ranges);
   }
 
   std::string detokenize(const std::vector<onmt::Token>& tokens) const
@@ -254,6 +229,36 @@ public:
 
 private:
   std::shared_ptr<const onmt::Tokenizer> _tokenizer;
+
+  template <typename T>
+  std::pair<std::string, onmt::Ranges>
+  detokenize_with_ranges_impl(const std::vector<T>& tokens,
+                              bool merge_ranges,
+                              bool with_unicode_ranges) const
+  {
+    onmt::Ranges ranges;
+    std::string text = _tokenizer->detokenize(tokens, ranges, merge_ranges);
+
+    if (with_unicode_ranges)
+    {
+      onmt::Ranges unicode_ranges;
+      for (const auto& pair : ranges)
+      {
+        const size_t word_index = pair.first;
+        const onmt::Range& range = pair.second;
+        const std::string prefix(text.c_str(), range.first);
+        const std::string piece(text.c_str() + range.first, range.second - range.first + 1);
+        const size_t prefix_length = onmt::unicode::utf8len(prefix);
+        const size_t piece_length = onmt::unicode::utf8len(piece);
+        unicode_ranges.emplace(word_index,
+                               onmt::Range(prefix_length, prefix_length + piece_length - 1));
+      }
+      ranges = std::move(unicode_ranges);
+    }
+
+    return std::make_pair(std::move(text), std::move(ranges));
+  }
+
 };
 
 static std::shared_ptr<onmt::Tokenizer>
