@@ -31,7 +31,7 @@ _maybe_add_library_root("TOKENIZER")
 cflags = ["-std=c++17", "-fvisibility=hidden"]
 ldflags = []
 if sys.platform == "darwin":
-    cflags.append("-mmacosx-version-min=10.9")
+    cflags.append("-mmacosx-version-min=10.14")
     ldflags.append("-Wl,-rpath,/usr/local/lib")
 
 tokenizer_module = Extension(
