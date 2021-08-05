@@ -618,13 +618,6 @@ PYBIND11_MODULE(_ext, m)
          py::arg("training")=true,
          py::call_guard<py::gil_scoped_release>())
 
-    .def("serialize_tokens", &TokenizerWrapper::serialize_tokens,
-         py::arg("tokens"))
-    .def("deserialize_tokens", &TokenizerWrapper::deserialize_tokens,
-         py::arg("tokens"),
-         py::arg("features")=py::none(),
-         py::call_guard<py::gil_scoped_release>())
-
     .def("detokenize",
          py::overload_cast<
          const std::vector<std::string>&,
@@ -660,6 +653,13 @@ PYBIND11_MODULE(_ext, m)
     .def("detokenize_file", &TokenizerWrapper::detokenize_file,
          py::arg("input_path"),
          py::arg("output_path"),
+         py::call_guard<py::gil_scoped_release>())
+
+    .def("serialize_tokens", &TokenizerWrapper::serialize_tokens,
+         py::arg("tokens"))
+    .def("deserialize_tokens", &TokenizerWrapper::deserialize_tokens,
+         py::arg("tokens"),
+         py::arg("features")=py::none(),
          py::call_guard<py::gil_scoped_release>())
 
     .def("__copy__", [](const TokenizerWrapper& wrapper) {
