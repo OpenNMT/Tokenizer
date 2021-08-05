@@ -154,21 +154,11 @@ public:
            const bool as_token_objects,
            const bool training) const
   {
+    std::vector<onmt::Token> tokens;
+    _tokenizer->tokenize(text, tokens, training);
     if (as_token_objects)
-    {
-      std::vector<onmt::Token> tokens;
-      _tokenizer->tokenize(text, tokens, training);
       return tokens;
-    }
-
-    std::vector<std::string> words;
-    std::vector<std::vector<std::string>> features;
-    _tokenizer->tokenize(text, words, features, training);
-
-    std::optional<std::vector<std::vector<std::string>>> optional_features;
-    if (!features.empty())
-      optional_features = std::move(features);
-    return std::make_pair(std::move(words), std::move(optional_features));
+    return serialize_tokens(tokens);
   }
 
   std::pair<std::vector<std::string>, std::optional<std::vector<std::vector<std::string>>>>
