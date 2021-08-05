@@ -1,5 +1,7 @@
 #include <fstream>
 #include <memory>
+#include <optional>
+#include <variant>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -13,22 +15,32 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-template <typename T>
-T copy(const T& v)
+static onmt::Ranges to_unicode_ranges(const std::string& text, const onmt::Ranges& ranges)
 {
-  return v;
-}
-
-template <typename T>
-T deepcopy(const T& v, const py::object& dict)
-{
-  return v;
+  onmt::Ranges unicode_ranges;
+  for (const auto& pair : ranges)
+  {
+    const size_t word_index = pair.first;
+    const onmt::Range& range = pair.second;
+    const std::string prefix(text.c_str(), range.first);
+    const std::string piece(text.c_str() + range.first, range.second - range.first + 1);
+    const size_t prefix_length = onmt::unicode::utf8len(prefix);
+    const size_t piece_length = onmt::unicode::utf8len(piece);
+    unicode_ranges.emplace(word_index,
+                           onmt::Range(prefix_length, prefix_length + piece_length - 1));
+  }
+  return unicode_ranges;
 }
 
 
 class TokenizerWrapper
 {
 public:
+  TokenizerWrapper(TokenizerWrapper&& other)
+    : _tokenizer(std::move(other._tokenizer))
+  {
+  }
+
   TokenizerWrapper(const TokenizerWrapper& other)
     : _tokenizer(other._tokenizer)
   {
@@ -40,14 +52,14 @@ public:
   }
 
   TokenizerWrapper(const std::string& mode,
-                   const std::string& lang,
-                   const std::string& bpe_model_path,
-                   const std::string& bpe_vocab_path,
+                   const std::optional<std::string>& lang,
+                   const std::optional<std::string>& bpe_model_path,
+                   const std::optional<std::string>& bpe_vocab_path,
                    int bpe_vocab_threshold,
                    float bpe_dropout,
-                   std::string vocabulary_path,
+                   const std::optional<std::string>& vocabulary_path,
                    int vocabulary_threshold,
-                   const std::string& sp_model_path,
+                   const std::optional<std::string>& sp_model_path,
                    int sp_nbest_size,
                    float sp_alpha,
                    const std::string& joiner,
@@ -65,25 +77,20 @@ public:
                    bool segment_numbers,
                    bool segment_alphabet_change,
                    bool support_prior_joiners,
-                   const py::object& segment_alphabet)
+                   const std::optional<std::vector<std::string>>& segment_alphabet)
   {
     std::shared_ptr<onmt::SubwordEncoder> subword_encoder;
 
-    if (!sp_model_path.empty())
-      subword_encoder = std::make_shared<onmt::SentencePiece>(sp_model_path, sp_nbest_size, sp_alpha);
-    else if (!bpe_model_path.empty())
-      subword_encoder = std::make_shared<onmt::BPE>(bpe_model_path, bpe_dropout);
-
-    if (vocabulary_path.empty())
-    {
-      // Backward compatibility.
-      vocabulary_path = bpe_vocab_path;
-      vocabulary_threshold = bpe_vocab_threshold;
-    }
+    if (sp_model_path)
+      subword_encoder = std::make_shared<onmt::SentencePiece>(sp_model_path.value(),
+                                                              sp_nbest_size,
+                                                              sp_alpha);
+    else if (bpe_model_path)
+      subword_encoder = std::make_shared<onmt::BPE>(bpe_model_path.value(), bpe_dropout);
 
     onmt::Tokenizer::Options options;
     options.mode = onmt::Tokenizer::str_to_mode(mode);
-    options.lang = lang;
+    options.lang = lang.value_or("");
     options.no_substitution = no_substitution;
     options.case_feature = case_feature;
     options.case_markup = case_markup;
@@ -99,11 +106,16 @@ public:
     options.segment_case = segment_case;
     options.segment_numbers = segment_numbers;
     options.segment_alphabet_change = segment_alphabet_change;
-    if (!segment_alphabet.is_none())
-      options.segment_alphabet = segment_alphabet.cast<std::vector<std::string>>();
+    if (segment_alphabet)
+      options.segment_alphabet = segment_alphabet.value();
 
-    if (subword_encoder && !vocabulary_path.empty())
-      subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold, &options);
+    if (subword_encoder)
+    {
+      if (vocabulary_path)
+        subword_encoder->load_vocabulary(vocabulary_path.value(), vocabulary_threshold, &options);
+      else if (bpe_vocab_path)  // Backward compatibility.
+        subword_encoder->load_vocabulary(bpe_vocab_path.value(), bpe_vocab_threshold, &options);
+    }
 
     _tokenizer = std::make_shared<onmt::Tokenizer>(options, subword_encoder);
   }
@@ -135,112 +147,87 @@ public:
       );
   }
 
-  py::object tokenize(const std::string& text,
-                      const bool as_token_objects,
-                      const bool training) const
+  std::variant<
+    std::pair<std::vector<std::string>, std::optional<std::vector<std::vector<std::string>>>>,
+    std::vector<onmt::Token>>
+  tokenize(const std::string& text,
+           const bool as_token_objects,
+           const bool training) const
   {
     if (as_token_objects)
     {
       std::vector<onmt::Token> tokens;
-      {
-        py::gil_scoped_release release;
-        _tokenizer->tokenize(text, tokens, training);
-      }
-      return py::cast(tokens);
+      _tokenizer->tokenize(text, tokens, training);
+      return tokens;
     }
 
     std::vector<std::string> words;
-    std::vector<std::vector<std::string> > features;
+    std::vector<std::vector<std::string>> features;
+    _tokenizer->tokenize(text, words, features, training);
 
-    {
-      py::gil_scoped_release release;
-      _tokenizer->tokenize(text, words, features, training);
-    }
-
-    return py::make_tuple(py::cast(words), features.empty() ? py::none() : py::cast(features));
+    std::optional<std::vector<std::vector<std::string>>> optional_features;
+    if (!features.empty())
+      optional_features = std::move(features);
+    return std::make_pair(std::move(words), std::move(optional_features));
   }
 
-  py::tuple serialize_tokens(const std::vector<onmt::Token>& tokens) const
+  std::pair<std::vector<std::string>, std::optional<std::vector<std::vector<std::string>>>>
+  serialize_tokens(const std::vector<onmt::Token>& tokens) const
   {
     std::vector<std::string> words;
     std::vector<std::vector<std::string>> features;
     _tokenizer->finalize_tokens(tokens, words, features);
-    return py::make_tuple(py::cast(words), features.empty() ? py::none() : py::cast(features));
+
+    std::optional<std::vector<std::vector<std::string>>> optional_features;
+    if (!features.empty())
+      optional_features = std::move(features);
+    return std::make_pair(std::move(words), std::move(optional_features));
   }
 
-  std::vector<onmt::Token> deserialize_tokens(const std::vector<std::string>& words_vec,
-                                              const py::object& features) const
+  std::vector<onmt::Token>
+  deserialize_tokens(const std::vector<std::string>& words,
+                     const std::optional<std::vector<std::vector<std::string>>>& features) const
   {
-    const auto features_vec = (features.is_none()
-                               ? std::vector<std::vector<std::string>>()
-                               : features.cast<std::vector<std::vector<std::string>>>());
-
     std::vector<onmt::Token> tokens;
-    {
-      py::gil_scoped_release release;
-      _tokenizer->annotate_tokens(words_vec, features_vec, tokens);
-    }
+    _tokenizer->annotate_tokens(words,
+                                features.value_or(std::vector<std::vector<std::string>>()),
+                                tokens);
     return tokens;
   }
 
-  py::tuple detokenize_with_ranges(const py::list& words,
-                                   bool merge_ranges,
-                                   bool with_unicode_ranges) const
+  std::pair<std::string, onmt::Ranges>
+  detokenize_with_ranges(const std::vector<std::string>& tokens,
+                         bool merge_ranges,
+                         bool with_unicode_ranges) const
   {
     onmt::Ranges ranges;
-    std::string text;
-    if (words.size() > 0)
-    {
-      if (py::isinstance<onmt::Token>(words[0]))
-        text = _tokenizer->detokenize(words.cast<std::vector<onmt::Token>>(),
-                                      ranges, merge_ranges);
-      else
-        text = _tokenizer->detokenize(words.cast<std::vector<std::string>>(),
-                                      ranges, merge_ranges);
-    }
-
+    std::string text = _tokenizer->detokenize(tokens, ranges, merge_ranges);
     if (with_unicode_ranges)
-    {
-      onmt::Ranges unicode_ranges;
-      for (const auto& pair : ranges)
-      {
-        const size_t word_index = pair.first;
-        const onmt::Range& range = pair.second;
-        const std::string prefix(text.c_str(), range.first);
-        const std::string piece(text.c_str() + range.first, range.second - range.first + 1);
-        const size_t prefix_length = onmt::unicode::utf8len(prefix);
-        const size_t piece_length = onmt::unicode::utf8len(piece);
-        unicode_ranges.emplace(word_index,
-                               onmt::Range(prefix_length, prefix_length + piece_length - 1));
-      }
-      ranges = std::move(unicode_ranges);
-    }
-
-    py::list ranges_py(ranges.size());
-    size_t index = 0;
-    for (const auto& pair : ranges)
-    {
-      auto range = py::make_tuple(pair.second.first, pair.second.second);
-      ranges_py[index++] = py::make_tuple(pair.first, range);
-    }
-
-    return py::make_tuple(text, py::dict(ranges_py));
+      ranges = to_unicode_ranges(text, ranges);
+    return std::make_pair(std::move(text), std::move(ranges));
   }
 
-  std::string detokenize(const py::list& words, const py::object& features) const
+  std::pair<std::string, onmt::Ranges>
+  detokenize_with_ranges(const std::vector<onmt::Token>& tokens,
+                         bool merge_ranges,
+                         bool with_unicode_ranges) const
   {
-    if (words.size() == 0)
-      return "";
+    onmt::Ranges ranges;
+    std::string text = _tokenizer->detokenize(tokens, ranges, merge_ranges);
+    if (with_unicode_ranges)
+      ranges = to_unicode_ranges(text, ranges);
+    return std::make_pair(std::move(text), std::move(ranges));
+  }
 
-    if (py::isinstance<onmt::Token>(words[0]))
-      return _tokenizer->detokenize(words.cast<std::vector<onmt::Token>>());
+  std::string detokenize(const std::vector<onmt::Token>& tokens) const
+  {
+    return _tokenizer->detokenize(tokens);
+  }
 
-    const auto words_vec = words.cast<std::vector<std::string>>();
-    const auto features_vec = (features.is_none()
-                               ? std::vector<std::vector<std::string>>()
-                               : features.cast<std::vector<std::vector<std::string>>>());
-
-    return _tokenizer->detokenize(words_vec, features_vec);
+  std::string detokenize(const std::vector<std::string>& tokens,
+                         const std::optional<std::vector<std::vector<std::string>>>& features) const
+  {
+    return _tokenizer->detokenize(tokens, features.value_or(std::vector<std::vector<std::string>>()));
   }
 
   void tokenize_file(const std::string& input_path,
@@ -255,7 +242,6 @@ public:
     std::ofstream out(output_path);
     if (!out)
       throw std::invalid_argument("Failed to open output file " + output_path);
-    py::gil_scoped_release release;
     _tokenizer->tokenize_stream(in, out, num_threads, verbose, training);
   }
 
@@ -268,7 +254,6 @@ public:
     std::ofstream out(output_path);
     if (!out)
       throw std::invalid_argument("Failed to open output file " + output_path);
-    py::gil_scoped_release release;
     _tokenizer->detokenize_stream(in, out);
   }
 
@@ -281,11 +266,12 @@ private:
   std::shared_ptr<const onmt::Tokenizer> _tokenizer;
 };
 
-static std::shared_ptr<onmt::Tokenizer> build_sp_tokenizer(const std::string& model_path,
-                                                           const std::string& vocabulary_path,
-                                                           int vocabulary_threshold,
-                                                           int nbest_size,
-                                                           float alpha)
+static std::shared_ptr<onmt::Tokenizer>
+build_sp_tokenizer(const std::string& model_path,
+                   const std::optional<std::string>& vocabulary_path,
+                   int vocabulary_threshold,
+                   int nbest_size,
+                   float alpha)
 {
   onmt::Tokenizer::Options options;
   options.mode = onmt::Tokenizer::Mode::None;
@@ -293,8 +279,8 @@ static std::shared_ptr<onmt::Tokenizer> build_sp_tokenizer(const std::string& mo
   options.spacer_annotate = true;
 
   auto subword_encoder = std::make_shared<onmt::SentencePiece>(model_path, nbest_size, alpha);
-  if (!vocabulary_path.empty())
-    subword_encoder->load_vocabulary(vocabulary_path, vocabulary_threshold, &options);
+  if (vocabulary_path)
+    subword_encoder->load_vocabulary(vocabulary_path.value(), vocabulary_threshold, &options);
 
   return std::make_shared<onmt::Tokenizer>(options, subword_encoder);
 }
@@ -303,7 +289,7 @@ class SentencePieceTokenizerWrapper : public TokenizerWrapper
 {
 public:
   SentencePieceTokenizerWrapper(const std::string& model_path,
-                                const std::string& vocabulary_path,
+                                const std::optional<std::string>& vocabulary_path,
                                 int vocabulary_threshold,
                                 int nbest_size,
                                 float alpha)
@@ -319,9 +305,10 @@ public:
 class SubwordLearnerWrapper
 {
 public:
-  SubwordLearnerWrapper(const TokenizerWrapper* tokenizer, onmt::SubwordLearner* learner)
+  SubwordLearnerWrapper(const TokenizerWrapper* tokenizer,
+                        std::unique_ptr<onmt::SubwordLearner> learner)
     : _tokenizer(tokenizer ? tokenizer->get() : learner->get_default_tokenizer())
-    , _learner(learner)
+    , _learner(std::move(learner))
   {
   }
 
@@ -332,7 +319,6 @@ public:
     std::ifstream in(path);
     if (!in)
       throw std::invalid_argument("Failed to open input file " + path);
-    py::gil_scoped_release release;
     _learner->ingest(in, _tokenizer.get());
   }
 
@@ -353,10 +339,7 @@ public:
 
   TokenizerWrapper learn(const std::string& model_path, bool verbose)
   {
-    {
-      py::gil_scoped_release release;
-      _learner->learn(model_path, nullptr, verbose);
-    }
+    _learner->learn(model_path, nullptr, verbose);
 
     auto new_subword_encoder = create_subword_encoder(model_path);
     auto new_tokenizer = std::make_shared<onmt::Tokenizer>(*_tokenizer);
@@ -381,11 +364,11 @@ public:
                     int min_frequency,
                     bool total_symbols)
     : SubwordLearnerWrapper(tokenizer,
-                            new onmt::BPELearner(false,
-                                                 symbols,
-                                                 min_frequency,
-                                                 false,
-                                                 total_symbols))
+                            std::make_unique<onmt::BPELearner>(false,
+                                                               symbols,
+                                                               min_frequency,
+                                                               false,
+                                                               total_symbols))
   {
   }
 
@@ -424,10 +407,10 @@ public:
                               bool keep_vocab,
                               py::kwargs kwargs)
     : SubwordLearnerWrapper(tokenizer,
-                            new onmt::SentencePieceLearner(false,
-                                                           parse_kwargs(kwargs),
-                                                           create_temp_file(),
-                                                           keep_vocab))
+                            std::make_unique<onmt::SentencePieceLearner>(false,
+                                                                         parse_kwargs(kwargs),
+                                                                         create_temp_file(),
+                                                                         keep_vocab))
     , _keep_vocab(keep_vocab)
   {
   }
@@ -451,7 +434,7 @@ static onmt::Token create_token(std::string surface,
                                 const bool join_right,
                                 const bool spacer,
                                 const bool preserve,
-                                const py::object& features) {
+                                const std::optional<std::vector<std::string>>& features) {
   onmt::Token token(std::move(surface));
   token.type = type;
   token.casing = casing;
@@ -459,8 +442,8 @@ static onmt::Token create_token(std::string surface,
   token.join_right = join_right;
   token.spacer = spacer;
   token.preserve = preserve;
-  if (!features.is_none())
-    token.features = features.cast<std::vector<std::string>>();
+  if (features)
+    token.features = features.value();
   return token;
 }
 
@@ -563,24 +546,50 @@ PYBIND11_MODULE(_ext, m)
                                    t[4].cast<bool>(),
                                    t[5].cast<bool>(),
                                    t[6].cast<bool>(),
-                                   t[7]);
+                                   t[7].cast<std::optional<std::vector<std::string>>>());
              }
            ));
     ;
 
   py::class_<TokenizerWrapper>(m, "Tokenizer")
-    .def(py::init<const TokenizerWrapper&>(), py::arg("tokenizer"))
-    .def(py::init<const std::string&, const std::string&, const std::string&, const std::string&, int, float, std::string, int, const std::string&, int, float, const std::string&, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, const py::object&>(),
+    .def(py::init<
+         const std::string&,
+         const std::optional<std::string>&,
+         const std::optional<std::string>&,
+         const std::optional<std::string>&,
+         int,
+         float,
+         const std::optional<std::string>&,
+         int,
+         const std::optional<std::string>&,
+         int,
+         float,
+         const std::string&,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         bool,
+         const std::optional<std::vector<std::string>>&>(),
          py::arg("mode"),
          py::kw_only(),
-         py::arg("lang")="",
-         py::arg("bpe_model_path")="",
-         py::arg("bpe_vocab_path")="",  // Keep for backward compatibility.
+         py::arg("lang")=py::none(),
+         py::arg("bpe_model_path")=py::none(),
+         py::arg("bpe_vocab_path")=py::none(),  // Keep for backward compatibility.
          py::arg("bpe_vocab_threshold")=50,  // Keep for backward compatibility.
          py::arg("bpe_dropout")=0,
-         py::arg("vocabulary_path")="",
+         py::arg("vocabulary_path")=py::none(),
          py::arg("vocabulary_threshold")=0,
-         py::arg("sp_model_path")="",
+         py::arg("sp_model_path")=py::none(),
          py::arg("sp_nbest_size")=0,
          py::arg("sp_alpha")=0.1,
          py::arg("joiner")=onmt::Tokenizer::joiner_marker,
@@ -599,38 +608,72 @@ PYBIND11_MODULE(_ext, m)
          py::arg("segment_alphabet_change")=false,
          py::arg("support_prior_joiners")=false,
          py::arg("segment_alphabet")=py::none())
+    .def(py::init<const TokenizerWrapper&>(), py::arg("tokenizer"))
+
     .def_property_readonly("options", &TokenizerWrapper::get_options)
+
     .def("tokenize", &TokenizerWrapper::tokenize,
          py::arg("text"),
          py::arg("as_token_objects")=false,
-         py::arg("training")=true)
+         py::arg("training")=true,
+         py::call_guard<py::gil_scoped_release>())
+
     .def("serialize_tokens", &TokenizerWrapper::serialize_tokens,
          py::arg("tokens"))
     .def("deserialize_tokens", &TokenizerWrapper::deserialize_tokens,
-         py::arg("tokens"), py::arg("features")=py::none())
+         py::arg("tokens"),
+         py::arg("features")=py::none(),
+         py::call_guard<py::gil_scoped_release>())
+
+    .def("detokenize",
+         py::overload_cast<
+         const std::vector<std::string>&,
+         const std::optional<std::vector<std::vector<std::string>>>&>(
+           &TokenizerWrapper::detokenize, py::const_),
+         py::arg("tokens"),
+         py::arg("features")=py::none())
+    .def("detokenize",
+         py::overload_cast<const std::vector<onmt::Token>&>(
+           &TokenizerWrapper::detokenize, py::const_),
+         py::arg("tokens"))
+
+    .def("detokenize_with_ranges",
+         py::overload_cast<const std::vector<std::string>&, bool, bool>(
+           &TokenizerWrapper::detokenize_with_ranges, py::const_),
+         py::arg("tokens"),
+         py::arg("merge_ranges")=false,
+         py::arg("unicode_ranges")=false)
+    .def("detokenize_with_ranges",
+         py::overload_cast<const std::vector<onmt::Token>&, bool, bool>(
+           &TokenizerWrapper::detokenize_with_ranges, py::const_),
+         py::arg("tokens"),
+         py::arg("merge_ranges")=false,
+         py::arg("unicode_ranges")=false)
+
     .def("tokenize_file", &TokenizerWrapper::tokenize_file,
          py::arg("input_path"),
          py::arg("output_path"),
          py::arg("num_threads")=1,
          py::arg("verbose")=false,
-         py::arg("training")=true)
-    .def("detokenize", &TokenizerWrapper::detokenize,
-         py::arg("tokens"), py::arg("features")=py::none())
-    .def("detokenize_with_ranges", &TokenizerWrapper::detokenize_with_ranges,
-         py::arg("tokens"),
-         py::arg("merge_ranges")=false,
-         py::arg("unicode_ranges")=false)
+         py::arg("training")=true,
+         py::call_guard<py::gil_scoped_release>())
     .def("detokenize_file", &TokenizerWrapper::detokenize_file,
          py::arg("input_path"),
-         py::arg("output_path"))
-    .def("__copy__", copy<TokenizerWrapper>)
-    .def("__deepcopy__", deepcopy<TokenizerWrapper>)
+         py::arg("output_path"),
+         py::call_guard<py::gil_scoped_release>())
+
+    .def("__copy__", [](const TokenizerWrapper& wrapper) {
+      return wrapper;
+    })
+    .def("__deepcopy__", [](const TokenizerWrapper& wrapper, const py::object& dict) {
+      return wrapper;
+    })
     ;
 
   py::class_<SentencePieceTokenizerWrapper, TokenizerWrapper>(m, "SentencePieceTokenizer")
-    .def(py::init<const std::string&, const std::string&, int, int, float>(),
+    .def(py::init<const std::string&, const std::optional<std::string>&, int, int, float>(),
          py::arg("model_path"),
-         py::arg("vocabulary_path")="",
+         py::arg("vocabulary_path")=py::none(),
          py::arg("vocabulary_threshold")=0,
          py::arg("nbest_size")=0,
          py::arg("alpha")=0.1)
@@ -638,15 +681,19 @@ PYBIND11_MODULE(_ext, m)
 
   py::class_<SubwordLearnerWrapper>(m, "SubwordLearner")
     .def("ingest", &SubwordLearnerWrapper::ingest, py::arg("text"))
-    .def("ingest_file", &SubwordLearnerWrapper::ingest_file, py::arg("path"))
+    .def("ingest_file", &SubwordLearnerWrapper::ingest_file,
+         py::arg("path"),
+         py::call_guard<py::gil_scoped_release>())
     .def("ingest_token",
-         (void (SubwordLearnerWrapper::*)(const std::string&)) &SubwordLearnerWrapper::ingest_token,
+         py::overload_cast<const std::string&>(&SubwordLearnerWrapper::ingest_token),
          py::arg("token"))
     .def("ingest_token",
-         (void (SubwordLearnerWrapper::*)(const onmt::Token&)) &SubwordLearnerWrapper::ingest_token,
+         py::overload_cast<const onmt::Token&>(&SubwordLearnerWrapper::ingest_token),
          py::arg("token"))
     .def("learn", &SubwordLearnerWrapper::learn,
-         py::arg("model_path"), py::arg("verbose")=false)
+         py::arg("model_path"),
+         py::arg("verbose")=false,
+         py::call_guard<py::gil_scoped_release>())
     ;
 
   py::class_<BPELearnerWrapper, SubwordLearnerWrapper>(m, "BPELearner")

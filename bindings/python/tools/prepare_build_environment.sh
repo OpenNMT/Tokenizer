@@ -4,7 +4,7 @@ set -e
 set -x
 
 ROOT_DIR=$PWD
-ICU_VERSION=${ICU_VERSION:-66.1}
+ICU_VERSION=${ICU_VERSION:-69.1}
 
 # Install ICU.
 curl -L -O https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/icu4c-${ICU_VERSION/./_}-src.tgz

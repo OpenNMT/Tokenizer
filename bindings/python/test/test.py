@@ -26,6 +26,11 @@ def test_simple():
     detok = tokenizer.detokenize(tokens)
     assert detok == text
 
+def test_empty():
+    tokenizer = pyonmttok.Tokenizer("conservative")
+    assert tokenizer.tokenize("") == ([], None)
+    assert tokenizer.detokenize([]) == ""
+
 def test_options():
     options = {
         "mode": "aggressive",

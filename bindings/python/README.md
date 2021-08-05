@@ -12,6 +12,7 @@ pip install pyonmttok
 
 * OS: Linux, macOS
 * Python version: >= 3.5
+* pip version: >= 19.0
 
 **Table of contents**
 
@@ -42,12 +43,12 @@ pip install pyonmttok
 tokenizer = pyonmttok.Tokenizer(
     mode: str,
     *,
-    lang: str = "",
-    bpe_model_path: str = "",
+    lang: Optional[str] = None,
+    bpe_model_path: Optional[str] = None,
     bpe_dropout: float = 0,
-    vocabulary_path: str = "",
+    vocabulary_path: Optional[str] = None,
     vocabulary_threshold: int = 0,
-    sp_model_path: str = "",
+    sp_model_path: Optional[str] = None,
     sp_nbest_size: int = 0,
     sp_alpha: float = 0.1,
     joiner: str = "￭",
@@ -70,7 +71,7 @@ tokenizer = pyonmttok.Tokenizer(
 # SentencePiece-compatible tokenizer.
 tokenizer = pyonmttok.SentencePieceTokenizer(
     model_path: str,
-    vocabulary_path: str = "",
+    vocabulary_path: Optional[str] = None,
     vocabulary_threshold: int = 0,
     nbest_size: int = 0,
     alpha: float = 0.1,
@@ -90,17 +91,12 @@ See the [documentation](https://github.com/OpenNMT/Tokenizer/blob/master/docs/op
 ```python
 # By default, tokenize returns the tokens and features.
 # When training=False, subword regularization such as BPE dropout is disabled.
+# When as_token_objects=True, the method returns Token objects (see below).
 tokenizer.tokenize(
     text: str,
+    as_token_objects: bool = False,
     training: bool = True,
-) -> Tuple[List[str], List[List[str]]]
-
-# The as_token_objects flag can alternatively return Token objects (see below).
-tokenizer.tokenize(
-    text: str,
-    as_token_objects: bool = True,
-    training: bool = True,
-) -> List[pyonmttok.Token]
+) -> Union[Tuple[List[str], Optional[List[List[str]]]], List[pyonmttok.Token]]
 
 # Tokenize a file.
 tokenizer.tokenize_file(
@@ -117,9 +113,10 @@ tokenizer.tokenize_file(
 ```python
 # The detokenize method converts a list of tokens back to a string.
 tokenizer.detokenize(
-    tokens: Union[List[str], List[pyonmttok.Token]],
+    tokens: List[str],
     features: Optional[List[List[str]]] = None
 ) -> str
+tokenizer.detokenize(tokens: List[pyonmttok.Token]) -> str
 
 # The detokenize_with_ranges method also returns a dictionary mapping a token
 # index to a range in the detokenized text.
@@ -130,7 +127,7 @@ tokenizer.detokenize_with_ranges(
     tokens: Union[List[str], List[pyonmttok.Token]],
     merge_ranges: bool = True,
     unicode_ranges: bool = True
-) -> Tuple[str, Dict[int, Pair[int, int]]]
+) -> Tuple[str, Dict[int, Tuple[int, int]]]
 
 # Detokenize a file.
 tokenizer.detokenize_file(input_path: str, output_path: str)
@@ -251,7 +248,9 @@ The `Tokenizer` instances provide methods to serialize or deserialize `Token` ob
 
 ```python
 # Serialize Token objects to strings that can be saved on disk.
-tokenizer.serialize_tokens(tokens: List[pyonmttok.Token]) -> Tuple[List[str], List[List[str]]]
+tokenizer.serialize_tokens(
+    tokens: List[pyonmttok.Token],
+) -> Tuple[List[str], Optional[List[List[str]]]]
 
 # Deserialize strings into Token objects.
 tokenizer.deserialize_tokens(
