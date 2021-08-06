@@ -19,16 +19,6 @@ using namespace pybind11::literals;
 class TokenizerWrapper
 {
 public:
-  TokenizerWrapper(TokenizerWrapper&& other)
-    : _tokenizer(std::move(other._tokenizer))
-  {
-  }
-
-  TokenizerWrapper(const TokenizerWrapper& other)
-    : _tokenizer(other._tokenizer)
-  {
-  }
-
   TokenizerWrapper(std::shared_ptr<const onmt::Tokenizer> tokenizer)
     : _tokenizer(std::move(tokenizer))
   {
@@ -300,7 +290,7 @@ public:
 class SubwordLearnerWrapper
 {
 public:
-  SubwordLearnerWrapper(const TokenizerWrapper* tokenizer,
+  SubwordLearnerWrapper(const std::optional<TokenizerWrapper>& tokenizer,
                         std::unique_ptr<onmt::SubwordLearner> learner)
     : _tokenizer(tokenizer ? tokenizer->get() : learner->get_default_tokenizer())
     , _learner(std::move(learner))
@@ -354,7 +344,7 @@ private:
 class BPELearnerWrapper : public SubwordLearnerWrapper
 {
 public:
-  BPELearnerWrapper(const TokenizerWrapper* tokenizer,
+  BPELearnerWrapper(const std::optional<TokenizerWrapper>& tokenizer,
                     int symbols,
                     int min_frequency,
                     bool total_symbols)
@@ -398,7 +388,7 @@ static std::string create_temp_file()
 class SentencePieceLearnerWrapper : public SubwordLearnerWrapper
 {
 public:
-  SentencePieceLearnerWrapper(const TokenizerWrapper* tokenizer,
+  SentencePieceLearnerWrapper(const std::optional<TokenizerWrapper>& tokenizer,
                               bool keep_vocab,
                               py::kwargs kwargs)
     : SubwordLearnerWrapper(tokenizer,
@@ -692,7 +682,7 @@ PYBIND11_MODULE(_ext, m)
     ;
 
   py::class_<BPELearnerWrapper, SubwordLearnerWrapper>(m, "BPELearner")
-    .def(py::init<const TokenizerWrapper*, int, int, bool>(),
+    .def(py::init<const std::optional<TokenizerWrapper>&, int, int, bool>(),
          py::arg("tokenizer")=py::none(),
          py::arg("symbols")=10000,
          py::arg("min_frequency")=2,
@@ -700,7 +690,7 @@ PYBIND11_MODULE(_ext, m)
     ;
 
   py::class_<SentencePieceLearnerWrapper, SubwordLearnerWrapper>(m, "SentencePieceLearner")
-    .def(py::init<const TokenizerWrapper*, bool, py::kwargs>(),
+    .def(py::init<const std::optional<TokenizerWrapper>&, bool, py::kwargs>(),
          py::arg("tokenizer")=py::none(),
          py::arg("keep_vocab")=false)
     ;
