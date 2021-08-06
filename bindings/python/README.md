@@ -66,7 +66,8 @@ tokenizer = pyonmttok.Tokenizer(
     segment_case: bool = False,
     segment_numbers: bool = False,
     segment_alphabet_change: bool = False,
-    segment_alphabet: Optional[List[str]] = None)
+    segment_alphabet: Optional[List[str]] = None,
+)
 
 # SentencePiece-compatible tokenizer.
 tokenizer = pyonmttok.SentencePieceTokenizer(
@@ -90,8 +91,8 @@ See the [documentation](https://github.com/OpenNMT/Tokenizer/blob/master/docs/op
 
 ```python
 # By default, tokenize returns the tokens and features.
-# When training=False, subword regularization such as BPE dropout is disabled.
 # When as_token_objects=True, the method returns Token objects (see below).
+# When training=False, subword regularization such as BPE dropout is disabled.
 tokenizer.tokenize(
     text: str,
     as_token_objects: bool = False,
@@ -114,7 +115,7 @@ tokenizer.tokenize_file(
 # The detokenize method converts a list of tokens back to a string.
 tokenizer.detokenize(
     tokens: List[str],
-    features: Optional[List[List[str]]] = None
+    features: Optional[List[List[str]]] = None,
 ) -> str
 tokenizer.detokenize(tokens: List[pyonmttok.Token]) -> str
 
@@ -125,8 +126,8 @@ tokenizer.detokenize(tokens: List[pyonmttok.Token]) -> str
 # Set unicode_ranges=True to return ranges over Unicode characters instead of bytes.
 tokenizer.detokenize_with_ranges(
     tokens: Union[List[str], List[pyonmttok.Token]],
-    merge_ranges: bool = True,
-    unicode_ranges: bool = True
+    merge_ranges: bool = False,
+    unicode_ranges: bool = False,
 ) -> Tuple[str, Dict[int, Tuple[int, int]]]
 
 # Detokenize a file.
@@ -179,14 +180,16 @@ learner = pyonmttok.BPELearner(
     tokenizer: Optional[pyonmttok.Tokenizer] = None,  # Defaults to tokenization mode "space".
     symbols: int = 10000,
     min_frequency: int = 2,
-    total_symbols: bool = False)
+    total_symbols: bool = False,
+)
 
 # See https://github.com/google/sentencepiece/blob/master/src/spm_train_main.cc
 # for available training options.
 learner = pyonmttok.SentencePieceLearner(
     tokenizer: Optional[pyonmttok.Tokenizer] = None,  # Defaults to tokenization mode "none".
     keep_vocab: bool = False,  # Keep the generated vocabulary (model_path will act like model_prefix in spm_train)
-    **training_options)
+    **training_options,
+)
 
 learner.ingest(text: str)
 learner.ingest_file(path: str)
@@ -255,7 +258,7 @@ tokenizer.serialize_tokens(
 # Deserialize strings into Token objects.
 tokenizer.deserialize_tokens(
     tokens: List[str],
-    features: Optional[List[List[str]]] = None
+    features: Optional[List[List[str]]] = None,
 ) -> List[pyonmttok.Token]
 ```
 
