@@ -295,8 +295,14 @@ namespace onmt
 
       const std::string code = str.substr(index + protected_character.size(), hex_value_width);
       const int v = hex_to_int(code);
-      str.replace(index, protected_character.size() + hex_value_width, unicode::cp_to_utf8(v));
-      offset = index + 1;
+      const std::string c = unicode::cp_to_utf8(v);
+      if (c.empty() || !c[0])
+        offset = index + protected_character.size();
+      else
+      {
+        str.replace(index, protected_character.size() + hex_value_width, c);
+        offset = index + 1;
+      }
     }
   }
 
