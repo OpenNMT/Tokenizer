@@ -24,6 +24,22 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.27.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.27.0) (2021-08-30)
+
+### Changes
+
+* Linux Python wheels are now compiled with `manylinux2010` and require `pip` >= 19.0 for installation
+* macOS Python wheels now require macOS >= 10.14
+
+### Fixes and improvements
+
+* Fix casing resolution when some letters do not have case information
+* Fix detokenization when a token includes a fullwidth percent sign (％) that is not used as an escape sequence
+* Improve error message when setting invalid `segment_alphabet` or `lang` options
+* Update SentencePiece to 0.1.96
+* [Python] Improve declaration of functions and classes for better type hints and checks
+* [Python] Update ICU to 69.1
+
 ## [v1.26.4](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.26.4) (2021-06-25)
 
 ### Fixes and improvements
