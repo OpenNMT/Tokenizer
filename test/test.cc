@@ -440,6 +440,12 @@ TEST(TokenizerTest, JoinerSubstitution) {
            "It is a test-aggressive ■'■ with pre■ tokenizat ■ions ｟entity＃1：World￭｠ 123.");
 }
 
+TEST(TokenizerTest, InvalidEscapeSequence) {
+  test_detok({},
+             "要求从１４％降到２％，动员干部参加生产，向合作社看齐。",
+             "要求从１４％降到２％，动员干部参加生产，向合作社看齐。");
+}
+
 TEST(TokenizerTest, ZeroWidthJoiner) {
   Tokenizer::Options options;
   options.joiner_annotate = true;
