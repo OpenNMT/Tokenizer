@@ -130,7 +130,7 @@ public:
     std::vector<onmt::Token> tokens;
     _tokenizer->tokenize(text, tokens, training);
     if (as_token_objects)
-      return tokens;
+      return std::move(tokens);
     return serialize_tokens(tokens);
   }
 
