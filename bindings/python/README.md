@@ -10,7 +10,7 @@ pip install pyonmttok
 
 **Requirements:**
 
-* OS: Linux, macOS
+* OS: Linux, macOS, Windows
 * Python version: >= 3.5
 * pip version: >= 19.0
 
