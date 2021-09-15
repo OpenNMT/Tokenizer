@@ -11,7 +11,9 @@ option(BUILD_TESTS "Compile unit tests" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+if(CMAKE_VERSION VERSION_LESS "3.7.0")
+  set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -40,13 +42,15 @@ if(MSVC)
     endif()
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   endif()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /wd4251")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /wd4251 /d2FH4-")
+  set(ICU_COMPONENTS uc dt)
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+  set(ICU_COMPONENTS uc data)
 endif()
 
 if(NOT DEFINED ICU_INCLUDE_DIRS OR NOT DEFINED ICU_LIBRARIES)
-  find_package(ICU REQUIRED COMPONENTS uc data)
+  find_package(ICU REQUIRED COMPONENTS ${ICU_COMPONENTS})
 endif()
 
 set(INCLUDE_DIRECTORIES
