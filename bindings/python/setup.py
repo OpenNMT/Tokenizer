@@ -15,6 +15,15 @@ def _get_long_description():
         return readme_file.read()
 
 
+def _get_project_version():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    version_path = os.path.join(base_dir, "pyonmttok", "version.py")
+    version = {}
+    with open(version_path, encoding="utf-8") as fp:
+        exec(fp.read(), version)
+    return version["__version__"]
+
+
 def _maybe_add_library_root(lib_name, header_only=False):
     root = os.environ.get("%s_ROOT" % lib_name)
     if root is None:
@@ -52,7 +61,7 @@ tokenizer_module = Extension(
 
 setup(
     name="pyonmttok",
-    version="1.27.0",
+    version=_get_project_version(),
     license="MIT",
     description=(
         "Fast and customizable text tokenization library with "
