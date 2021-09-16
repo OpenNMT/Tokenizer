@@ -3,6 +3,7 @@
 #include <future>
 #include <mutex>
 #include <queue>
+#include <sstream>
 #include <thread>
 
 #include "Utils.h"
@@ -194,18 +195,7 @@ namespace onmt
                   {
                     const auto& words = result.first;
                     const auto& features = result.second;
-                    for (size_t i = 0; i < words.size(); ++i)
-                    {
-                      if (i > 0)
-                        os << tokens_delimiter;
-                      os << words[i];
-
-                      if (!features.empty())
-                      {
-                        for (size_t j = 0; j < features.size(); ++j)
-                          os << feature_marker << features[j][i];
-                      }
-                    }
+                    write_tokens(words, features, os, tokens_delimiter);
                   };
     if (verbose)
       std::cerr << "Start processing..." << std::endl;
@@ -223,33 +213,69 @@ namespace onmt
                                      const std::string& tokens_delimiter) const
   {
     auto function = [this, &tokens_delimiter](const std::string& line) {
-      auto tokens = split_string(line, tokens_delimiter);
-      if (tokens.empty())
-        return std::string();
-
+      std::vector<std::string> tokens;
       std::vector<std::vector<std::string>> features;
-      if (tokens[0].find(feature_marker) != std::string::npos)
-      {
-        for (auto& token : tokens)
-        {
-          auto fields = split_string(token, feature_marker);
-          token = std::move(fields[0]);
-          for (size_t i = 1; i < fields.size(); ++i)
-          {
-            if (features.size() < i)
-            {
-              features.emplace_back();
-              features.back().reserve(tokens.size());
-            }
-            features[i - 1].emplace_back(std::move(fields[i]));
-          }
-        }
-      }
-
+      read_tokens(line, tokens, features, tokens_delimiter);
       return this->detokenize(tokens, features);
     };
     auto writer = [](std::ostream& os, const std::string& text) { os << text; };
     process_stream<std::string>(function, writer, in, out, /*num_threads=*/1, /*buffer_size=*/0);
+  }
+
+  void read_tokens(const std::string& line,
+                   std::vector<std::string>& tokens,
+                   std::vector<std::vector<std::string>>& features,
+                   const std::string& tokens_delimiter)
+  {
+    tokens = split_string(line, tokens_delimiter);
+    if (tokens.empty())
+      return;
+
+    if (tokens[0].find(ITokenizer::feature_marker) != std::string::npos)
+    {
+      for (auto& token : tokens)
+      {
+        auto fields = split_string(token, ITokenizer::feature_marker);
+        token = std::move(fields[0]);
+        for (size_t i = 1; i < fields.size(); ++i)
+        {
+          if (features.size() < i)
+          {
+            features.emplace_back();
+            features.back().reserve(tokens.size());
+          }
+          features[i - 1].emplace_back(std::move(fields[i]));
+        }
+      }
+    }
+  }
+
+  void write_tokens(const std::vector<std::string>& tokens,
+                    const std::vector<std::vector<std::string>>& features,
+                    std::ostream& os,
+                    const std::string& tokens_delimiter)
+  {
+    for (size_t i = 0; i < tokens.size(); ++i)
+    {
+      if (i > 0)
+        os << tokens_delimiter;
+      os << tokens[i];
+
+      if (!features.empty())
+      {
+        for (size_t j = 0; j < features.size(); ++j)
+          os << ITokenizer::feature_marker << features[j][i];
+      }
+    }
+  }
+
+  std::string write_tokens(const std::vector<std::string>& tokens,
+                           const std::vector<std::vector<std::string>>& features,
+                           const std::string& tokens_delimiter)
+  {
+    std::ostringstream oss;
+    write_tokens(tokens, features, oss, tokens_delimiter);
+    return oss.str();
   }
 
 }

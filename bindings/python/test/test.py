@@ -91,13 +91,13 @@ def test_file(tmpdir, tokens_delimiter):
     tokenizer.tokenize_file(input_path, output_path, tokens_delimiter=tokens_delimiter)
     assert os.path.exists(output_path)
     with open(output_path, encoding="utf-8") as output_file:
-        assert output_file.readline().strip() == tokens_delimiter.join(expected_tokens)
+        assert output_file.readline() == tokens_delimiter.join(expected_tokens) + "\n"
     os.remove(input_path)
 
     tokenizer.detokenize_file(output_path, input_path, tokens_delimiter=tokens_delimiter)
     assert os.path.exists(input_path)
     with open(input_path, encoding="utf-8") as input_file:
-        assert input_file.readline().strip() == text
+        assert input_file.readline() == text + "\n"
 
 def test_invalid_files(tmpdir):
     tokenizer = pyonmttok.Tokenizer("conservative")

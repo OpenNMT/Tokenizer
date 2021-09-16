@@ -56,4 +56,16 @@ namespace onmt
                            const std::string& tokens_delimiter = " ") const;
   };
 
+  void read_tokens(const std::string& line,
+                   std::vector<std::string>& tokens,
+                   std::vector<std::vector<std::string>>& features,
+                   const std::string& tokens_delimiter = " ");
+  void write_tokens(const std::vector<std::string>& tokens,
+                    const std::vector<std::vector<std::string>>& features,
+                    std::ostream& os,
+                    const std::string& tokens_delimiter = " ");
+  std::string write_tokens(const std::vector<std::string>& tokens,
+                           const std::vector<std::vector<std::string>>& features,
+                           const std::string& tokens_delimiter = " ");
+
 }
