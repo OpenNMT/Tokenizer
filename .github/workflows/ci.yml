@@ -43,6 +43,38 @@ jobs:
           test/onmt_tokenizer_test test/data
 
 
+  check-python-style:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install dependencies
+        run: |
+          python -m pip install black==21.9b0 flake8==3.9.* isort==5.*
+
+      - name: Check code format with Black
+        working-directory: bindings/python
+        run: |
+          black --check .
+
+      - name: Check imports order with isort
+        working-directory: bindings/python
+        run: |
+          isort --check-only .
+
+      - name: Check code style with Flake8
+        working-directory: bindings/python
+        if: ${{ always() }}
+        run: |
+          flake8 .
+
+
   build-and-test-python-wheels:
     name: Build and test Python wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

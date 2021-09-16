@@ -1,18 +1,19 @@
 import os
 import sys
 
-from setuptools import find_packages, setup, Extension
-
 import pybind11
 
+from setuptools import Extension, find_packages, setup
 
 include_dirs = [pybind11.get_include()]
 library_dirs = []
+
 
 def _get_long_description():
     readme_path = "README.md"
     with open(readme_path, encoding="utf-8") as readme_file:
         return readme_file.read()
+
 
 def _maybe_add_library_root(lib_name, header_only=False):
     root = os.environ.get("%s_ROOT" % lib_name)
@@ -25,6 +26,7 @@ def _maybe_add_library_root(lib_name, header_only=False):
             if os.path.isdir(lib_dir):
                 library_dirs.append(lib_dir)
                 break
+
 
 _maybe_add_library_root("TOKENIZER")
 
@@ -45,13 +47,17 @@ tokenizer_module = Extension(
     extra_link_args=ldflags,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
-    libraries=["OpenNMTTokenizer"])
+    libraries=["OpenNMTTokenizer"],
+)
 
 setup(
     name="pyonmttok",
     version="1.27.0",
     license="MIT",
-    description="Fast and customizable text tokenization library with BPE and SentencePiece support",
+    description=(
+        "Fast and customizable text tokenization library with "
+        "BPE and SentencePiece support"
+    ),
     long_description=_get_long_description(),
     long_description_content_type="text/markdown",
     author="OpenNMT",
@@ -70,11 +76,11 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Topic :: Text Processing :: Linguistic",
-        "Topic :: Software Development :: Libraries :: Python Modules"
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     project_urls={
         "Forum": "https://forum.opennmt.net/",
-        "Source": "https://github.com/OpenNMT/Tokenizer/"
+        "Source": "https://github.com/OpenNMT/Tokenizer/",
     },
     keywords="tokenization opennmt unicode bpe sentencepiece subword",
     packages=find_packages(),
@@ -82,5 +88,5 @@ setup(
     python_requires=">=3.5,<3.10",
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
-    ext_modules=[tokenizer_module]
+    ext_modules=[tokenizer_module],
 )

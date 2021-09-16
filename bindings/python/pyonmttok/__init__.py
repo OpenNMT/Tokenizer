@@ -1,8 +1,9 @@
 import sys
 
 if sys.platform == "win32":
-    import os
     import ctypes
+    import os
+
     import pkg_resources
 
     module_name = sys.modules[__name__].__name__
@@ -16,4 +17,15 @@ if sys.platform == "win32":
         if filename.endswith(".dll"):
             ctypes.CDLL(os.path.join(package_dir, filename))
 
-from ._ext import *
+from ._ext import (
+    BPELearner,
+    Casing,
+    SentencePieceLearner,
+    SentencePieceTokenizer,
+    SubwordLearner,
+    Token,
+    Tokenizer,
+    TokenType,
+    is_placeholder,
+    set_random_seed,
+)
