@@ -125,6 +125,10 @@ namespace onmt
       throw std::invalid_argument("joiner_new requires joiner_annotate");
     if (support_prior_joiners && unicode::utf8len(joiner) != 1)
       throw std::invalid_argument("support_prior_joiners does not support multi-character joiners");
+    if (spacer_annotate && with_separators)
+      throw std::invalid_argument("spacer_annotate and with_separators can't be set at the "
+                                  "same time because spacer_annotate is replacing the separator "
+                                  "characters by a marker");
 
     for (const std::string& alphabet : segment_alphabet)
     {

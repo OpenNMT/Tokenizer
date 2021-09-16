@@ -164,6 +164,23 @@ $ echo "ΣΙΓΜΑ ΤΕΛΙΚΟΣ" | cli/tokenize --lang el --case_markup --soft
 
 Note: when compiling from source, this option requires ICU version 60 or greater.
 
+### `with_separators` (boolean, default: `false`)
+
+By default, characters from the "Separator" Unicode category are used as tokens boundaries and are not included in the tokenized output. They can be returned by enabling this option.
+
+When writing the tokenization results to a file, you should consider changing the default tokens delimiter to better isolate these characters:
+
+```bash
+$ echo "A B" | cli/tokenize
+A B
+$ echo "A B" | cli/tokenize --with_separators
+A   B
+$ echo "A B" | cli/tokenize --with_separators --tokens_delimiter "++"
+A++ ++B
+```
+
+Note: this option is not compatible with `spacer_annotate`, since `space_annotate` is replacing these characters by a marker.
+
 ## Subword encoding
 
 ### `bpe_model_path` (string, default: `""`)

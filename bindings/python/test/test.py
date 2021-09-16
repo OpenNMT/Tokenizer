@@ -132,6 +132,11 @@ def test_segment_alphabet():
     tokens, _ = tokenizer.tokenize("測試 abc")
     assert tokens == ["測試", "abc"]
 
+def test_with_separators():
+    tokenizer = pyonmttok.Tokenizer("conservative", with_separators=True)
+    tokens, _ = tokenizer.tokenize("Exemple :")  # Non-breaking space
+    assert tokens == ["Exemple", " ", ":"]
+
 def test_sp_tokenizer():
     sp_model_path = os.path.join(_DATA_DIR, "sp-models", "wmtende.model")
     tokenizer = pyonmttok.SentencePieceTokenizer(sp_model_path)

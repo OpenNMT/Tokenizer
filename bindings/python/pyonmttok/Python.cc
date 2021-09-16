@@ -44,6 +44,7 @@ public:
                    bool case_markup,
                    bool soft_case_regions,
                    bool no_substitution,
+                   bool with_separators,
                    bool preserve_placeholders,
                    bool preserve_segmented_tokens,
                    bool segment_case,
@@ -65,6 +66,7 @@ public:
     options.mode = onmt::Tokenizer::str_to_mode(mode);
     options.lang = lang.value_or("");
     options.no_substitution = no_substitution;
+    options.with_separators = with_separators;
     options.case_feature = case_feature;
     options.case_markup = case_markup;
     options.soft_case_regions = soft_case_regions;
@@ -102,6 +104,7 @@ public:
       "mode"_a=onmt::Tokenizer::mode_to_str(options.mode),
       "lang"_a=options.lang,
       "no_substitution"_a=options.no_substitution,
+      "with_separators"_a=options.with_separators,
       "case_feature"_a=options.case_feature,
       "case_markup"_a=options.case_markup,
       "soft_case_regions"_a=options.soft_case_regions,
@@ -548,6 +551,7 @@ PYBIND11_MODULE(_ext, m)
          bool,
          bool,
          bool,
+         bool,
          const std::optional<std::vector<std::string>>&>(),
          py::arg("mode"),
          py::kw_only(),
@@ -570,6 +574,7 @@ PYBIND11_MODULE(_ext, m)
          py::arg("case_markup")=false,
          py::arg("soft_case_regions")=false,
          py::arg("no_substitution")=false,
+         py::arg("with_separators")=false,
          py::arg("preserve_placeholders")=false,
          py::arg("preserve_segmented_tokens")=false,
          py::arg("segment_case")=false,
