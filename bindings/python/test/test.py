@@ -8,17 +8,17 @@ import pytest
 import pyonmttok
 
 _DATA_DIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "test", "data")
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "test", "data"
+)
+
 
 def test_is_placeholder():
     assert not pyonmttok.is_placeholder("hello")
     assert pyonmttok.is_placeholder("｟hello｠")
 
+
 def test_simple():
-    tokenizer = pyonmttok.Tokenizer(
-        "aggressive",
-        joiner_annotate=True,
-        joiner_new=True)
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, joiner_new=True)
     text = "Hello World!"
     tokens, features = tokenizer.tokenize(text)
     assert tokens == ["Hello", "World", "￭", "!"]
@@ -26,10 +26,12 @@ def test_simple():
     detok = tokenizer.detokenize(tokens)
     assert detok == text
 
+
 def test_empty():
     tokenizer = pyonmttok.Tokenizer("conservative")
     assert tokenizer.tokenize("") == ([], None)
     assert tokenizer.detokenize([]) == ""
+
 
 def test_options():
     options = {
@@ -44,32 +46,35 @@ def test_options():
     for name, value in options.items():
         assert tokenizer.options[name] == value
 
+
 def test_invalid_mode():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("xxx")
+
 
 def test_invalid_lang():
     with pytest.raises(ValueError, match="ISO"):
         pyonmttok.Tokenizer("conservative", lang="xxx")
 
+
 def test_invalid_sentencepiece_model():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("none", sp_model_path="xxx")
+
 
 def test_invalid_bpe_model():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("conservative", bpe_model_path="xxx")
 
+
 def test_invalid_annotation():
     with pytest.raises(ValueError):
-        pyonmttok.Tokenizer(
-            "conservative",
-            joiner_annotate=True,
-            spacer_annotate=True)
+        pyonmttok.Tokenizer("conservative", joiner_annotate=True, spacer_annotate=True)
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("conservative", joiner_new=True)
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("conservative", spacer_new=True)
+
 
 @pytest.mark.parametrize("tokens_delimiter", [" ", "++"])
 def test_file(tmpdir, tokens_delimiter):
@@ -94,10 +99,13 @@ def test_file(tmpdir, tokens_delimiter):
         assert output_file.readline() == tokens_delimiter.join(expected_tokens) + "\n"
     os.remove(input_path)
 
-    tokenizer.detokenize_file(output_path, input_path, tokens_delimiter=tokens_delimiter)
+    tokenizer.detokenize_file(
+        output_path, input_path, tokens_delimiter=tokens_delimiter
+    )
     assert os.path.exists(input_path)
     with open(input_path, encoding="utf-8") as input_file:
         assert input_file.readline() == text + "\n"
+
 
 def test_invalid_files(tmpdir):
     tokenizer = pyonmttok.Tokenizer("conservative")
@@ -117,11 +125,12 @@ def test_invalid_files(tmpdir):
     with pytest.raises(ValueError):
         tokenizer.detokenize_file(input_file, directory)
 
+
 def test_custom_joiner():
-    tokenizer = pyonmttok.Tokenizer(
-        "aggressive", joiner="•", joiner_annotate=True)
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner="•", joiner_annotate=True)
     tokens, _ = tokenizer.tokenize("Hello World!")
     assert tokens == ["Hello", "World", "•!"]
+
 
 def test_segment_alphabet():
     tokenizer = pyonmttok.Tokenizer(mode="aggressive", segment_alphabet=["Han"])
@@ -132,16 +141,19 @@ def test_segment_alphabet():
     tokens, _ = tokenizer.tokenize("測試 abc")
     assert tokens == ["測試", "abc"]
 
+
 def test_with_separators():
     tokenizer = pyonmttok.Tokenizer("conservative", with_separators=True)
     tokens, _ = tokenizer.tokenize("Exemple :")  # Non-breaking space
     assert tokens == ["Exemple", " ", ":"]
+
 
 def test_sp_tokenizer():
     sp_model_path = os.path.join(_DATA_DIR, "sp-models", "wmtende.model")
     tokenizer = pyonmttok.SentencePieceTokenizer(sp_model_path)
     assert isinstance(tokenizer, pyonmttok.Tokenizer)
     assert tokenizer.tokenize("Hello")[0] == ["▁H", "ello"]
+
 
 def test_sp_with_vocabulary(tmpdir):
     sp_model_path = os.path.join(_DATA_DIR, "sp-models", "wmtende.model")
@@ -154,13 +166,16 @@ def test_sp_with_vocabulary(tmpdir):
             mode="none",
             sp_model_path=sp_model_path,
             vocabulary_path=vocab_path,
-            joiner_annotate=True)
+            joiner_annotate=True,
+        )
 
     tokenizer = pyonmttok.Tokenizer(
         mode="none",
         sp_model_path=os.path.join(_DATA_DIR, "sp-models", "wmtende.model"),
-        vocabulary_path=vocab_path)
+        vocabulary_path=vocab_path,
+    )
     assert tokenizer.tokenize("World")[0] == ["▁Wor", "l", "d"]
+
 
 def test_named_arguments():
     tokenizer = pyonmttok.Tokenizer(mode="aggressive", joiner_annotate=True)
@@ -168,6 +183,7 @@ def test_named_arguments():
     tokens, features = tokenizer.tokenize(text=text)
     assert tokens == ["Hello", "World", "￭!"]
     assert text == tokenizer.detokenize(tokens=tokens)
+
 
 @pytest.mark.parametrize("use_constructor", [False, True])
 def test_deepcopy(use_constructor):
@@ -184,6 +200,7 @@ def test_deepcopy(use_constructor):
     tokens2, _ = tok2.tokenize(text)
     assert tokens1 == tokens2
 
+
 def test_detok_with_ranges():
     tokenizer = pyonmttok.Tokenizer("conservative")
     text, ranges = tokenizer.detokenize_with_ranges(["a", "b"])
@@ -192,17 +209,18 @@ def test_detok_with_ranges():
     assert ranges[0] == (0, 0)
     assert ranges[1] == (2, 2)
 
-    _, ranges = tokenizer.detokenize_with_ranges(
-        ["测", "试"], unicode_ranges=True)
+    _, ranges = tokenizer.detokenize_with_ranges(["测", "试"], unicode_ranges=True)
     assert len(ranges) == 2
     assert ranges[0] == (0, 0)
     assert ranges[1] == (2, 2)
 
     _, ranges = tokenizer.detokenize_with_ranges(
-        ["测", "￭试"], unicode_ranges=True, merge_ranges=True)
+        ["测", "￭试"], unicode_ranges=True, merge_ranges=True
+    )
     assert len(ranges) == 2
     assert ranges[0] == (0, 1)
     assert ranges[1] == (0, 1)
+
 
 def test_subword_regularization():
     pyonmttok.set_random_seed(42)
@@ -211,22 +229,40 @@ def test_subword_regularization():
         "none",
         sp_model_path=os.path.join(_DATA_DIR, "sp-models", "wmtende.model"),
         sp_nbest_size=10,
-        sp_alpha=0.1)
+        sp_alpha=0.1,
+    )
     assert tokenizer.tokenize("appealing")[0] == ["▁app", "e", "al", "ing"]
     assert tokenizer.tokenize("appealing", training=False)[0] == ["▁appealing"]
 
     tokenizer = pyonmttok.Tokenizer(
         "conservative",
         bpe_model_path=os.path.join(_DATA_DIR, "bpe-models", "testcode.v0.1"),
-        bpe_dropout=0.3)
-    assert tokenizer.tokenize("improvement")[0] == ["i", "m", "pr", "ove", "m", "e", "n", "t"]
-    assert tokenizer.tokenize("improvement", training=False)[0] == ["impr", "ovemen", "t"]
+        bpe_dropout=0.3,
+    )
+    assert tokenizer.tokenize("improvement")[0] == [
+        "i",
+        "m",
+        "pr",
+        "ove",
+        "m",
+        "e",
+        "n",
+        "t",
+    ]
+    assert tokenizer.tokenize("improvement", training=False)[0] == [
+        "impr",
+        "ovemen",
+        "t",
+    ]
+
 
 def test_bpe_case_insensitive_issue_147():
     tokenizer = pyonmttok.Tokenizer(
         "conservative",
-        bpe_model_path=os.path.join(_DATA_DIR, "bpe-models", "issue-147.txt"))
+        bpe_model_path=os.path.join(_DATA_DIR, "bpe-models", "issue-147.txt"),
+    )
     tokenizer.tokenize("𝘛𝘩𝘦𝘳𝘦'𝘴 𝘯𝘰𝘵𝘩𝘪𝘯𝘨 𝘮𝘰𝘳𝘦 𝘨𝘭𝘢𝘮𝘰𝘳𝘰𝘶𝘴 𝘵𝘩𝘢𝘯 𝘭𝘰𝘰𝘬𝘪𝘯𝘨 𝘵𝘰𝘸𝘢𝘳𝘥𝘴 𝘵𝘩𝘦 𝘧𝘶𝘵𝘶𝘳𝘦")
+
 
 def test_bpe_learner(tmpdir):
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
@@ -240,6 +276,7 @@ def test_bpe_learner(tmpdir):
     tokens, _ = tokenizer.tokenize("hello")
     assert tokens == ["h￭", "ell￭", "o"]
 
+
 def test_bpe_learner_tokens(tmpdir):
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
     learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=2, min_frequency=1)
@@ -251,10 +288,12 @@ def test_bpe_learner_tokens(tmpdir):
     with open(model_path, encoding="utf-8") as model:
         assert model.read() == "#version: 0.2\na b</w>\nc d</w>\n"
 
+
 @pytest.mark.parametrize("keep_vocab", [False, True])
 def test_sp_learner(tmpdir, keep_vocab):
     learner = pyonmttok.SentencePieceLearner(
-        keep_vocab=keep_vocab, vocab_size=17, character_coverage=0.98)
+        keep_vocab=keep_vocab, vocab_size=17, character_coverage=0.98
+    )
     assert isinstance(learner, pyonmttok.SubwordLearner)
     learner.ingest("hello word! how are you?")
     model_path = str(tmpdir.join("sp"))
@@ -267,10 +306,14 @@ def test_sp_learner(tmpdir, keep_vocab):
     tokens, _ = tokenizer.tokenize("hello")
     assert tokens == ["▁h", "e", "l", "l", "o"]
 
+
 @pytest.mark.parametrize(
     "learner",
-    [pyonmttok.BPELearner(symbols=2, min_frequency=1),
-     pyonmttok.SentencePieceLearner(vocab_size=17, character_coverage=0.98)])
+    [
+        pyonmttok.BPELearner(symbols=2, min_frequency=1),
+        pyonmttok.SentencePieceLearner(vocab_size=17, character_coverage=0.98),
+    ],
+)
 def test_learner_with_invalid_files(tmpdir, learner):
     with pytest.raises(ValueError):
         learner.ingest_file("notfound.txt")
@@ -280,8 +323,11 @@ def test_learner_with_invalid_files(tmpdir, learner):
     with pytest.raises(Exception):
         learner.learn(str(directory))
 
+
 def test_token_api():
-    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, case_markup=True)
+    tokenizer = pyonmttok.Tokenizer(
+        "aggressive", joiner_annotate=True, case_markup=True
+    )
 
     text = "Hello WORLD!"
     tokens = tokenizer.tokenize(text, as_token_objects=True)
@@ -308,30 +354,37 @@ def test_token_api():
         "｟mrk_begin_case_region_U｠",
         "world",
         "｟mrk_end_case_region_U｠",
-        "￭!"
+        "￭!",
     ]
 
-    assert all(a == b for a, b in zip(tokenizer.deserialize_tokens(serialized_tokens), tokens))
+    assert all(
+        a == b for a, b in zip(tokenizer.deserialize_tokens(serialized_tokens), tokens)
+    )
 
     tokens[0].surface = "toto"
     tokens[0].casing = pyonmttok.Casing.LOWERCASE
     tokens[2].join_left = False
     assert tokenizer.detokenize(tokens) == "toto WORLD !"
 
+
 def test_token_api_with_subword():
     tokenizer = pyonmttok.Tokenizer(
         "conservative",
         case_markup=True,
         joiner_annotate=True,
-        bpe_model_path=os.path.join(_DATA_DIR, "bpe-models", "codes_suffix_case_insensitive.fr"))
+        bpe_model_path=os.path.join(
+            _DATA_DIR, "bpe-models", "codes_suffix_case_insensitive.fr"
+        ),
+    )
 
     text = "BONJOUR MONDE"
+
     def _check_subword(tokens):
         assert len(tokens) == 5
-        assert tokens[0].type == pyonmttok.TokenType.LEADING_SUBWORD   # bon
+        assert tokens[0].type == pyonmttok.TokenType.LEADING_SUBWORD  # bon
         assert tokens[1].type == pyonmttok.TokenType.TRAILING_SUBWORD  # j
         assert tokens[2].type == pyonmttok.TokenType.TRAILING_SUBWORD  # our
-        assert tokens[3].type == pyonmttok.TokenType.LEADING_SUBWORD   # mon
+        assert tokens[3].type == pyonmttok.TokenType.LEADING_SUBWORD  # mon
         assert tokens[4].type == pyonmttok.TokenType.TRAILING_SUBWORD  # de
 
     tokens = tokenizer.tokenize(text, as_token_objects=True)
@@ -343,14 +396,17 @@ def test_token_api_with_subword():
     _check_subword(tokens)
     assert serialized_tokens == tokenizer.serialize_tokens(tokens)[0]
 
+
 def test_token_deserialize_with_preserved_tokens():
     tokenizer = pyonmttok.Tokenizer(
         "conservative",
         joiner_annotate=True,
         segment_case=True,
-        preserve_segmented_tokens=True)
+        preserve_segmented_tokens=True,
+    )
     tokens = tokenizer.tokenize("HelloWorld", as_token_objects=True)
     assert tokenizer.deserialize_tokens(*tokenizer.serialize_tokens(tokens)) == tokens
+
 
 def test_token_api_features():
     tokenizer = pyonmttok.Tokenizer("space")
@@ -376,8 +432,10 @@ def test_token_api_features():
     assert tokens[1].casing == pyonmttok.Casing.UPPERCASE
     assert tokens[1].features == []
 
+
 def test_token_length():
     assert len(pyonmttok.Token("測試")) == 2
+
 
 def test_token_copy():
     a = pyonmttok.Token("a")
@@ -386,6 +444,7 @@ def test_token_copy():
     b.surface = "b"
     assert b.surface == "b"
     assert a.surface == "a"
+
 
 def test_token_dict():
     a = pyonmttok.Token("a")
@@ -398,7 +457,9 @@ def test_token_dict():
     assert d not in collection
     for i, token in enumerate((a, b, c)):
         assert collection[token] == i
-        assert collection[pyonmttok.Token(token)] == i  # Hashing is based on token equivalence.
+        # Hashing is based on token equivalence.
+        assert collection[pyonmttok.Token(token)] == i
+
 
 def test_token_repr():
     token = pyonmttok.Token()
@@ -414,14 +475,18 @@ def test_token_repr():
         join_right=True,
         join_left=True,
         preserve=True,
-        features=["X", "Y"])
-    assert repr(token) == ("Token('Hello', "
+        features=["X", "Y"],
+    )
+    assert repr(token) == (
+        "Token('Hello', "
         "type=TokenType.LEADING_SUBWORD, "
         "join_left=True, "
         "join_right=True, "
         "preserve=True, "
         "features=['X', 'Y'], "
-        "casing=Casing.MIXED)")
+        "casing=Casing.MIXED)"
+    )
+
 
 def test_token_pickle():
     token = pyonmttok.Token(
@@ -431,7 +496,8 @@ def test_token_pickle():
         join_right=True,
         join_left=True,
         preserve=True,
-        features=["X", "Y"])
+        features=["X", "Y"],
+    )
 
     data = pickle.dumps(token)
     token2 = pickle.loads(data)
