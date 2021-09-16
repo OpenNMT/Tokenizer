@@ -5,7 +5,7 @@
 #include <queue>
 #include <thread>
 
-#include "onmt/SpaceTokenizer.h"
+#include "Utils.h"
 
 namespace onmt
 {
@@ -179,6 +179,7 @@ namespace onmt
                                    size_t num_threads,
                                    bool verbose,
                                    bool training,
+                                   const std::string& tokens_delimiter,
                                    size_t buffer_size) const
   {
     using Result = std::pair<std::vector<std::string>, std::vector<std::vector<std::string>>>;
@@ -189,14 +190,14 @@ namespace onmt
                       this->tokenize(text, words, features, training);
                       return Result(std::move(words), std::move(features));
                     };
-    auto writer = [](std::ostream& os, const Result& result)
+    auto writer = [&tokens_delimiter](std::ostream& os, const Result& result)
                   {
                     const auto& words = result.first;
                     const auto& features = result.second;
                     for (size_t i = 0; i < words.size(); ++i)
                     {
                       if (i > 0)
-                        os << ' ';
+                        os << tokens_delimiter;
                       os << words[i];
 
                       if (!features.empty())
@@ -217,12 +218,34 @@ namespace onmt
                            verbose ? 100000 : 0);
   }
 
-  void ITokenizer::detokenize_stream(std::istream& in, std::ostream& out) const
+  void ITokenizer::detokenize_stream(std::istream& in,
+                                     std::ostream& out,
+                                     const std::string& tokens_delimiter) const
   {
-    auto function = [this](const std::string& line) {
-      std::vector<std::string> tokens;
+    auto function = [this, &tokens_delimiter](const std::string& line) {
+      auto tokens = split_string(line, tokens_delimiter);
+      if (tokens.empty())
+        return std::string();
+
       std::vector<std::vector<std::string>> features;
-      SpaceTokenizer::get_instance().tokenize(line, tokens, features);
+      if (tokens[0].find(feature_marker) != std::string::npos)
+      {
+        for (auto& token : tokens)
+        {
+          auto fields = split_string(token, feature_marker);
+          token = std::move(fields[0]);
+          for (size_t i = 1; i < fields.size(); ++i)
+          {
+            if (features.size() < i)
+            {
+              features.emplace_back();
+              features.back().reserve(tokens.size());
+            }
+            features[i - 1].emplace_back(std::move(fields[i]));
+          }
+        }
+      }
+
       return this->detokenize(tokens, features);
     };
     auto writer = [](std::ostream& os, const std::string& text) { os << text; };

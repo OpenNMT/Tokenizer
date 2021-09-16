@@ -43,14 +43,17 @@ namespace onmt
     virtual std::string detokenize(const std::vector<std::string>& words,
                                    Ranges& ranges, bool merge_ranges = false) const;
 
-    virtual void tokenize_stream(std::istream& is,
-                                 std::ostream& os,
-                                 size_t num_threads = 1,
-                                 bool verbose = false,
-                                 bool training = true,
-                                 size_t buffer_size = 1000) const;
+    void tokenize_stream(std::istream& is,
+                         std::ostream& os,
+                         size_t num_threads = 1,
+                         bool verbose = false,
+                         bool training = true,
+                         const std::string& tokens_delimiter = " ",
+                         size_t buffer_size = 1000) const;
 
-    virtual void detokenize_stream(std::istream& is, std::ostream& os) const;
+    void detokenize_stream(std::istream& is,
+                           std::ostream& os,
+                           const std::string& tokens_delimiter = " ") const;
   };
 
 }

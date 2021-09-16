@@ -19,6 +19,8 @@ int main(int argc, char* argv[])
      cxxopts::value<unsigned int>()->default_value("0"))
     ("v,verbose", "Log tokenization progress",
      cxxopts::value<bool>()->default_value("false"))
+    ("tokens_delimiter", "String delimiting the tokens",
+     cxxopts::value<std::string>()->default_value(" "))
     ;
 
   add_tokenization_options(cmd_options);
@@ -99,6 +101,8 @@ int main(int argc, char* argv[])
   tokenizer.tokenize_stream(std::cin,
                             std::cout,
                             vm["num_threads"].as<int>(),
-                            vm["verbose"].as<bool>());
+                            vm["verbose"].as<bool>(),
+                            /*training=*/true,
+                            vm["tokens_delimiter"].as<std::string>());
   return 0;
 }
