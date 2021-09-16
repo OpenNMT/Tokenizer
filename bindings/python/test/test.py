@@ -71,21 +71,33 @@ def test_invalid_annotation():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("conservative", spacer_new=True)
 
-def test_file(tmpdir):
+@pytest.mark.parametrize("tokens_delimiter", [" ", "++"])
+def test_file(tmpdir, tokens_delimiter):
+    tokenizer = pyonmttok.Tokenizer(
+        "aggressive",
+        joiner_annotate=True,
+        joiner_new=True,
+        case_feature=True,
+    )
+    text = "Hello WORLD!"
+    expected_tokens = ["hello￨C", "world￨U", "￭￨N", "!￨N"]
+
     input_path = str(tmpdir.join("input.txt"))
     output_path = str(tmpdir.join("output.txt"))
     with open(input_path, "w", encoding="utf-8") as input_file:
-        input_file.write("Hello world!")
-    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, joiner_new=True)
-    tokenizer.tokenize_file(input_path, output_path)
+        input_file.write(text)
+        input_file.write("\n")
+
+    tokenizer.tokenize_file(input_path, output_path, tokens_delimiter=tokens_delimiter)
     assert os.path.exists(output_path)
     with open(output_path, encoding="utf-8") as output_file:
-        assert output_file.readline().strip() == "Hello world ￭ !"
+        assert output_file.readline() == tokens_delimiter.join(expected_tokens) + "\n"
     os.remove(input_path)
-    tokenizer.detokenize_file(output_path, input_path)
+
+    tokenizer.detokenize_file(output_path, input_path, tokens_delimiter=tokens_delimiter)
     assert os.path.exists(input_path)
     with open(input_path, encoding="utf-8") as input_file:
-        assert input_file.readline().strip() == "Hello world!"
+        assert input_file.readline() == text + "\n"
 
 def test_invalid_files(tmpdir):
     tokenizer = pyonmttok.Tokenizer("conservative")

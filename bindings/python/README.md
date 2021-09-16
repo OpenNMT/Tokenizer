@@ -106,6 +106,7 @@ tokenizer.tokenize_file(
     num_threads: int = 1,
     verbose: bool = False,
     training: bool = True,
+    tokens_delimiter: str = " ",
 )
 ```
 
@@ -131,7 +132,11 @@ tokenizer.detokenize_with_ranges(
 ) -> Tuple[str, Dict[int, Tuple[int, int]]]
 
 # Detokenize a file.
-tokenizer.detokenize_file(input_path: str, output_path: str)
+tokenizer.detokenize_file(
+    input_path: str,
+    output_path: str,
+    tokens_delimiter: str = " ",
+)
 ```
 
 ## Subword learning

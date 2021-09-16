@@ -3,7 +3,6 @@
 #include <onmt/BPE.h>
 #include <onmt/SentencePiece.h>
 #include <onmt/Tokenizer.h>
-#include <onmt/SpaceTokenizer.h>
 
 using namespace onmt;
 
@@ -21,7 +20,7 @@ static void test_tok(const Tokenizer& tokenizer,
   std::vector<std::string> tokens;
   std::vector<std::vector<std::string>> features;
   tokenizer.tokenize(in, tokens, features, training);
-  EXPECT_EQ(SpaceTokenizer::get_instance().detokenize(tokens, features), expected);
+  EXPECT_EQ(write_tokens(tokens, features), expected);
   if (detokenize) {
     EXPECT_EQ(tokenizer.detokenize(tokens, features), in);
   }
@@ -62,9 +61,9 @@ static void test_detok(const Tokenizer& tokenizer,
                        const std::string& in,
                        const std::string& expected) {
   std::vector<std::string> tokens;
-  onmt::SpaceTokenizer::get_instance().tokenize(in, tokens);
-  auto detok = tokenizer.detokenize(tokens);
-  EXPECT_EQ(detok, expected);
+  std::vector<std::vector<std::string>> features;
+  read_tokens(in, tokens, features);
+  EXPECT_EQ(tokenizer.detokenize(tokens, features), expected);
 }
 
 static void test_detok(const Tokenizer::Options& options,

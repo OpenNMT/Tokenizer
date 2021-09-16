@@ -201,7 +201,8 @@ public:
                      const std::string& output_path,
                      int num_threads,
                      bool verbose,
-                     bool training)
+                     bool training,
+                     const std::string& tokens_delimiter)
   {
     std::ifstream in(input_path);
     if (!in)
@@ -209,11 +210,12 @@ public:
     std::ofstream out(output_path);
     if (!out)
       throw std::invalid_argument("Failed to open output file " + output_path);
-    _tokenizer->tokenize_stream(in, out, num_threads, verbose, training);
+    _tokenizer->tokenize_stream(in, out, num_threads, verbose, training, tokens_delimiter);
   }
 
   void detokenize_file(const std::string& input_path,
-                       const std::string& output_path)
+                       const std::string& output_path,
+                       const std::string& tokens_delimiter)
   {
     std::ifstream in(input_path);
     if (!in)
@@ -221,7 +223,7 @@ public:
     std::ofstream out(output_path);
     if (!out)
       throw std::invalid_argument("Failed to open output file " + output_path);
-    _tokenizer->detokenize_stream(in, out);
+    _tokenizer->detokenize_stream(in, out, tokens_delimiter);
   }
 
   const std::shared_ptr<const onmt::Tokenizer>& get() const
@@ -612,10 +614,12 @@ PYBIND11_MODULE(_ext, m)
          py::arg("num_threads")=1,
          py::arg("verbose")=false,
          py::arg("training")=true,
+         py::arg("tokens_delimiter")=" ",
          py::call_guard<py::gil_scoped_release>())
     .def("detokenize_file", &TokenizerWrapper::detokenize_file,
          py::arg("input_path"),
          py::arg("output_path"),
+         py::arg("tokens_delimiter")=" ",
          py::call_guard<py::gil_scoped_release>())
 
     .def("serialize_tokens", &TokenizerWrapper::serialize_tokens,
