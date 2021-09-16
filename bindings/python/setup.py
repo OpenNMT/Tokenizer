@@ -1,10 +1,9 @@
 import os
 import sys
 
-from setuptools import find_packages, setup, Extension
-
 import pybind11
 
+from setuptools import Extension, find_packages, setup
 
 include_dirs = [pybind11.get_include()]
 library_dirs = []
