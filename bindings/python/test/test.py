@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
 import copy
+import os
 import pickle
+
 import pytest
 
 import pyonmttok
