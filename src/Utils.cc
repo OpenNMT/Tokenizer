@@ -23,7 +23,8 @@ namespace onmt
   }
 
   std::vector<std::string> split_string(const std::string& str,
-                                        const std::string& separator)
+                                        const std::string& separator,
+                                        bool skip_empty)
   {
     std::vector<std::string> parts;
     if (str.size() == 0)
@@ -40,7 +41,7 @@ namespace onmt
       }
 
       const size_t length = index - offset;
-      if (length > 0)
+      if (!skip_empty || length > 0)
         parts.emplace_back(str, offset, length);
       offset = index + separator.size();
     } while (offset < str.size());

@@ -72,7 +72,7 @@ Disable substitution of special characters defined by the Tokenizer and found in
 
 By default, characters from the "Separator" Unicode category are used as tokens boundaries and are not included in the tokenized output. They can be returned by enabling this option.
 
-When writing the tokenization results to a file, you should consider changing the default tokens delimiter to better isolate these characters:
+When writing the tokenization results to a file, you can change the default tokens delimiter to better isolate these characters:
 
 ```bash
 $ echo "A B" | cli/tokenize
@@ -83,7 +83,7 @@ $ echo "A B" | cli/tokenize --with_separators --tokens_delimiter "++"
 A++ ++B
 ```
 
-Note: this option is not compatible with `spacer_annotate`, since `spacer_annotate` is replacing these characters by a marker.
+Note: this option makes the tokenized output reversible so `joiner_annotate` or `spacer_annotate` should not be used.
 
 ## Case annotation
 
