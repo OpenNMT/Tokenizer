@@ -17,7 +17,7 @@ if sys.platform == "win32":
         if filename.endswith(".dll"):
             ctypes.CDLL(os.path.join(package_dir, filename))
 
-from ._ext import (
+from pyonmttok._ext import (
     BPELearner,
     Casing,
     SentencePieceLearner,
@@ -29,3 +29,4 @@ from ._ext import (
     is_placeholder,
     set_random_seed,
 )
+from pyonmttok.version import __version__
