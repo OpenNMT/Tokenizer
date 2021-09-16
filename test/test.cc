@@ -430,6 +430,14 @@ TEST(TokenizerTest, NoSubstitution) {
   test_tok(options, "｟tag：value with spaces｠", "｟tag：value with spaces｠");
 }
 
+TEST(TokenizerTest, WithSeparators) {
+  Tokenizer::Options options;
+  options.with_separators = true;
+  test_tok(options, "Hello World!", {"Hello", " ", "World", "!"}, true);
+  test_detok(options, "Hello   World !", "Hello World!");
+  test_detok(options, "Hello     World !", "Hello  World!");
+}
+
 TEST(TokenizerTest, JoinerSubstitution) {
   Tokenizer::Options options;
   options.mode = Tokenizer::Mode::Space;

@@ -125,10 +125,10 @@ namespace onmt
       throw std::invalid_argument("joiner_new requires joiner_annotate");
     if (support_prior_joiners && unicode::utf8len(joiner) != 1)
       throw std::invalid_argument("support_prior_joiners does not support multi-character joiners");
-    if (spacer_annotate && with_separators)
-      throw std::invalid_argument("spacer_annotate and with_separators can't be set at the "
-                                  "same time because spacer_annotate is replacing the separator "
-                                  "characters by a marker");
+    if (with_separators && (spacer_annotate || joiner_annotate))
+      throw std::invalid_argument("spacer_annotate or joiner_annotate should not be used when "
+                                  "with_separators is enabled since the output is already "
+                                  "reversible");
 
     for (const std::string& alphabet : segment_alphabet)
     {
@@ -321,7 +321,7 @@ namespace onmt
     for (size_t i = 0; i < tokens.size(); ++i)
     {
       const auto& token = tokens[i];
-      if (i > 0 && !tokens[i - 1].join_right && !token.join_left)
+      if (!_options.with_separators && i > 0 && !tokens[i - 1].join_right && !token.join_left)
         line += ' ';
 
       std::string prep_word = token.surface;

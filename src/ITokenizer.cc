@@ -227,7 +227,32 @@ namespace onmt
                    std::vector<std::vector<std::string>>& features,
                    const std::string& tokens_delimiter)
   {
-    tokens = split_string(line, tokens_delimiter);
+    tokens = split_string(line, tokens_delimiter, /*skip_empty=*/false);
+
+    // If 2 consecutive elements are empty, it means the token delimiter is also a token.
+    // For example, with tokens_delimiter '+' we could have:
+    //   a+++b
+    // In this case, split_string with skip_empty=false returns:
+    //   {"a", "", "", "b}
+    // and we want:
+    //   {"a", "+", "b"}
+    for (auto it = tokens.begin(); it != tokens.end();)
+    {
+      if (it->empty())
+      {
+        auto next_it = std::next(it);
+        if (next_it != tokens.end() && next_it->empty())
+        {
+          *it = tokens_delimiter;
+          it = tokens.erase(next_it);
+        }
+        else
+          it = tokens.erase(it);
+      }
+      else
+        it++;
+    }
+
     if (tokens.empty())
       return;
 

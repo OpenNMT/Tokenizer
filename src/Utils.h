@@ -9,7 +9,9 @@ namespace onmt
   bool starts_with(const std::string& str, const std::string& prefix);
   bool ends_with(const std::string& str, const std::string& suffix);
 
-  std::vector<std::string> split_string(const std::string& str, const std::string& separator);
+  std::vector<std::string> split_string(const std::string& str,
+                                        const std::string& separator,
+                                        bool skip_empty = true);
 
   bool is_placeholder(const std::string& str);
 
