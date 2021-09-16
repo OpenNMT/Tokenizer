@@ -179,7 +179,7 @@ $ echo "A B" | cli/tokenize --with_separators --tokens_delimiter "++"
 A++ ++B
 ```
 
-Note: this option is not compatible with `spacer_annotate`, since `space_annotate` is replacing these characters by a marker.
+Note: this option is not compatible with `spacer_annotate`, since `spacer_annotate` is replacing these characters by a marker.
 
 ## Subword encoding
 
