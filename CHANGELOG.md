@@ -24,6 +24,23 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.28.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.28.0) (2021-09-17)
+
+### Changes
+
+* [C++] Remove the `SpaceTokenizer` class that is not meant to be public and can be confused with the "space" tokenization mode
+
+### New features
+
+* Build Python wheels for Windows
+* Add option `tokens_delimiter` to configure how tokens are delimited in tokenized files (default is a space)
+* Expose option `with_separators` in Python and CLI to include whitespace characters in the tokenized output
+* [Python] Add package version information in `pyonmttok.__version__`
+
+### Fixes and improvements
+
+* Fix detokenization when option `with_separators` is enabled
+
 ## [v1.27.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.27.0) (2021-08-30)
 
 ### Changes
