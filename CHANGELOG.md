@@ -24,6 +24,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.28.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.28.1) (2021-09-30)
+
+### Fixes and improvements
+
+* Fix detokenization when a token includes a fullwidth percent sign (％) that is not used as an escape sequence (version 1.27.0 contained a partial fix for this bug)
+
 ## [v1.28.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.28.0) (2021-09-17)
 
 ### Changes
