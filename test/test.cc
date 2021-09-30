@@ -451,6 +451,9 @@ TEST(TokenizerTest, InvalidEscapeSequence) {
   test_detok({},
              "要求从１４％降到２％，动员干部参加生产，向合作社看齐。",
              "要求从１４％降到２％，动员干部参加生产，向合作社看齐。");
+  test_detok({},
+             "王鴻薇說，復星僅持有0.7％BNT股權，所以德國BNT是德國公司無誤",
+             "王鴻薇說，復星僅持有0.7％BNT股權，所以德國BNT是德國公司無誤");
 }
 
 TEST(TokenizerTest, ZeroWidthJoiner) {

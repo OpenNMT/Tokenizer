@@ -300,7 +300,7 @@ namespace onmt
       const std::string code = str.substr(index + protected_character.size(), hex_value_width);
       const int v = hex_to_int(code);
       const std::string c = unicode::cp_to_utf8(v);
-      if (c.empty() || !c[0])
+      if (c.empty() || !c[0] || int_to_hex(v, hex_value_width) != code)
         offset = index + protected_character.size();
       else
       {
