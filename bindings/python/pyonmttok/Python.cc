@@ -441,7 +441,7 @@ static std::string repr_token(const onmt::Token& token) {
   return repr;
 }
 
-static ssize_t hash_token(const onmt::Token& token) {
+static py::ssize_t hash_token(const onmt::Token& token) {
   return py::hash(py::make_tuple(token.surface,
                                  token.type,
                                  token.casing,
