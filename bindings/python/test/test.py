@@ -184,6 +184,23 @@ def test_named_arguments():
     assert text == tokenizer.detokenize(tokens=tokens)
 
 
+def test_tokenize_batch():
+    tokenizer = pyonmttok.Tokenizer("aggressive")
+    assert tokenizer.tokenize_batch([]) == ([], [])
+    assert tokenizer.tokenize_batch([], as_token_objects=True) == []
+
+    batch_tokens, batch_features = tokenizer.tokenize_batch(["a b c", "d e"])
+    assert batch_tokens == [["a", "b", "c"], ["d", "e"]]
+    assert batch_features == [None, None]
+
+    tokenizer = pyonmttok.Tokenizer("aggressive", case_feature=True)
+    batch_tokens, batch_features = tokenizer.tokenize_batch(
+        ["Hello world", "HALLO Welt"]
+    )
+    assert batch_tokens == [["hello", "world"], ["hallo", "welt"]]
+    assert batch_features == [[["C", "L"]], [["U", "C"]]]
+
+
 @pytest.mark.parametrize("use_constructor", [False, True])
 def test_deepcopy(use_constructor):
     text = "Hello World!"

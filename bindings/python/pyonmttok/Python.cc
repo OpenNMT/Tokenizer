@@ -137,6 +137,28 @@ public:
     return serialize_tokens(tokens);
   }
 
+  std::variant<
+    std::pair<std::vector<std::vector<std::string>>,
+              std::vector<std::optional<std::vector<std::vector<std::string>>>>>,
+    std::vector<std::vector<onmt::Token>>>
+  tokenize_batch(const std::vector<std::string>& batch_text,
+                 const bool as_token_objects,
+                 const bool training) const {
+    const size_t batch_size = batch_text.size();
+
+    std::vector<std::vector<onmt::Token>> batch_tokens(batch_size);
+    for (size_t i = 0; i < batch_size; ++i)
+      _tokenizer->tokenize(batch_text[i], batch_tokens[i], training);
+    if (as_token_objects)
+      return std::move(batch_tokens);
+
+    std::vector<std::vector<std::string>> batch_words(batch_size);
+    std::vector<std::optional<std::vector<std::vector<std::string>>>> batch_features(batch_size);
+    for (size_t i = 0; i < batch_size; ++i)
+      std::tie(batch_words[i], batch_features[i]) = serialize_tokens(batch_tokens[i]);
+    return std::make_pair(std::move(batch_words), std::move(batch_features));
+  }
+
   std::pair<std::vector<std::string>, std::optional<std::vector<std::vector<std::string>>>>
   serialize_tokens(const std::vector<onmt::Token>& tokens) const
   {
@@ -588,6 +610,11 @@ PYBIND11_MODULE(_ext, m)
 
     .def("tokenize", &TokenizerWrapper::tokenize,
          py::arg("text"),
+         py::arg("as_token_objects")=false,
+         py::arg("training")=true,
+         py::call_guard<py::gil_scoped_release>())
+    .def("tokenize_batch", &TokenizerWrapper::tokenize_batch,
+         py::arg("batch_text"),
          py::arg("as_token_objects")=false,
          py::arg("training")=true,
          py::call_guard<py::gil_scoped_release>())
