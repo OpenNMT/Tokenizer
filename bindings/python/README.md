@@ -100,6 +100,13 @@ tokenizer.tokenize(
     training: bool = True,
 ) -> Union[Tuple[List[str], Optional[List[List[str]]]], List[pyonmttok.Token]]
 
+# Batch version of tokenize method.
+tokenizer.tokenize_batch(
+    batch_text: List[str],
+    as_token_objects: bool = False,
+    training: bool = True,
+) -> Union[Tuple[List[List[str]], List[Optional[List[List[str]]]]], List[List[pyonmttok.Token]]]
+
 # Tokenize a file.
 tokenizer.tokenize_file(
     input_path: str,
