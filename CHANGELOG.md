@@ -24,6 +24,16 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.30.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.30.0) (2021-11-29)
+
+### New features
+
+* [Python] Build wheels for AArch64 Linux
+
+### Fixes and improvements
+
+* [Python] Update ICU to 70.1
+
 ## [v1.29.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.29.0) (2021-10-08)
 
 ### Changes
