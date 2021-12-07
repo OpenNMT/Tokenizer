@@ -1,14 +1,14 @@
 name: CI
 
-on: push
-  # push:
-  #   branches:
-  #     - master
-  #   tags:
-  #     - v*
-  # pull_request:
-  #   branches:
-  #     - master
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build-and-test-cpp:
@@ -78,8 +78,6 @@ jobs:
   build-and-test-python-wheels:
     name: Build and test wheels on ${{ matrix.os }} for ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
-    env:
-      ICU_VERSION: 70.1
     strategy:
       fail-fast: false
       matrix:
@@ -98,21 +96,13 @@ jobs:
         if: ${{ matrix.arch == 'aarch64' }}
         name: Set up QEMU
 
-      - name: Cache compiled ICU library
-        uses: actions/cache@v2
-        if: not startsWith(matrix.os, 'windows')
-        with:
-          path: libicu
-          key: icu-${ICU_VERSION}-${{ matrix.os }}-${{ matrix.arch }}
-
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.3.0
+        uses: pypa/cibuildwheel@v2.1.3
         with:
           package-dir: bindings/python
           output-dir: wheelhouse
         env:
           CIBW_ENVIRONMENT_WINDOWS: TOKENIZER_ROOT='${{ github.workspace }}\install'
-          CIBW_ENVIRONMENT_PASS_LINUX: ICU_VERSION
           CIBW_BEFORE_ALL: bindings/python/tools/prepare_build_environment.sh
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
           CIBW_BEFORE_BUILD: pip install pybind11==2.8.0
@@ -120,7 +110,7 @@ jobs:
           CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
           CIBW_TEST_REQUIRES: pytest
           CIBW_ARCHS: ${{ matrix.arch }}
-          CIBW_SKIP: pp* *-musllinux_*
+          CIBW_SKIP: pp*
 
       - name: Upload Python wheels
         uses: actions/upload-artifact@v2
