@@ -235,9 +235,7 @@ namespace onmt
 
     bool is_valid_language(const char* language)
     {
-      const icu::Locale locale(language);
-      const char* iso3_lang = locale.getISO3Language();
-      return iso3_lang[0] != '\0';
+      return icu::Locale(language).getISO3Language()[0] != '\0';
     }
 
     // The functions below are made backward compatible with the Kangxi and Kanbun script names
