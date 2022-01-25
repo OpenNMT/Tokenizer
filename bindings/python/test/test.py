@@ -56,6 +56,10 @@ def test_invalid_lang():
         pyonmttok.Tokenizer("conservative", lang="xxx")
 
 
+def test_deprecated_lang():
+    pyonmttok.Tokenizer("conservative", lang="tl")
+
+
 def test_invalid_sentencepiece_model():
     with pytest.raises(ValueError):
         pyonmttok.Tokenizer("none", sp_model_path="xxx")
