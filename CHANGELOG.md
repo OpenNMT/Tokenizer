@@ -24,6 +24,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.30.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.30.1) (2022-01-25)
+
+### Fixes and improvements
+
+* Fix deprecated languages codes in ICU that are incorrectly considered as invalid (e.g. "tl" for Tagalog)
+
 ## [v1.30.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.30.0) (2021-11-29)
 
 ### New features
