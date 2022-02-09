@@ -105,7 +105,7 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: TOKENIZER_ROOT='${{ github.workspace }}\install'
           CIBW_BEFORE_ALL: bindings/python/tools/prepare_build_environment.sh
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
-          CIBW_BEFORE_BUILD: pip install pybind11==2.8.0
+          CIBW_BEFORE_BUILD: pip install pybind11==2.9.1
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
           CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
           CIBW_TEST_REQUIRES: pytest
