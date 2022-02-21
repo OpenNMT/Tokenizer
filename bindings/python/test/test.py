@@ -26,6 +26,11 @@ def test_simple():
     assert detok == text
 
 
+def test_call():
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, joiner_new=True)
+    assert tokenizer("Hello World!") == ["Hello", "World", "￭", "!"]
+
+
 def test_empty():
     tokenizer = pyonmttok.Tokenizer("conservative")
     assert tokenizer.tokenize("") == ([], None)

@@ -123,6 +123,13 @@ public:
       );
   }
 
+  std::vector<std::string> call(const std::string& text, const bool training) const
+  {
+    std::vector<std::string> tokens;
+    _tokenizer->tokenize(text, tokens, training);
+    return tokens;
+  }
+
   std::variant<
     std::pair<std::vector<std::string>, std::optional<std::vector<std::vector<std::string>>>>,
     std::vector<onmt::Token>>
@@ -608,6 +615,10 @@ PYBIND11_MODULE(_ext, m)
 
     .def_property_readonly("options", &TokenizerWrapper::get_options)
 
+    .def("__call__", &TokenizerWrapper::call,
+         py::arg("text"),
+         py::arg("training")=true,
+         py::call_guard<py::gil_scoped_release>())
     .def("tokenize", &TokenizerWrapper::tokenize,
          py::arg("text"),
          py::arg("as_token_objects")=false,
