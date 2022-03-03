@@ -7,10 +7,12 @@
 
 #include "Tokenizer.h"
 
+#include "onmt/opennmttokenizer_export.h"
+
 namespace onmt
 {
 
-  class Vocab
+  class OPENNMTTOKENIZER_EXPORT Vocab
   {
   public:
     static const std::string unk_token;
