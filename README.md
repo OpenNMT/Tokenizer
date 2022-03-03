@@ -29,7 +29,7 @@ pip install pyonmttok
 ```python
 >>> import pyonmttok
 >>> tokenizer = pyonmttok.Tokenizer("conservative", joiner_annotate=True)
->>> tokens, _ = tokenizer.tokenize("Hello World!")
+>>> tokens = tokenizer("Hello World!")
 >>> tokens
 ['Hello', 'World', '￭!']
 >>> tokenizer.detokenize(tokens)

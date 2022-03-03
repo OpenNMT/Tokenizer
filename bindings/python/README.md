@@ -28,7 +28,7 @@ pip install pyonmttok
 ```python
 >>> import pyonmtok
 >>> tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
->>> tokens, _ = tokenizer.tokenize("Hello World!")
+>>> tokens = tokenizer("Hello World!")
 >>> tokens
 ['Hello', 'World', '￭!']
 >>> tokenizer.detokenize(tokens)
@@ -91,16 +91,19 @@ See the [documentation](https://github.com/OpenNMT/Tokenizer/blob/master/docs/op
 #### Tokenization
 
 ```python
-# By default, tokenize returns the tokens and features.
-# When as_token_objects=True, the method returns Token objects (see below).
+# Tokenize a text.
 # When training=False, subword regularization such as BPE dropout is disabled.
+tokenizer.__call__(text: str, training: bool = True) -> List[str]
+
+# Tokenize a text and return optional features.
+# When as_token_objects=True, the method returns Token objects (see below).
 tokenizer.tokenize(
     text: str,
     as_token_objects: bool = False,
     training: bool = True,
 ) -> Union[Tuple[List[str], Optional[List[List[str]]]], List[pyonmttok.Token]]
 
-# Batch version of tokenize method.
+# Tokenize a batch of text.
 tokenizer.tokenize_batch(
     batch_text: List[str],
     as_token_objects: bool = False,
