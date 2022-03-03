@@ -251,6 +251,9 @@ vocab.__getitem__(token: str) -> int    # Implements: vocab["hello"]
 vocab.lookup_token(token: str) -> int
 vocab.lookup_index(index: int) -> str
 
+# Calls lookup_token on a batch of tokens.
+vocab.__call__(tokens: List[str]) -> List[int]
+
 vocab.add_token(token: str) -> None
 
 # Add tokens to the vocabulary after tokenization.

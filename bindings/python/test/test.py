@@ -546,6 +546,7 @@ def test_vocab():
     assert vocab["b"] == 4
     assert vocab["c"] == len(vocab)
     assert vocab.lookup_index(len(vocab)) == "<unk>"
+    assert vocab(["a", "b"]) == [3, 4]
 
     assert vocab.tokens_to_ids == {
         "<blank>": 0,

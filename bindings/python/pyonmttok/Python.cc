@@ -738,6 +738,17 @@ PYBIND11_MODULE(_ext, m)
          py::arg("token"))
     .def("lookup_index", py::overload_cast<size_t>(&onmt::Vocab::lookup, py::const_),
          py::arg("index"))
+    .def("__call__",
+         [](const onmt::Vocab& vocab, const std::vector<std::string>& tokens) {
+           std::vector<size_t> ids;
+           ids.reserve(tokens.size());
+           for (const auto& token : tokens)
+             ids.emplace_back(vocab.lookup(token));
+           return ids;
+         },
+         py::arg("tokens"),
+         py::call_guard<py::gil_scoped_release>())
+
     .def_property_readonly("tokens_to_ids", &onmt::Vocab::tokens_to_ids)
     .def_property_readonly("ids_to_tokens", &onmt::Vocab::ids_to_tokens)
 
