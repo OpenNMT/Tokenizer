@@ -232,7 +232,7 @@ with open("train.txt") as train_file:
 
 with open("vocab.txt", "w") as vocab_file:
     for token in vocab.ids_to_tokens:
-        vocab_file.write("%s\b" % token)
+        vocab_file.write("%s\n" % token)
 ```
 
 ### Interface
