@@ -27,7 +27,35 @@ from pyonmttok._ext import (
     Token,
     Tokenizer,
     TokenType,
+    Vocab,
     is_placeholder,
     set_random_seed,
 )
 from pyonmttok.version import __version__
+
+
+def build_vocab_from_tokens(
+    tokens,
+    maximum_size=0,
+    minimum_frequency=1,
+    special_tokens=None,
+):
+    vocab = Vocab(special_tokens)
+    for token in tokens:
+        vocab.add_token(token)
+    vocab.resize(maximum_size=maximum_size, minimum_frequency=minimum_frequency)
+    return vocab
+
+
+def build_vocab_from_lines(
+    lines,
+    tokenizer=None,
+    maximum_size=0,
+    minimum_frequency=1,
+    special_tokens=None,
+):
+    vocab = Vocab(special_tokens)
+    for line in lines:
+        vocab.add_from_text(line.rstrip("\r\n"), tokenizer)
+    vocab.resize(maximum_size=maximum_size, minimum_frequency=minimum_frequency)
+    return vocab

@@ -1,4 +1,5 @@
 import copy
+import itertools
 import os
 import pickle
 
@@ -527,3 +528,74 @@ def test_token_pickle():
     data = pickle.dumps(token)
     token2 = pickle.loads(data)
     assert token == token2
+
+
+def test_vocab():
+    special_tokens = ["<blank>", "<s>", "</s>"]
+    vocab = pyonmttok.Vocab(special_tokens=special_tokens)
+    vocab.add_token("a")
+    vocab.add_token("a")
+    vocab.add_token("b")
+
+    assert len(vocab) == 5
+    assert "a" in vocab
+    assert "b" in vocab
+    assert "c" not in vocab
+    assert vocab["<blank>"] == 0
+    assert vocab["a"] == 3
+    assert vocab["b"] == 4
+    assert vocab["c"] == len(vocab)
+    assert vocab.lookup_index(len(vocab)) == "<unk>"
+
+    assert vocab.tokens_to_ids == {
+        "<blank>": 0,
+        "<s>": 1,
+        "</s>": 2,
+        "a": 3,
+        "b": 4,
+    }
+
+    vocab1 = copy.deepcopy(vocab)
+    vocab2 = copy.deepcopy(vocab)
+
+    vocab1.resize(maximum_size=4)
+    vocab2.resize(minimum_frequency=2)
+
+    expected_tokens = list(special_tokens) + ["a"]
+    assert vocab1.ids_to_tokens == expected_tokens
+    assert vocab2.ids_to_tokens == expected_tokens
+
+
+def test_vocab_from_text():
+    vocab = pyonmttok.Vocab()
+    vocab.add_from_text("Hello World!")
+    assert vocab.ids_to_tokens == ["Hello", "World!"]
+
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+    vocab = pyonmttok.Vocab()
+    vocab.add_from_text("Hello World!", tokenizer)
+    assert vocab.ids_to_tokens == ["Hello", "World", "￭!"]
+
+
+def test_vocab_from_file(tmpdir):
+    input_path = str(tmpdir.join("input.txt"))
+    with open(input_path, "w", encoding="utf-8") as input_file:
+        input_file.write("Hello World!\n")
+
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+    vocab = pyonmttok.Vocab()
+    vocab.add_from_file(input_path, tokenizer)
+    assert vocab.ids_to_tokens == ["Hello", "World", "￭!"]
+
+
+def test_vocab_build_helpers():
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+    lines = ["Hello World!", "Hello all."]
+    tokens = itertools.chain.from_iterable(map(tokenizer, lines))
+
+    vocab1 = pyonmttok.build_vocab_from_lines(lines, tokenizer)
+    vocab2 = pyonmttok.build_vocab_from_tokens(tokens)
+
+    expected_tokens = ["Hello", "World", "￭!", "all", "￭."]
+    assert vocab1.ids_to_tokens == expected_tokens
+    assert vocab2.ids_to_tokens == expected_tokens
