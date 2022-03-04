@@ -245,22 +245,21 @@ vocab = pyonmttok.Vocab(special_tokens: Optional[List[str]] = None)
 vocab.tokens_to_ids -> Dict[str, int]
 vocab.ids_to_tokens -> List[str]
 
-vocab.__len__() -> int                  # Implements: len(vocab)
-vocab.__contains__(token: str) -> bool  # Implements: "hello" in vocab
-vocab.__getitem__(token: str) -> int    # Implements: vocab["hello"]
-
 vocab.lookup_token(token: str) -> int
 vocab.lookup_index(index: int) -> str
 
 # Calls lookup_token on a batch of tokens.
 vocab.__call__(tokens: List[str]) -> List[int]
 
-vocab.add_token(token: str) -> None
+vocab.__len__() -> int                  # Implements: len(vocab)
+vocab.__contains__(token: str) -> bool  # Implements: "hello" in vocab
+vocab.__getitem__(token: str) -> int    # Implements: vocab["hello"]
 
 # Add tokens to the vocabulary after tokenization.
 # If a tokenizer is not set, the text is split on spaces.
 vocab.add_from_text(text: str, tokenizer: Optional[pyonmttok.Tokenizer] = None) -> None
 vocab.add_from_file(path: str, tokenizer: Optional[pyonmttok.Tokenizer] = None) -> None
+vocab.add_token(token: str) -> None
 
 vocab.resize(maximum_size: int = 0, minimum_frequency: int = 1) -> None
 
