@@ -20,9 +20,6 @@ namespace onmt
     Vocab() = default;
     Vocab(const std::vector<std::string>& special_tokens);
 
-    static Vocab load_from_file(std::istream& is);
-    static Vocab load_from_tokens(const std::vector<std::string>& tokens);
-
     size_t lookup(const std::string& token) const
     {
       auto it = _tokens_to_ids.find(token);

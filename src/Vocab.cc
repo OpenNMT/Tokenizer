@@ -17,21 +17,6 @@ namespace onmt
       frequency = std::numeric_limits<size_t>::max();
   }
 
-  Vocab Vocab::load_from_file(std::istream& is) {
-    Vocab vocab;
-    std::string token;
-    while (std::getline(is, token))
-      vocab.add_token(std::move(token));
-    return vocab;
-  }
-
-  Vocab load_from_tokens(const std::vector<std::string>& tokens) {
-    Vocab vocab;
-    for (const auto& token : tokens)
-      vocab.add_token(token);
-    return vocab;
-  }
-
   void Vocab::add_token(std::string token)
   {
     const size_t index = _ids_to_tokens.size();
