@@ -778,11 +778,13 @@ PYBIND11_MODULE(_ext, m)
          py::arg("minimum_frequency")=1,
          py::call_guard<py::gil_scoped_release>())
 
-    .def("__copy__", [](const onmt::Vocab& vocab) {
-      return onmt::Vocab(vocab);
-    })
-    .def("__deepcopy__", [](const onmt::Vocab& vocab, const py::object& dict) {
-      return onmt::Vocab(vocab);
-    })
+    .def("__copy__",
+         [](const onmt::Vocab& vocab) {
+           return onmt::Vocab(vocab);
+         })
+    .def("__deepcopy__",
+         [](const onmt::Vocab& vocab, const py::object& dict) {
+           return onmt::Vocab(vocab);
+         })
     ;
 }
