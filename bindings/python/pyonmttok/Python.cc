@@ -756,19 +756,23 @@ PYBIND11_MODULE(_ext, m)
     .def("add_token", &onmt::Vocab::add_token, py::arg("token"))
 
     .def("add_from_text",
-         [](onmt::Vocab& vocab, const std::string& text, const TokenizerWrapper* tokenizer) {
-           vocab.add_from_text(text, tokenizer ? tokenizer->get().get() : nullptr);
+         [](onmt::Vocab& vocab,
+            const std::string& text,
+            const std::optional<TokenizerWrapper>& tokenizer) {
+           vocab.add_from_text(text, tokenizer ? tokenizer.value().get().get() : nullptr);
          },
          py::arg("text"),
          py::arg("tokenizer")=nullptr,
          py::call_guard<py::gil_scoped_release>())
 
     .def("add_from_file",
-         [](onmt::Vocab& vocab, const std::string& path, const TokenizerWrapper* tokenizer) {
+         [](onmt::Vocab& vocab,
+            const std::string& path,
+            const std::optional<TokenizerWrapper>& tokenizer) {
            std::ifstream in(path);
            if (!in)
              throw std::invalid_argument("Failed to open input file " + path);
-           vocab.add_from_stream(in, tokenizer ? tokenizer->get().get() : nullptr);
+           vocab.add_from_stream(in, tokenizer ? tokenizer.value().get().get() : nullptr);
          },
          py::arg("path"),
          py::arg("tokenizer")=nullptr,
