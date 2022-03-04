@@ -1,6 +1,7 @@
 #pragma once
 
 #include <istream>
+#include <limits>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -67,7 +68,7 @@ namespace onmt
 
     size_t get_default_id() const
     {
-      if (_default_id >= 0)
+      if (_default_id < std::numeric_limits<size_t>::max())
         return _default_id;
       const auto it = _tokens_to_ids.find(unk_token);
       if (it == _tokens_to_ids.end())
@@ -79,7 +80,7 @@ namespace onmt
     std::unordered_map<std::string, size_t> _tokens_to_ids;
     std::vector<std::string> _ids_to_tokens;
     std::vector<size_t> _frequencies;
-    ssize_t _default_id = -1;
+    size_t _default_id = std::numeric_limits<size_t>::max();
   };
 
 }
