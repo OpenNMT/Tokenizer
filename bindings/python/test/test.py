@@ -604,3 +604,19 @@ def test_vocab_build_helpers():
     expected_tokens = ["Hello", "World", "￭!", "all", "￭."]
     assert vocab1.ids_to_tokens == expected_tokens
     assert vocab2.ids_to_tokens == expected_tokens
+
+
+@pytest.mark.parametrize(
+    "tokens,default_id,expected_default_id",
+    [
+        (["a", "b", "c"], None, 3),
+        (["a", "b", "c"], 1, 1),
+        (["a", "<unk>", "b", "c"], None, 1),
+    ],
+)
+def test_vocab_default_id(tokens, default_id, expected_default_id):
+    vocab = pyonmttok.build_vocab_from_tokens(tokens)
+    if default_id is not None:
+        vocab.default_id = default_id
+    assert vocab.default_id == expected_default_id
+    assert vocab.lookup_token("oov") == expected_default_id

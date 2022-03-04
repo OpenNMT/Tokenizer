@@ -749,6 +749,7 @@ PYBIND11_MODULE(_ext, m)
          py::arg("tokens"),
          py::call_guard<py::gil_scoped_release>())
 
+    .def_property("default_id", &onmt::Vocab::get_default_id, &onmt::Vocab::set_default_id)
     .def_property_readonly("tokens_to_ids", &onmt::Vocab::tokens_to_ids)
     .def_property_readonly("ids_to_tokens", &onmt::Vocab::ids_to_tokens)
 

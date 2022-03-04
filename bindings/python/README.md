@@ -245,6 +245,10 @@ vocab = pyonmttok.Vocab(special_tokens: Optional[List[str]] = None)
 vocab.tokens_to_ids -> Dict[str, int]
 vocab.ids_to_tokens -> List[str]
 
+# Get or set the ID returned for out-of-vocabulary tokens.
+# By default, it is the ID of the token <unk> if present in the vocabulary, len(vocab) otherwise.
+vocab.default_id -> int
+
 vocab.lookup_token(token: str) -> int
 vocab.lookup_index(index: int) -> str
 

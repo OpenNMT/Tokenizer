@@ -20,8 +20,8 @@ namespace onmt
 
   void Vocab::add_token(std::string token)
   {
-    const size_t index = _ids_to_tokens.size();
-    const auto pair = _tokens_to_ids.emplace(std::move(token), index);
+    const size_t id = _ids_to_tokens.size();
+    const auto pair = _tokens_to_ids.emplace(std::move(token), id);
     const auto& entry = *pair.first;
     const bool inserted = pair.second;
 

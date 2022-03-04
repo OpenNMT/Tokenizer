@@ -22,21 +22,17 @@ namespace onmt
 
     size_t lookup(const std::string& token) const
     {
-      auto it = _tokens_to_ids.find(token);
+      const auto it = _tokens_to_ids.find(token);
       if (it == _tokens_to_ids.end())
-      {
-        it = _tokens_to_ids.find(unk_token);
-        if (it == _tokens_to_ids.end())
-          return size();
-      }
+        return get_default_id();
       return it->second;
     }
 
-    const std::string& lookup(size_t index) const
+    const std::string& lookup(size_t id) const
     {
-      if (index >= size())
+      if (id >= size())
         return unk_token;
-      return _ids_to_tokens[index];
+      return _ids_to_tokens[id];
     }
 
     bool contains(const std::string& token) const
@@ -64,10 +60,26 @@ namespace onmt
     void add_from_stream(std::istream& is, const Tokenizer* tokenizer = nullptr);
     void resize(size_t maximum_size = 0, size_t minimum_frequency = 1);
 
+    void set_default_id(size_t id)
+    {
+      _default_id = id;
+    }
+
+    size_t get_default_id() const
+    {
+      if (_default_id >= 0)
+        return _default_id;
+      const auto it = _tokens_to_ids.find(unk_token);
+      if (it == _tokens_to_ids.end())
+        return size();
+      return it->second;
+    }
+
   private:
     std::unordered_map<std::string, size_t> _tokens_to_ids;
     std::vector<std::string> _ids_to_tokens;
     std::vector<size_t> _frequencies;
+    ssize_t _default_id = -1;
   };
 
 }
