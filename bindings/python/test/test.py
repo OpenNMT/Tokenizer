@@ -566,6 +566,10 @@ def test_vocab():
     assert vocab1.ids_to_tokens == expected_tokens
     assert vocab2.ids_to_tokens == expected_tokens
 
+    vocab3 = copy.deepcopy(vocab)
+    vocab3.resize(maximum_size=1)
+    assert vocab3.ids_to_tokens == special_tokens
+
 
 def test_vocab_from_text():
     vocab = pyonmttok.Vocab()

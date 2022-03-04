@@ -8,13 +8,14 @@
 namespace onmt
 {
   const std::string Vocab::unk_token = "<unk>";
+  constexpr size_t max_frequency = std::numeric_limits<size_t>::max();
 
   Vocab::Vocab(const std::vector<std::string>& special_tokens)
   {
     for (const auto& token : special_tokens)
       add_token(token);
     for (auto& frequency : _frequencies)
-      frequency = std::numeric_limits<size_t>::max();
+      frequency = max_frequency;
   }
 
   void Vocab::add_token(std::string token)
@@ -29,7 +30,7 @@ namespace onmt
       _ids_to_tokens.emplace_back(entry.first);
       _frequencies.emplace_back(1);
     }
-    else if (_frequencies[entry.second] < std::numeric_limits<size_t>::max())
+    else if (_frequencies[entry.second] < max_frequency)
     {
       _frequencies[entry.second]++;
     }
@@ -67,8 +68,13 @@ namespace onmt
     while (!ids.empty() && _frequencies[ids.back()] < minimum_frequency)
       ids.pop_back();
 
-    if (maximum_size > 0 && ids.size() > maximum_size)
-      ids.resize(maximum_size);
+    if (maximum_size > 0)
+    {
+      while (maximum_size < ids.size() && _frequencies[ids[maximum_size]] == max_frequency)
+        ++maximum_size;
+      if (maximum_size < ids.size())
+        ids.resize(maximum_size);
+    }
 
     const size_t new_size = ids.size();
 

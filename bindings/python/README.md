@@ -238,6 +238,7 @@ with open("vocab.txt", "w") as vocab_file:
 ### Interface
 
 ```python
+# Special tokens are added with ids 0, 1, etc., and are never removed by a resize.
 vocab = pyonmttok.Vocab(special_tokens: Optional[List[str]] = None)
 
 # Read-only properties.
@@ -265,6 +266,7 @@ vocab.resize(maximum_size: int = 0, minimum_frequency: int = 1) -> None
 
 
 # Build a vocabulary from an iterator of lines.
+# If a tokenizer is not set, the lines are split on spaces.
 pyonmttok.build_vocab_from_lines(
     lines: Iterable[str],
     tokenizer: Optional[pyonmttok.Tokenizer] = None,
