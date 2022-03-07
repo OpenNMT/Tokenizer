@@ -26,6 +26,24 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.31.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.31.0) (2022-03-07)
+
+### New features
+
+* Add utilities to build and use vocabularies:
+  * `pyonmttok.Vocab`
+  * `pyonmttok.build_vocab_from_tokens`
+  * `pyonmttok.build_vocab_from_lines`
+* Define the method `Tokenizer.__call__` to simplify the tokenizer usage when additional features are unused:
+
+```python
+tokens = tokenizer(text)
+```
+
+### Fixes and improvements
+
+* Update pybind11 to 2.9.1
+
 ## [v1.30.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.30.1) (2022-01-25)
 
 ### Fixes and improvements
