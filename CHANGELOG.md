@@ -9,12 +9,14 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
   * `onmt::SentencePiece`
   * `onmt::SpaceTokenizer`
   * `onmt::Tokenizer`
+  * `onmt::Vocab`
   * `onmt::unicode::*`
 * Python
   * `pyonmttok.BPELearner`
   * `pyonmttok.SentencePieceLearner`
   * `pyonmttok.SentencePieceTokenizer`
   * `pyonmttok.Tokenizer`
+  * `pyonmttok.Vocab`
 
 ---
 

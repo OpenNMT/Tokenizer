@@ -11,6 +11,7 @@
 #include <onmt/SentencePiece.h>
 #include <onmt/BPELearner.h>
 #include <onmt/SentencePieceLearner.h>
+#include <onmt/Vocab.h>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -481,6 +482,13 @@ static py::ssize_t hash_token(const onmt::Token& token) {
                                  py::tuple(py::cast(token.features))));
 }
 
+static onmt::Vocab create_vocab(const std::optional<std::vector<std::string>>& special_tokens) {
+  if (special_tokens)
+    return onmt::Vocab(special_tokens.value());
+  else
+    return onmt::Vocab();
+}
+
 PYBIND11_MODULE(_ext, m)
 {
   m.def("is_placeholder", &onmt::Tokenizer::is_placeholder, py::arg("token"));
@@ -718,5 +726,70 @@ PYBIND11_MODULE(_ext, m)
     .def(py::init<const std::optional<TokenizerWrapper>&, bool, py::kwargs>(),
          py::arg("tokenizer")=py::none(),
          py::arg("keep_vocab")=false)
+    ;
+
+  py::class_<onmt::Vocab>(m, "Vocab")
+    .def(py::init(&create_vocab), py::arg("special_tokens")=py::none())
+    .def("__len__", &onmt::Vocab::size)
+    .def("__contains__", &onmt::Vocab::contains, py::arg("token"))
+    .def("__getitem__", py::overload_cast<const std::string&>(&onmt::Vocab::lookup, py::const_),
+         py::arg("token"))
+    .def("lookup_token", py::overload_cast<const std::string&>(&onmt::Vocab::lookup, py::const_),
+         py::arg("token"))
+    .def("lookup_index", py::overload_cast<size_t>(&onmt::Vocab::lookup, py::const_),
+         py::arg("index"))
+    .def("__call__",
+         [](const onmt::Vocab& vocab, const std::vector<std::string>& tokens) {
+           std::vector<size_t> ids;
+           ids.reserve(tokens.size());
+           for (const auto& token : tokens)
+             ids.emplace_back(vocab.lookup(token));
+           return ids;
+         },
+         py::arg("tokens"),
+         py::call_guard<py::gil_scoped_release>())
+
+    .def_property("default_id", &onmt::Vocab::get_default_id, &onmt::Vocab::set_default_id)
+    .def_property_readonly("tokens_to_ids", &onmt::Vocab::tokens_to_ids)
+    .def_property_readonly("ids_to_tokens", &onmt::Vocab::ids_to_tokens)
+
+    .def("add_token", &onmt::Vocab::add_token, py::arg("token"))
+
+    .def("add_from_text",
+         [](onmt::Vocab& vocab,
+            const std::string& text,
+            const std::optional<TokenizerWrapper>& tokenizer) {
+           vocab.add_from_text(text, tokenizer ? tokenizer.value().get().get() : nullptr);
+         },
+         py::arg("text"),
+         py::arg("tokenizer")=nullptr,
+         py::call_guard<py::gil_scoped_release>())
+
+    .def("add_from_file",
+         [](onmt::Vocab& vocab,
+            const std::string& path,
+            const std::optional<TokenizerWrapper>& tokenizer) {
+           std::ifstream in(path);
+           if (!in)
+             throw std::invalid_argument("Failed to open input file " + path);
+           vocab.add_from_stream(in, tokenizer ? tokenizer.value().get().get() : nullptr);
+         },
+         py::arg("path"),
+         py::arg("tokenizer")=nullptr,
+         py::call_guard<py::gil_scoped_release>())
+
+    .def("resize", &onmt::Vocab::resize,
+         py::arg("maximum_size")=0,
+         py::arg("minimum_frequency")=1,
+         py::call_guard<py::gil_scoped_release>())
+
+    .def("__copy__",
+         [](const onmt::Vocab& vocab) {
+           return onmt::Vocab(vocab);
+         })
+    .def("__deepcopy__",
+         [](const onmt::Vocab& vocab, const py::object& dict) {
+           return onmt::Vocab(vocab);
+         })
     ;
 }

@@ -18,6 +18,7 @@ pip install pyonmttok
 
 1. [Tokenization](#tokenization)
 1. [Subword learning](#subword-learning)
+1. [Vocabulary](#vocabulary)
 1. [Token API](#token-api)
 1. [Utilities](#utilities)
 
@@ -212,6 +213,78 @@ learner.ingest_file(path: str)
 learner.ingest_token(token: Union[str, pyonmttok.Token])
 
 learner.learn(model_path: str, verbose: bool = False) -> pyonmttok.Tokenizer
+```
+
+## Vocabulary
+
+### Example
+
+```python
+tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+
+with open("train.txt") as train_file:
+    vocab = pyonmttok.build_vocab_from_lines(
+        train_file,
+        tokenizer=tokenizer,
+        maximum_size=32000,
+        special_tokens=["<blank>", "<unk>", "<s>", "</s>"],
+    )
+
+with open("vocab.txt", "w") as vocab_file:
+    for token in vocab.ids_to_tokens:
+        vocab_file.write("%s\n" % token)
+```
+
+### Interface
+
+```python
+# Special tokens are added with ids 0, 1, etc., and are never removed by a resize.
+vocab = pyonmttok.Vocab(special_tokens: Optional[List[str]] = None)
+
+# Read-only properties.
+vocab.tokens_to_ids -> Dict[str, int]
+vocab.ids_to_tokens -> List[str]
+
+# Get or set the ID returned for out-of-vocabulary tokens.
+# By default, it is the ID of the token <unk> if present in the vocabulary, len(vocab) otherwise.
+vocab.default_id -> int
+
+vocab.lookup_token(token: str) -> int
+vocab.lookup_index(index: int) -> str
+
+# Calls lookup_token on a batch of tokens.
+vocab.__call__(tokens: List[str]) -> List[int]
+
+vocab.__len__() -> int                  # Implements: len(vocab)
+vocab.__contains__(token: str) -> bool  # Implements: "hello" in vocab
+vocab.__getitem__(token: str) -> int    # Implements: vocab["hello"]
+
+# Add tokens to the vocabulary after tokenization.
+# If a tokenizer is not set, the text is split on spaces.
+vocab.add_from_text(text: str, tokenizer: Optional[pyonmttok.Tokenizer] = None) -> None
+vocab.add_from_file(path: str, tokenizer: Optional[pyonmttok.Tokenizer] = None) -> None
+vocab.add_token(token: str) -> None
+
+vocab.resize(maximum_size: int = 0, minimum_frequency: int = 1) -> None
+
+
+# Build a vocabulary from an iterator of lines.
+# If a tokenizer is not set, the lines are split on spaces.
+pyonmttok.build_vocab_from_lines(
+    lines: Iterable[str],
+    tokenizer: Optional[pyonmttok.Tokenizer] = None,
+    maximum_size: int = 0,
+    minimum_frequency: int = 1,
+    special_tokens: Optional[List[str]] = None,
+) -> pyonmttok.Vocab
+
+# Build a vocabulary from an iterator of tokens.
+pyonmttok.build_vocab_from_tokens(
+    tokens: Iterable[str],
+    maximum_size: int = 0,
+    minimum_frequency: int = 1,
+    special_tokens: Optional[List[str]] = None,
+) -> pyonmttok.Vocab
 ```
 
 ## Token API

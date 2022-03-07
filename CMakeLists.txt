@@ -74,6 +74,7 @@ set(PUBLIC_HEADERS
   include/onmt/SubwordEncoder.h
   include/onmt/SubwordLearner.h
   include/onmt/Tokenizer.h
+  include/onmt/Vocab.h
   )
 
 set(SOURCES
@@ -88,6 +89,7 @@ set(SOURCES
   src/Token.cc
   src/Tokenizer.cc
   src/Utils.cc
+  src/Vocab.cc
   src/unicode/Unicode.cc
   )
 
