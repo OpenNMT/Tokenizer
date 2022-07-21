@@ -56,6 +56,11 @@ namespace onmt
       return _ids_to_tokens;
     }
 
+    const std::vector<size_t>& counters() const
+    {
+      return _frequencies;
+    }
+
     void add_token(std::string token);
     void add_from_text(const std::string& text, const Tokenizer* tokenizer = nullptr);
     void add_from_stream(std::istream& is, const Tokenizer* tokenizer = nullptr);
