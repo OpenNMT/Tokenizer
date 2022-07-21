@@ -556,6 +556,14 @@ def test_vocab():
         "b": 4,
     }
 
+    assert vocab.counters == [
+        18446744073709551615,
+        18446744073709551615,
+        18446744073709551615,
+        2,
+        1,
+    ]
+
     vocab1 = copy.deepcopy(vocab)
     vocab2 = copy.deepcopy(vocab)
 
