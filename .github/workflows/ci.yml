@@ -97,7 +97,7 @@ jobs:
         name: Set up QEMU
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.1.3
+        uses: pypa/cibuildwheel@v2.8.1
         with:
           package-dir: bindings/python
           output-dir: wheelhouse
@@ -110,7 +110,7 @@ jobs:
           CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
           CIBW_TEST_REQUIRES: pytest
           CIBW_ARCHS: ${{ matrix.arch }}
-          CIBW_SKIP: pp*
+          CIBW_SKIP: pp* *-musllinux_*
 
       - name: Upload Python wheels
         uses: actions/upload-artifact@v2
