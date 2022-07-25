@@ -26,6 +26,17 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.32.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.32.0) (2022-07-25)
+
+### New features
+
+* Add property `pyonmttok.Vocab.counters` to retrieve the number of occurrences of each token
+
+### Fixes and improvements
+
+* Update pybind11 to 2.10.0
+* Update cxxopts to 3.0.0
+
 ## [v1.31.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.31.0) (2022-03-07)
 
 ### New features
