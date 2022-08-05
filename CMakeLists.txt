@@ -26,7 +26,10 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/sentencepiece EXCLUDE_F
 if(MSVC)
   set(SENTENCEPIECE_CXX_FLAGS "/w")
 else()
-  set(SENTENCEPIECE_CXX_FLAGS "-Wno-all -Wno-extra -Wno-error -Wno-stringop-overflow")
+  set(SENTENCEPIECE_CXX_FLAGS "-Wno-all -Wno-extra -Wno-error")
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(SENTENCEPIECE_CXX_FLAGS "${SENTENCEPIECE_CXX_FLAGS} -Wno-stringop-overflow")
+  endif()
 endif()
 
 set_target_properties(
