@@ -80,5 +80,7 @@ inline onmt::Tokenizer::Options build_tokenization_options(const cxxopts::ParseR
   options.segment_numbers = args["segment_numbers"].as<bool>();
   options.segment_alphabet_change = args["segment_alphabet_change"].as<bool>();
   options.segment_alphabet = args["segment_alphabet"].as<std::vector<std::string>>();
+  if (options.segment_alphabet.size() == 1 && options.segment_alphabet[0].empty())
+    options.segment_alphabet.clear();
   return options;
 }
