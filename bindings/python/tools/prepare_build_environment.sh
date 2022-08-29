@@ -30,7 +30,7 @@ else
     tar xf icu4c-*-src.tgz
     cd icu/source
     CFLAGS="-O3 -fPIC" CXXFLAGS="-O3 -fPIC" ./configure --disable-shared --enable-static --prefix=$ICU_ROOT
-    make -j$(nproc) install
+    make -j2 install
 
 fi
 
@@ -44,5 +44,5 @@ rm -rf build
 mkdir build
 cd build
 cmake -DLIB_ONLY=ON -DICU_ROOT=$ICU_ROOT $CMAKE_EXTRA_ARGS ..
-VERBOSE=1 make -j$(nproc) install
+VERBOSE=1 make -j2 install
 cd $ROOT_DIR
