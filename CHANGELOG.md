@@ -26,6 +26,17 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.33.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.33.0) (2022-08-29)
+
+### New features
+
+* [Python] Build ARM64 wheels for macOS
+
+### Fixes and improvements
+
+* [CLI] Fix error when the option `--segment_alphabet` is not set
+* Fix SentencePiece build warning when compiling with Clang
+
 ## [v1.32.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.32.0) (2022-07-25)
 
 ### New features
