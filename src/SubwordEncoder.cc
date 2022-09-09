@@ -1,6 +1,7 @@
 #include "onmt/SubwordEncoder.h"
 
 #include <fstream>
+#include <limits>
 #include <stdexcept>
 
 #include "Casing.h"
@@ -37,8 +38,22 @@ namespace onmt
       }
       else
       {
+        const std::string frequency_str = line.substr(sep + 1);
         token = line.substr(0, sep);
-        frequency = std::stoi(line.substr(sep + 1));
+
+        try
+        {
+          frequency = std::stoi(frequency_str);
+        }
+        catch (const std::invalid_argument&)
+        {
+          throw std::invalid_argument("Cannot convert token frequency '"
+                                      + frequency_str + "' to an integer value");
+        }
+        catch (const std::out_of_range&)
+        {
+          frequency = std::numeric_limits<int>::max();
+        }
       }
 
       if (frequency >= frequency_threshold)
