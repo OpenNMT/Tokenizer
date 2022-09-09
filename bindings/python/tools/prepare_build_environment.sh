@@ -25,7 +25,7 @@ if [ "$CIBW_ARCHS" == "arm64" ]; then
 else
 
     # Download and compile ICU from sources.
-    ICU_VERSION=${ICU_VERSION:-70.1}
+    ICU_VERSION=${ICU_VERSION:-71.1}
     curl -L -O https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/icu4c-${ICU_VERSION/./_}-src.tgz
     tar xf icu4c-*-src.tgz
     cd icu/source
