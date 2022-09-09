@@ -105,7 +105,7 @@ list(APPEND LINK_LIBRARIES
 if(COMMAND create_library)
   create_library(${PROJECT_NAME} SHARED ${SOURCES})
 else()
-  add_library(${PROJECT_NAME} SHARED ${SOURCES})
+  add_library(${PROJECT_NAME} ${SOURCES})
 endif()
 
 include(GNUInstallDirs)
