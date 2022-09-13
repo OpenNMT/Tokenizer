@@ -26,6 +26,24 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.34.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.34.0) (2022-09-13)
+
+### Changes
+
+* [Python] Wheels are now built under `manylinux2014` and requires `pip` >= 19.3 for installation
+
+### New features
+
+* [Python] Build wheels for Python 3.11
+
+### Fixes and improvements
+
+* Improve error handling when reading token frequencies in the vocabulary file
+* [Python] Fix possible crash when `pyonmttok` is imported before `torch`
+* [Python] Update ICU to 71.1
+* [C++] Fix static compilation with `-DBUILD_SHARED_LIBS=OFF`
+* [C++] Fix CMake warning when compiling the tests
+
 ## [v1.33.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.33.0) (2022-08-29)
 
 ### New features
