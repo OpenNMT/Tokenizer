@@ -18,7 +18,7 @@ namespace onmt
       frequency = maximum_frequency;
   }
 
-  void Vocab::add_token(std::string token)
+  void Vocab::add_token(std::string token, size_t count)
   {
     const size_t id = _ids_to_tokens.size();
     const auto pair = _tokens_to_ids.emplace(std::move(token), id);
@@ -28,11 +28,15 @@ namespace onmt
     if (inserted)
     {
       _ids_to_tokens.emplace_back(entry.first);
-      _frequencies.emplace_back(1);
+      _frequencies.emplace_back(count);
     }
-    else if (_frequencies[entry.second] < maximum_frequency)
+    else if (_frequencies[entry.second] <= maximum_frequency - count)
     {
-      _frequencies[entry.second]++;
+      _frequencies[entry.second] += count;
+    }
+    else
+    {
+      _frequencies[entry.second] = maximum_frequency;
     }
   }
 

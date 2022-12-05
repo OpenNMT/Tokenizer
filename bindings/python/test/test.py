@@ -530,6 +530,9 @@ def test_token_pickle():
     assert token == token2
 
 
+_MAX_COUNTER = 18446744073709551615
+
+
 def test_vocab():
     special_tokens = ["<blank>", "<s>", "</s>"]
     vocab = pyonmttok.Vocab(special_tokens=special_tokens)
@@ -557,9 +560,9 @@ def test_vocab():
     }
 
     assert vocab.counters == [
-        18446744073709551615,
-        18446744073709551615,
-        18446744073709551615,
+        _MAX_COUNTER,
+        _MAX_COUNTER,
+        _MAX_COUNTER,
         2,
         1,
     ]
@@ -628,3 +631,19 @@ def test_vocab_default_id(tokens, default_id, expected_default_id):
         vocab.default_id = default_id
     assert vocab.default_id == expected_default_id
     assert vocab.lookup_token("oov") == expected_default_id
+
+
+def test_vocab_pickle():
+    vocab = pyonmttok.build_vocab_from_tokens(
+        ["a", "b", "a", "a", "c", "c"], special_tokens=["z"]
+    )
+    vocab.default_id = 0
+
+    data = pickle.dumps(vocab)
+    vocab_clone = pickle.loads(data)
+
+    assert vocab_clone is not vocab
+    assert len(vocab) == 4
+    assert vocab.ids_to_tokens == ["z", "a", "b", "c"]
+    assert vocab.default_id == 0
+    assert vocab.counters == [_MAX_COUNTER, 3, 1, 2]

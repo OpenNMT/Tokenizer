@@ -754,7 +754,7 @@ PYBIND11_MODULE(_ext, m)
     .def_property_readonly("ids_to_tokens", &onmt::Vocab::ids_to_tokens)
     .def_property_readonly("counters", &onmt::Vocab::counters)
 
-    .def("add_token", &onmt::Vocab::add_token, py::arg("token"))
+    .def("add_token", &onmt::Vocab::add_token, py::arg("token"), py::arg("count")=1)
 
     .def("add_from_text",
          [](onmt::Vocab& vocab,
@@ -792,5 +792,30 @@ PYBIND11_MODULE(_ext, m)
          [](const onmt::Vocab& vocab, const py::object& dict) {
            return onmt::Vocab(vocab);
          })
+
+    .def(py::pickle(
+           [](const onmt::Vocab& vocab) {
+             return py::make_tuple(
+               /*version=*/1,
+               vocab.ids_to_tokens(),
+               vocab.counters(),
+               vocab.get_default_id());
+           },
+           [](py::tuple t) {
+             if (t.size() != 4 || t[0].cast<unsigned int>() != 1)
+               throw std::runtime_error("Invalid pickle data");
+
+             auto tokens = t[1].cast<std::vector<std::string>>();
+             auto counters = t[2].cast<std::vector<size_t>>();
+             auto default_id = t[3].cast<size_t>();
+
+             onmt::Vocab vocab;
+             vocab.set_default_id(default_id);
+
+             for (size_t i = 0; i < tokens.size(); ++i)
+               vocab.add_token(std::move(tokens[i]), counters[i]);
+
+             return vocab;
+           }));
     ;
 }

@@ -264,7 +264,7 @@ vocab.__getitem__(token: str) -> int    # Implements: vocab["hello"]
 # If a tokenizer is not set, the text is split on spaces.
 vocab.add_from_text(text: str, tokenizer: Optional[pyonmttok.Tokenizer] = None) -> None
 vocab.add_from_file(path: str, tokenizer: Optional[pyonmttok.Tokenizer] = None) -> None
-vocab.add_token(token: str) -> None
+vocab.add_token(token: str, count: int = 1) -> None
 
 vocab.resize(maximum_size: int = 0, minimum_frequency: int = 1) -> None
 

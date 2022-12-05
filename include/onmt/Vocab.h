@@ -61,7 +61,7 @@ namespace onmt
       return _frequencies;
     }
 
-    void add_token(std::string token);
+    void add_token(std::string token, size_t count = 1);
     void add_from_text(const std::string& text, const Tokenizer* tokenizer = nullptr);
     void add_from_stream(std::istream& is, const Tokenizer* tokenizer = nullptr);
     void resize(size_t maximum_size = 0, size_t minimum_frequency = 1);
