@@ -33,9 +33,7 @@ jobs:
       - name: Build and install
         if: startsWith(matrix.os, 'macos')
         run: |
-          cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$PWD/install \
-            -DICU_INCLUDE_DIR=/usr/local/opt/icu4c/include \
-            -DICU_LIBRARY=/usr/local/opt/icu4c/lib/libicuuc.dylib .
+          cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$PWD/install -DICU_ROOT=/usr/local/opt/icu4c/ .
           make install
 
       - name: Test
