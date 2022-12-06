@@ -643,7 +643,7 @@ def test_vocab_pickle():
     vocab_clone = pickle.loads(data)
 
     assert vocab_clone is not vocab
-    assert len(vocab) == 4
-    assert vocab.ids_to_tokens == ["z", "a", "b", "c"]
-    assert vocab.default_id == 0
-    assert vocab.counters == [_MAX_COUNTER, 3, 1, 2]
+    assert len(vocab_clone) == 4
+    assert vocab_clone.ids_to_tokens == ["z", "a", "b", "c"]
+    assert vocab_clone.default_id == 0
+    assert vocab_clone.counters == [_MAX_COUNTER, 3, 1, 2]
