@@ -26,6 +26,17 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.35.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.35.0) (2022-12-06)
+
+### New features
+
+* [Python] Add pickling support to `pyonmttok.Vocab`
+
+### Fixes and improvements
+
+* Update pybind11 to 2.10.1
+* Update cibuildwheel to 2.11.2
+
 ## [v1.34.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.34.0) (2022-09-13)
 
 ### Changes
