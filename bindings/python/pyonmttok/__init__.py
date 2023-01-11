@@ -29,6 +29,7 @@ from pyonmttok._ext import (
     TokenType,
     Vocab,
     is_placeholder,
+    is_valid_language,
     set_random_seed,
 )
 from pyonmttok.version import __version__

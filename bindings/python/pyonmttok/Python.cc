@@ -492,6 +492,7 @@ static onmt::Vocab create_vocab(const std::optional<std::vector<std::string>>& s
 PYBIND11_MODULE(_ext, m)
 {
   m.def("is_placeholder", &onmt::Tokenizer::is_placeholder, py::arg("token"));
+  m.def("is_valid_language", &onmt::unicode::is_valid_language, py::arg("lang"));
   m.def("set_random_seed", &onmt::set_random_seed, py::arg("seed"));
 
   py::enum_<onmt::Casing>(m, "Casing")
