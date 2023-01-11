@@ -31,6 +31,7 @@ public:
                    const std::optional<std::string>& bpe_vocab_path,
                    int bpe_vocab_threshold,
                    float bpe_dropout,
+                   const std::optional<std::vector<std::string>>& vocabulary,
                    const std::optional<std::string>& vocabulary_path,
                    int vocabulary_threshold,
                    const std::optional<std::string>& sp_model_path,
@@ -87,7 +88,9 @@ public:
 
     if (subword_encoder)
     {
-      if (vocabulary_path)
+      if (vocabulary)
+        subword_encoder->set_vocabulary(vocabulary.value(), &options);
+      else if (vocabulary_path)
         subword_encoder->load_vocabulary(vocabulary_path.value(), vocabulary_threshold, &options);
       else if (bpe_vocab_path)  // Backward compatibility.
         subword_encoder->load_vocabulary(bpe_vocab_path.value(), bpe_vocab_threshold, &options);
@@ -568,6 +571,7 @@ PYBIND11_MODULE(_ext, m)
          const std::optional<std::string>&,
          int,
          float,
+         const std::optional<std::vector<std::string>>&,
          const std::optional<std::string>&,
          int,
          const std::optional<std::string>&,
@@ -597,6 +601,7 @@ PYBIND11_MODULE(_ext, m)
          py::arg("bpe_vocab_path")=py::none(),  // Keep for backward compatibility.
          py::arg("bpe_vocab_threshold")=50,  // Keep for backward compatibility.
          py::arg("bpe_dropout")=0,
+         py::arg("vocabulary")=py::none(),
          py::arg("vocabulary_path")=py::none(),
          py::arg("vocabulary_threshold")=0,
          py::arg("sp_model_path")=py::none(),

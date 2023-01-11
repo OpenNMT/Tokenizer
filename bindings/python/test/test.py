@@ -164,24 +164,35 @@ def test_sp_tokenizer():
     assert tokenizer.tokenize("Hello")[0] == ["▁H", "ello"]
 
 
-def test_sp_with_vocabulary(tmpdir):
+@pytest.mark.parametrize("as_file", [True, False])
+def test_sp_with_vocabulary(tmpdir, as_file):
     sp_model_path = os.path.join(_DATA_DIR, "sp-models", "wmtende.model")
-    vocab_path = str(tmpdir.join("vocab.txt"))
-    with open(vocab_path, "w", encoding="utf-8") as vocab_file:
-        vocab_file.write("▁Wor\n")
+
+    vocab = ["▁Wor"]
+    kwargs = {}
+
+    if as_file:
+        vocab_path = str(tmpdir.join("vocab.txt"))
+        with open(vocab_path, "w", encoding="utf-8") as vocab_file:
+            for token in vocab:
+                vocab_file.write(token)
+                vocab_file.write("\n")
+        kwargs["vocabulary_path"] = vocab_path
+    else:
+        kwargs["vocabulary"] = vocab
 
     with pytest.raises(ValueError, match="spacer_annotate"):
         tokenizer = pyonmttok.Tokenizer(
             mode="none",
             sp_model_path=sp_model_path,
-            vocabulary_path=vocab_path,
             joiner_annotate=True,
+            **kwargs,
         )
 
     tokenizer = pyonmttok.Tokenizer(
         mode="none",
         sp_model_path=os.path.join(_DATA_DIR, "sp-models", "wmtende.model"),
-        vocabulary_path=vocab_path,
+        **kwargs,
     )
     assert tokenizer.tokenize("World")[0] == ["▁Wor", "l", "d"]
 

@@ -47,6 +47,7 @@ tokenizer = pyonmttok.Tokenizer(
     lang: Optional[str] = None,
     bpe_model_path: Optional[str] = None,
     bpe_dropout: float = 0,
+    vocabulary: Optional[List[str]] = None,
     vocabulary_path: Optional[str] = None,
     vocabulary_threshold: int = 0,
     sp_model_path: Optional[str] = None,
