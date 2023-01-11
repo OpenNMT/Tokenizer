@@ -17,6 +17,12 @@ def test_is_placeholder():
     assert pyonmttok.is_placeholder("｟hello｠")
 
 
+def test_is_valid_language():
+    assert pyonmttok.is_valid_language("fr")
+    assert pyonmttok.is_valid_language("de")
+    assert not pyonmttok.is_valid_language("xx")
+
+
 def test_simple():
     tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True, joiner_new=True)
     text = "Hello World!"

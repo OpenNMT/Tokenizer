@@ -363,4 +363,7 @@ pyonmttok.is_placeholder(token: str)
 
 # Sets the random seed for reproducible tokenization.
 pyonmttok.set_random_seed(seed: int)
+
+# Checks if the language code is valid.
+pyonmttok.is_valid_language(lang: str).
 ```
