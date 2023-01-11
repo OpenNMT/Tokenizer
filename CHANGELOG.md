@@ -26,6 +26,13 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.36.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.36.0) (2023-01-11)
+
+### New features
+
+* [Python] Add argument `vocabulary` in the `Tokenizer` constructor to set the vocabulary with a list of tokens instead of using a file
+* [Python] Add function `pyonmttok.is_valid_language` to check if a language code is valid and can be passed to the `Tokenizer` constructor
+
 ## [v1.35.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.35.0) (2022-12-06)
 
 ### New features
