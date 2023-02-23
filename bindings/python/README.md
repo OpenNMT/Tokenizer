@@ -64,6 +64,7 @@ tokenizer = pyonmttok.Tokenizer(
     soft_case_regions: bool = False,
     no_substitution: bool = False,
     with_separators: bool = False,
+    allow_isolated_marks: bool = False,
     preserve_placeholders: bool = False,
     preserve_segmented_tokens: bool = False,
     segment_case: bool = False,

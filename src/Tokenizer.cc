@@ -754,11 +754,35 @@ namespace onmt
   }
 
   static inline size_t get_next_main_char(const std::vector<unicode::CharInfo>& chars,
-                                          size_t offset)
+                                          size_t offset,
+                                          const Tokenizer::Options& options)
   {
+    int base_alphabet = -1;
+
+    if (options.allow_isolated_marks) {
+      const auto& base_char = chars[offset];
+      if (base_char.char_type == unicode::CharType::Separator)
+        return offset + 1;
+      if (base_char.char_type == unicode::CharType::Letter)
+        base_alphabet = unicode::get_script(base_char.value);
+    }
+
     ++offset;
-    while (offset < chars.size() && chars[offset].char_type == unicode::CharType::Mark)
+
+    while (offset < chars.size()) {
+      const auto& current_char = chars[offset];
+
+      if (current_char.char_type != unicode::CharType::Mark)
+        break;
+      if (options.allow_isolated_marks
+          && options.segment_alphabet_change
+          && base_alphabet != -1
+          && base_alphabet != unicode::get_script(current_char.value))
+        break;
+
       ++offset;
+    }
+
     return offset;
   }
 
@@ -782,7 +806,7 @@ namespace onmt
       if (v < 32 || v == 0xFEFF)  // skip special characters and BOM
         continue;
 
-      const size_t next_index = get_next_main_char(chars, i);
+      const size_t next_index = get_next_main_char(chars, i, _options);
       const auto* next_c = next_index < chars.size() ? &chars[next_index] : nullptr;
       const bool has_combining_marks = (next_index != i + 1);
 
@@ -976,6 +1000,8 @@ namespace onmt
           {
             builder.segment();
             builder.current().join_left = true;
+            if (_options.preserve_segmented_tokens && c.char_type == unicode::CharType::Mark)
+              builder.current().preserve = true;
           }
 
           builder.safe_append(c);
