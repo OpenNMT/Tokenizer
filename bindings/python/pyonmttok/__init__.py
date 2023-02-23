@@ -14,9 +14,8 @@ if sys.platform == "win32":
     if add_dll_directory is not None:
         add_dll_directory(package_dir)
 
-    for library in ("icudt*", "icuuc*", "OpenNMTTokenizer"):
-        library_path = glob.glob(os.path.join(package_dir, "%s.dll" % library))[0]
-        ctypes.CDLL(library_path)
+    for library in glob.glob(os.path.join(package_dir, "*.dll")):
+        ctypes.CDLL(library)
 
 from pyonmttok._ext import (
     BPELearner,
