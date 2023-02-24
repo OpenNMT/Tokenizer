@@ -55,8 +55,13 @@ namespace onmt
         unsigned int char_size = 0;
         code_point_t code_point = utf8_to_cp(
           reinterpret_cast<const unsigned char*>(c_str), char_size);
+
         if (code_point == 0)  // Ignore invalid code points.
+        {
+          c_str++;
           continue;
+        }
+        
         callback(c_str, char_size, code_point);
         c_str += char_size;
       }
