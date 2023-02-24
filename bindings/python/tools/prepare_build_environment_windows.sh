@@ -4,10 +4,12 @@ set -e
 set -x
 
 ROOT_DIR=$PWD
-ICU_VERSION=${ICU_VERSION:-71.1}
+ICU_VERSION=${ICU_VERSION:-72.1}
 
 curl -L -O -nv https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/icu4c-${ICU_VERSION/./_}-Win64-MSVC2019.zip
-unzip *.zip -d icu
+unzip *.zip
+unzip *_Release/icu-windows.zip -d icu
+rm -r *_Release
 
 rm -rf build
 mkdir build
