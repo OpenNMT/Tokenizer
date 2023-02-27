@@ -308,6 +308,9 @@ namespace onmt
     std::unordered_map<const bigram*, std::unordered_map<int, int>> indices;
     get_pair_statistics(collection, sorted_vocab, stats, indices);
 
+    if (stats.empty())
+      throw std::runtime_error("No pairs of characters were found in the ingested data");
+
     std::unordered_map<const bigram*, int> big_stats(stats);
 
     if (_total_symbols) {
