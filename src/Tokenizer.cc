@@ -760,17 +760,16 @@ namespace onmt
   {
     size_t next_offset = offset + 1;
 
-    if (options.allow_isolated_marks && chars[offset].char_type == unicode::CharType::Separator)
-      return next_offset;
-
     while (next_offset < chars.size()) {
       if (chars[next_offset].char_type != unicode::CharType::Mark)
         break;
 
-      if (options.allow_isolated_marks
-          && options.segment_alphabet_change
-          && scripts[next_offset] != scripts[offset])
-        break;
+      if (options.allow_isolated_marks) {
+        if (chars[offset].char_type == unicode::CharType::Separator)
+          break;
+        if (options.segment_alphabet_change && scripts[next_offset] != scripts[offset])
+          break;
+      }
 
       ++next_offset;
     }
