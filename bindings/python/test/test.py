@@ -332,6 +332,15 @@ def test_bpe_learner_tokens(tmpdir):
         assert model.read() == "#version: 0.2\na b</w>\nc d</w>\n"
 
 
+def test_bpe_learner_no_pairs(tmpdir):
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+    learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=2, min_frequency=1)
+    learner.ingest("a b")
+    model_path = str(tmpdir.join("bpe.model"))
+    with pytest.raises(RuntimeError, match="pairs"):
+        tokenizer = learner.learn(model_path)
+
+
 @pytest.mark.parametrize("keep_vocab", [False, True])
 def test_sp_learner(tmpdir, keep_vocab):
     learner = pyonmttok.SentencePieceLearner(
