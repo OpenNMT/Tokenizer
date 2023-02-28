@@ -26,6 +26,18 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.37.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.37.0) (2023-02-28)
+
+### New features
+
+* Add tokenization option `allow_isolated_marks` to allow combining marks to appear isolated in the tokenization output in specific conditions
+
+### Fixes and improvements
+
+* Fix infinite loop when the text contains an invalid Unicode character
+* Fix segmentation fault when the `BPELearner` does not not find any pairs of characters in the tokenized data
+* [Python] Update ICU to 72.1
+
 ## [v1.36.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.36.0) (2023-01-11)
 
 ### New features
