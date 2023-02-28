@@ -754,36 +754,28 @@ namespace onmt
   }
 
   static inline size_t get_next_main_char(const std::vector<unicode::CharInfo>& chars,
+                                          const std::vector<int>& scripts,
                                           size_t offset,
                                           const Tokenizer::Options& options)
   {
-    int base_alphabet = -1;
+    size_t next_offset = offset + 1;
 
-    if (options.allow_isolated_marks) {
-      const auto& base_char = chars[offset];
-      if (base_char.char_type == unicode::CharType::Separator)
-        return offset + 1;
-      if (base_char.char_type == unicode::CharType::Letter)
-        base_alphabet = unicode::get_script(base_char.value);
-    }
+    if (options.allow_isolated_marks && chars[offset].char_type == unicode::CharType::Separator)
+      return next_offset;
 
-    ++offset;
-
-    while (offset < chars.size()) {
-      const auto& current_char = chars[offset];
-
-      if (current_char.char_type != unicode::CharType::Mark)
+    while (next_offset < chars.size()) {
+      if (chars[next_offset].char_type != unicode::CharType::Mark)
         break;
+
       if (options.allow_isolated_marks
           && options.segment_alphabet_change
-          && base_alphabet != -1
-          && base_alphabet != unicode::get_script(current_char.value))
+          && scripts[next_offset] != scripts[offset])
         break;
 
-      ++offset;
+      ++next_offset;
     }
 
-    return offset;
+    return next_offset;
   }
 
   void Tokenizer::tokenize_text(const std::string& text,
@@ -794,6 +786,13 @@ namespace onmt
     // smaller pieces to clarify its logic.
 
     const auto chars = unicode::get_characters_info(text);
+
+    std::vector<int> scripts;
+    scripts.reserve(chars.size());
+    for (const auto& c : chars) {
+      const int previous_script = scripts.empty() ? -1 : scripts.back();
+      scripts.emplace_back(unicode::get_script(c.value, previous_script));
+    }
 
     TokensBuilder builder(_options, annotated_tokens);
     State state = State::Space;
@@ -806,7 +805,7 @@ namespace onmt
       if (v < 32 || v == 0xFEFF)  // skip special characters and BOM
         continue;
 
-      const size_t next_index = get_next_main_char(chars, i, _options);
+      const size_t next_index = get_next_main_char(chars, scripts, i, _options);
       const auto* next_c = next_index < chars.size() ? &chars[next_index] : nullptr;
       const bool has_combining_marks = (next_index != i + 1);
 
@@ -896,7 +895,7 @@ namespace onmt
         if (is_number)
           alphabet = number_alphabet;
         else if (is_letter)
-          alphabet = unicode::get_script(v, prev_alphabet);
+          alphabet = scripts[i];
 
         if (alphabets != nullptr)
         {

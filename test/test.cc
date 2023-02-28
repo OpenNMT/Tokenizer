@@ -766,6 +766,8 @@ TEST(TokenizerTest, SegmentAlphabetChangeIsolatedMarks) {
   options.allow_isolated_marks = true;
   options.joiner_annotate = true;
   test_tok(options, "abc়", "abc ￭়");
+  test_tok(options, "8ে", "8 ￭ে");
+  test_tok(options, "ё", "ё");  // combining mark with inherited script.
 
   options.preserve_segmented_tokens = true;
   test_tok(options, "abc়", "abc ￭ ়");
