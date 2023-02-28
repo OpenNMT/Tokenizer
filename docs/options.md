@@ -85,6 +85,13 @@ A++ ++B
 
 Note: this option makes the tokenized output reversible so `joiner_annotate` or `spacer_annotate` should not be used.
 
+### `allow_isolated_marks` (boolean, default: `false`)
+
+By default, combining marks are always attached to the previous character. When this option is enabled, the combining mark can be detached in the following conditions:
+
+* when the previous character is from the "Separator" Unicode category
+* when `segment_alphabet_change` is enabled and the previous character does not belong to the same alphabet
+
 ## Case annotation
 
 ### `case_feature` (boolean, default: `false`)

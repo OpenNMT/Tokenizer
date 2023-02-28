@@ -15,6 +15,8 @@ inline void add_tokenization_options(cxxopts::Options& options)
      cxxopts::value<bool>()->default_value("false"))
     ("with_separators", "Include separator characters in the tokenized output",
      cxxopts::value<bool>()->default_value("false"))
+    ("allow_isolated_marks", "Allow isolated combining marks",
+     cxxopts::value<bool>()->default_value("false"))
     ;
 
   options.add_options("Reversible tokenization")
@@ -65,6 +67,7 @@ inline onmt::Tokenizer::Options build_tokenization_options(const cxxopts::ParseR
   options.lang = args["lang"].as<std::string>();
   options.no_substitution = args["no_substitution"].as<bool>();
   options.with_separators = args["with_separators"].as<bool>();
+  options.allow_isolated_marks = args["allow_isolated_marks"].as<bool>();
   options.case_feature = args["case_feature"].as<bool>();
   options.case_markup = args["case_markup"].as<bool>();
   options.soft_case_regions = args["soft_case_regions"].as<bool>();

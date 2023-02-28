@@ -479,6 +479,13 @@ TEST(TokenizerTest, CombiningMarkOnSpace) {
 
   {
     Tokenizer::Options options;
+    options.joiner_annotate = true;
+    options.allow_isolated_marks = true;
+    test_tok_and_detok(options, "b ̇c", "b ̇￭ c");
+  }
+
+  {
+    Tokenizer::Options options;
     options.spacer_annotate = true;
     test_tok_and_detok(options, "b ̇c", "b ％0020̇ c");
   }
@@ -751,6 +758,19 @@ TEST(TokenizerTest, SegmentAlphabetChangeCommonScript) {
   // Character ー can appear in both Hiragana and Katakana and should not be segmented when
   // appearing in these contexts. See https://github.com/OpenNMT/Tokenizer/issues/210.
   test_tok(options, "「キャント・バイ・ミー・ラヴ」", "「 キャント ・ バイ ・ ミー ・ ラヴ 」");
+}
+
+TEST(TokenizerTest, SegmentAlphabetChangeIsolatedMarks) {
+  Tokenizer::Options options;
+  options.segment_alphabet_change = true;
+  options.allow_isolated_marks = true;
+  options.joiner_annotate = true;
+  test_tok(options, "abc়", "abc ￭়");
+  test_tok(options, "8ে", "8 ￭ে");
+  test_tok(options, "ё", "ё");  // combining mark with inherited script.
+
+  options.preserve_segmented_tokens = true;
+  test_tok(options, "abc়", "abc ￭ ়");
 }
 
 TEST(TokenizerTest, PreserveSegmentedNumbers) {

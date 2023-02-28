@@ -40,6 +40,7 @@ namespace onmt
       bool case_markup = false;
       bool soft_case_regions = false;
       bool with_separators = false;
+      bool allow_isolated_marks = false;
       bool joiner_annotate = false;
       bool joiner_new = false;
       std::string joiner;
