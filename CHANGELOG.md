@@ -26,6 +26,13 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.37.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.37.1) (2023-03-01)
+
+### Fixes and improvements
+
+* Consider escaped characters as single characters in BPE
+* Ignore undefined scripts when resolving inherited or common scripts
+
 ## [v1.37.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.37.0) (2023-02-28)
 
 ### New features
