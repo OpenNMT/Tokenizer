@@ -787,10 +787,16 @@ namespace onmt
     const auto chars = unicode::get_characters_info(text);
 
     std::vector<int> scripts;
-    scripts.reserve(chars.size());
-    for (const auto& c : chars) {
-      const int previous_script = scripts.empty() ? -1 : scripts.back();
-      scripts.emplace_back(unicode::get_script(c.value, previous_script));
+
+    {
+      scripts.reserve(chars.size());
+      int previous_script = -1;
+      for (const auto& c : chars) {
+        const int script = unicode::get_script(c.value, previous_script);
+        scripts.emplace_back(script);
+        if (script != -1)
+          previous_script = script;
+      }
     }
 
     TokensBuilder builder(_options, annotated_tokens);
