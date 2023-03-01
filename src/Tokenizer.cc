@@ -18,9 +18,10 @@ namespace onmt
   const std::string Tokenizer::spacer_marker = "▁";
   const std::string Tokenizer::ph_marker_open = "｟";
   const std::string Tokenizer::ph_marker_close = "｠";
+  const std::string Tokenizer::escaped_character_prefix = "％";
+  const size_t Tokenizer::escaped_character_width = 4;
   static const unicode::code_point_t ph_marker_open_cp = 0xFF5F;
   static const unicode::code_point_t ph_marker_close_cp = 0xFF60;
-  static const std::string protected_character = "％";
   static const std::vector<std::pair<unicode::code_point_t, std::string>> substitutes = {
     {0x2581 /* ▁ */, "_"},
     {0xFFED /* ￭ */, "■"},
@@ -32,7 +33,6 @@ namespace onmt
 
   static const int placeholder_alphabet = -2;
   static const int number_alphabet = -3;
-  static const int hex_value_width = 4;
 
   Tokenizer::Mode Tokenizer::str_to_mode(const std::string& mode)
   {
@@ -290,21 +290,23 @@ namespace onmt
 
   static inline void unescape_characters(std::string& str)
   {
+    const auto& prefix = Tokenizer::escaped_character_prefix;
+    const auto& width = Tokenizer::escaped_character_width;
+
     for (size_t offset = 0;;)
     {
-      const size_t index = str.find(protected_character, offset);
-      if (index == std::string::npos
-          || index + protected_character.size() + hex_value_width > str.size())
+      const size_t index = str.find(prefix, offset);
+      if (index == std::string::npos || index + prefix.size() + width > str.size())
         break;
 
-      const std::string code = str.substr(index + protected_character.size(), hex_value_width);
+      const std::string code = str.substr(index + prefix.size(), width);
       const int v = hex_to_int(code);
       const std::string c = unicode::cp_to_utf8(v);
-      if (c.empty() || !c[0] || int_to_hex(v, hex_value_width) != code)
-        offset = index + protected_character.size();
+      if (c.empty() || !c[0] || int_to_hex(v, width) != code)
+        offset = index + prefix.size();
       else
       {
-        str.replace(index, protected_character.size() + hex_value_width, c);
+        str.replace(index, prefix.size() + width, c);
         offset = index + 1;
       }
     }
@@ -635,7 +637,8 @@ namespace onmt
       if (_no_substitution)
         append(character);
       else
-        append(protected_character + int_to_hex(character.value, hex_value_width));
+        append(Tokenizer::escaped_character_prefix
+               + int_to_hex(character.value, Tokenizer::escaped_character_width));
     }
 
     void flush_feature()

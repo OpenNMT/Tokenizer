@@ -341,6 +341,18 @@ def test_bpe_learner_no_pairs(tmpdir):
         tokenizer = learner.learn(model_path)
 
 
+def test_bpe_learner_escaped_character(tmpdir):
+    text = "คุณอาจจะทำอย ่ างนั ้ นไปซักพัก จนคุณเริ ่ มจะรู ้ สึกถึงมันจริงๆ"
+
+    tokenizer = pyonmttok.Tokenizer("aggressive", joiner_annotate=True)
+    learner = pyonmttok.BPELearner(tokenizer=tokenizer, symbols=5, min_frequency=1)
+    learner.ingest(text)
+    tokenizer = learner.learn(str(tmpdir.join("bpe.model")))
+
+    tokens = tokenizer(text)
+    assert "￭％0020่" in tokens
+
+
 @pytest.mark.parametrize("keep_vocab", [False, True])
 def test_sp_learner(tmpdir, keep_vocab):
     learner = pyonmttok.SentencePieceLearner(

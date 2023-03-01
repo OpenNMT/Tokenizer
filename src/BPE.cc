@@ -138,9 +138,23 @@ namespace onmt
     std::vector<std::string> pieces;
     pieces.reserve(chars.size());
 
+    static const auto escaped_character_prefix = (
+      unicode::utf8_to_cp(Tokenizer::escaped_character_prefix.c_str()));
+    size_t escaped_character_length = 0;
+
     for (const auto& c : chars)
     {
-      if (c.char_type == unicode::CharType::Mark)
+      if (escaped_character_length > 0)
+      {
+        pieces.back().append(c.data, c.length);
+        escaped_character_length--;
+      }
+      else if (c.value == escaped_character_prefix)
+      {
+        pieces.emplace_back(c.data, c.length);
+        escaped_character_length = Tokenizer::escaped_character_width;
+      }
+      else if (c.char_type == unicode::CharType::Mark)
       {
         if (pieces.empty())
           pieces.emplace_back(c.data, c.length);
