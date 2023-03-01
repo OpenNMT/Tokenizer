@@ -26,18 +26,18 @@ namespace onmt
       return std::string(reinterpret_cast<std::string::value_type*>(s), offset);
     }
 
-    code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l)
+    code_point_t utf8_to_cp(const char* str, size_t* length)
     {
       UChar32 c = -1;
       int32_t offset = 0;
-      U8_NEXT(s, offset, -1, c);
+      U8_NEXT(str, offset, -1, c);
       if (c < 0)
       {
-        l = 0;
         c = 0;
+        offset = 0;
       }
-      else
-        l = offset;
+      if (length)
+        *length = offset;
       return c;
     }
 
@@ -52,16 +52,15 @@ namespace onmt
       const char* c_str = str.c_str();
       while (*c_str)
       {
-        unsigned int char_size = 0;
-        code_point_t code_point = utf8_to_cp(
-          reinterpret_cast<const unsigned char*>(c_str), char_size);
+        size_t char_size = 0;
+        code_point_t code_point = utf8_to_cp(c_str, &char_size);
 
         if (code_point == 0)  // Ignore invalid code points.
         {
           c_str++;
           continue;
         }
-        
+
         callback(c_str, char_size, code_point);
         c_str += char_size;
       }
@@ -75,7 +74,7 @@ namespace onmt
       code_points.reserve(str.length());
 
       const auto callback = [&chars, &code_points](const char* data,
-                                                   unsigned int length,
+                                                   size_t length,
                                                    code_point_t code_point) {
         code_points.push_back(code_point);
         chars.emplace_back(data, length);
@@ -97,7 +96,7 @@ namespace onmt
         code_points_combining->reserve(str.length());
 
       const auto callback = [&](const char* data,
-                                unsigned int length,
+                                size_t length,
                                 code_point_t code_point) {
         if (chars.empty()
             || !is_mark(code_point)
@@ -127,7 +126,7 @@ namespace onmt
     size_t utf8len(const std::string& str)
     {
       size_t length = 0;
-      character_iterator(str, [&length](const char*, unsigned int, code_point_t) { ++length; });
+      character_iterator(str, [&length](const char*, size_t, code_point_t) { ++length; });
       return length;
     }
 
@@ -222,7 +221,7 @@ namespace onmt
 
       character_iterator(
         str,
-        [&chars](const char* data, unsigned int length, code_point_t code_point)
+        [&chars](const char* data, size_t length, code_point_t code_point)
         {
           const auto category = u_charType(code_point);
           const auto char_type = get_char_type(category);

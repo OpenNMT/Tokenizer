@@ -14,7 +14,7 @@ namespace onmt
     typedef int32_t code_point_t;
 
     OPENNMTTOKENIZER_EXPORT std::string cp_to_utf8(code_point_t u);
-    OPENNMTTOKENIZER_EXPORT code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l);
+    OPENNMTTOKENIZER_EXPORT code_point_t utf8_to_cp(const char* str, size_t* length = nullptr);
 
     OPENNMTTOKENIZER_EXPORT size_t utf8len(const std::string& str);
 
@@ -86,6 +86,14 @@ namespace onmt
 
 
     // The symbols below are deprecated but kept for backward compatibility.
+
+    inline code_point_t utf8_to_cp(const unsigned char* s, unsigned int &l)
+    {
+      size_t length = 0;
+      code_point_t code_point = utf8_to_cp(reinterpret_cast<const char*>(s), &length);
+      l = length;
+      return code_point;
+    }
 
     OPENNMTTOKENIZER_EXPORT std::vector<std::string> split_utf8(const std::string& str,
                                                                 const std::string& sep);
