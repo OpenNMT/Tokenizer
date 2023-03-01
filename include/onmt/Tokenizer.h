@@ -70,6 +70,8 @@ namespace onmt
     static const std::string spacer_marker;
     static const std::string ph_marker_open;
     static const std::string ph_marker_close;
+    static const std::string escaped_character_prefix;
+    static const size_t escaped_character_width;
 
     Tokenizer(Options options,
               const std::shared_ptr<const SubwordEncoder>& subword_encoder = nullptr);
