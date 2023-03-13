@@ -95,7 +95,7 @@ setup(
     keywords="tokenization opennmt unicode bpe sentencepiece subword",
     packages=find_packages(),
     package_data=package_data,
-    python_requires=">=3.6,<3.12",
+    python_requires=">=3.6",
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     ext_modules=[tokenizer_module],
