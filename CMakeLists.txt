@@ -97,7 +97,7 @@ set(SOURCES
   )
 
 list(APPEND LINK_LIBRARIES
-  ${ICU_LIBRARIES}
+  icu::icu
   sentencepiece-static
   sentencepiece_train-static
   )
