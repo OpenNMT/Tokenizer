@@ -10,7 +10,7 @@ project(OpenNMTTokenizer)
 option(BUILD_TESTS "Compile unit tests" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
   set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 endif()

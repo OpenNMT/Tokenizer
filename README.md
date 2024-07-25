@@ -79,7 +79,7 @@ See the `-h` flag to list the available options.
 git submodule update --init
 mkdir build
 cd build
-cmake ..
+cmake .. -DICU_ROOT=<path to root of ICU dependencies>
 make
 ```
 
