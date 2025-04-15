@@ -54,7 +54,12 @@ namespace onmt
     if (options && (options->joiner_annotate || options->spacer_new))
       throw std::invalid_argument("SentencePiece vocabulary restriction requires the tokenization "
                                   "to use \"spacer_annotate\" (same as spm_encode)");
-    auto status = _processor->SetVocabulary(vocabulary);
+    std::vector<std::string_view> vocabulary_views;
+    vocabulary_views.reserve(vocabulary.size());
+    for (const auto& s : vocabulary) {
+        vocabulary_views.emplace_back(s);
+    }
+    auto status = _processor->SetVocabulary(vocabulary_views);
     if (!status.ok())
       throw std::invalid_argument(status.ToString());
   }
