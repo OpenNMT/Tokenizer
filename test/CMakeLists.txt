@@ -8,6 +8,8 @@ add_executable(onmt_tokenizer_test test.cc)
 target_link_libraries(onmt_tokenizer_test
   ${PROJECT_NAME}
   gtest_main
+  ICU::uc
+  ICU::data
   )
 
 add_test(TokenizerTest onmt_tokenizer_test "${CMAKE_CURRENT_LIST_DIR}/data/")
