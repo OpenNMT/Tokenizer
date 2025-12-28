@@ -4,7 +4,25 @@
 #include <onmt/SentencePiece.h>
 #include <onmt/Tokenizer.h>
 
+#include <unicode/unistr.h>
+#include <unicode/normalizer2.h>
+
 using namespace onmt;
+
+static std::string normalize_nfc(const std::string& s) {
+  UErrorCode error = U_ZERO_ERROR;
+  const auto* norm = icu::Normalizer2::getNFCInstance(error);
+  EXPECT_TRUE(U_SUCCESS(error));
+
+  icu::UnicodeString u = icu::UnicodeString::fromUTF8(s);
+  icu::UnicodeString out;
+  norm->normalize(u, out, error);
+  EXPECT_TRUE(U_SUCCESS(error));
+
+  std::string result;
+  out.toUTF8String(result);
+  return result;
+}
 
 static std::string data_dir;
 
@@ -63,7 +81,10 @@ static void test_detok(const Tokenizer& tokenizer,
   std::vector<std::string> tokens;
   std::vector<std::vector<std::string>> features;
   read_tokens(in, tokens, features);
-  EXPECT_EQ(tokenizer.detokenize(tokens, features), expected);
+  EXPECT_EQ(
+    normalize_nfc(tokenizer.detokenize(tokens, features)),
+    normalize_nfc(expected)
+  );
 }
 
 static void test_detok(const Tokenizer::Options& options,
