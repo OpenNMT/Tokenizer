@@ -6,7 +6,7 @@ set -x
 ROOT_DIR=$PWD
 ICU_VERSION=${ICU_VERSION:-73.2}
 
-curl -L -O -nv https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/icu4c-${ICU_VERSION/./_}-Win64-MSVC2019.zip
+curl --netrc-optional -L -O -nv https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/icu4c-${ICU_VERSION/./_}-Win64-MSVC2019.zip
 unzip *.zip
 unzip *_Release/icu-windows.zip -d icu
 rm -r *_Release
