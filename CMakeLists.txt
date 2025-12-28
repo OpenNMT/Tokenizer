@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.5.0)
 
+# Allow find_package() to use <PackageName>_ROOT variables (ICU_ROOT)
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
 # Set policy for setting the MSVC runtime library for static MSVC builds
 if(POLICY CMP0091)
   cmake_policy(SET CMP0091 NEW)
