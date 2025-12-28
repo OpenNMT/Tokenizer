@@ -24,6 +24,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install ICU libraries on macOS
+        if: startsWith(matrix.os, 'macos')
+        run: brew install icu4c
+
       - name: Build and install
         if: startsWith(matrix.os, 'ubuntu')
         run: |
