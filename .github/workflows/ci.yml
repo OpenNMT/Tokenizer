@@ -127,7 +127,7 @@ jobs:
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
         with:
-          name: python-wheels
+          name: python-wheels-${{ matrix.os }}-${{ matrix.arch }}
           path: wheelhouse
 
 
@@ -140,7 +140,7 @@ jobs:
       - name: Download Python wheels
         uses: actions/download-artifact@v3
         with:
-          name: python-wheels
+          path: dist
 
       - name: Publish Python wheels to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
