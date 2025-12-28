@@ -34,11 +34,17 @@ jobs:
           cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$PWD/install .
           make install
 
-      - name: Build and install
+      - name: Build and install (macOS)
         if: startsWith(matrix.os, 'macos')
         run: |
-          cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$PWD/install -DICU_ROOT=/usr/local/opt/icu4c/ .
+          ICU_PREFIX=$(brew --prefix icu4c)
+          cmake \
+            -DBUILD_TESTS=ON \
+            -DCMAKE_INSTALL_PREFIX=$PWD/install \
+            -DICU_ROOT=$ICU_PREFIX \
+            .
           make install
+
 
       - name: Test
         run: |
