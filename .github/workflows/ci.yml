@@ -115,7 +115,7 @@ jobs:
           CIBW_TEST_SKIP: "*-macosx_arm64"
 
       - name: Upload Python wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-wheels
           path: wheelhouse
