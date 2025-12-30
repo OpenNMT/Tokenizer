@@ -112,7 +112,9 @@ jobs:
           package-dir: bindings/python
           output-dir: wheelhouse
         env:
-          CIBW_ENVIRONMENT: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
+          CIBW_ENVIRONMENT_LINUX: TOKENIZER_ROOT=/project/build/install
+          CIBW_ENVIRONMENT_MACOS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
+          CIBW_ENVIRONMENT_WINDOWS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
           CIBW_BEFORE_ALL_LINUX: bindings/python/tools/prepare_build_environment_linux.sh
           CIBW_BEFORE_ALL_MACOS: bindings/python/tools/prepare_build_environment_macos.sh
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
