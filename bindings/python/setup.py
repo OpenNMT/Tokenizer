@@ -97,4 +97,3 @@ setup(
     tests_require=["pytest"],
     ext_modules=[tokenizer_module],
 )
-
