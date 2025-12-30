@@ -19,7 +19,7 @@ make -j2 install
 cd "$ROOT_DIR"
 
 # Install cmake.
-pip install "cmake==3.18.*"
+pip install cmake
 
 # Build Tokenizer.
 rm -rf build

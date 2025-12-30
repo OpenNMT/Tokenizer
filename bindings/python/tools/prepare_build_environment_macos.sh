@@ -25,7 +25,7 @@ if [[ "$(uname -m)" == "arm64" ]]; then
 fi
 
 # Install cmake
-pip install "cmake==3.18.*"
+pip install cmake
 
 # Build Tokenizer
 rm -rf build
