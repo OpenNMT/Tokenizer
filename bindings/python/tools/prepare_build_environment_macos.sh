@@ -40,6 +40,4 @@ cmake \
 
 VERBOSE=1 make -j2 install
 cd "$ROOT_DIR"
-echo "TOKENIZER_ROOT=$ROOT_DIR/build/install" >> $GITHUB_ENV
-
 

@@ -125,6 +125,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: pp* *-musllinux_*
           CIBW_TEST_SKIP: "*-macosx_arm64"
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
 
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
