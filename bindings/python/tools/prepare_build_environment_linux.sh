@@ -1,55 +1,43 @@
 #!/usr/bin/env bash
-set -euo pipefail
-set -x
+set -euxo pipefail
 
 ROOT_DIR="$PWD"
-INSTALL_PREFIX="$ROOT_DIR/build/install"
-ICU_ROOT="$INSTALL_PREFIX"
+ICU_ROOT="$ROOT_DIR/icu"
 
-mkdir -p "$INSTALL_PREFIX"
+# manylinux compiler flags (required)
+export CFLAGS="-O3 -fPIC"
+export CXXFLAGS="-O3 -fPIC"
 
-# -----------------------------
-# Build ICU from source (static)
-# -----------------------------
+# Build ICU from source
 ICU_VERSION=${ICU_VERSION:-73.2}
+ICU_TGZ="icu4c-${ICU_VERSION/./_}-src.tgz"
 
-curl -LO https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/icu4c-${ICU_VERSION/./_}-src.tgz
-tar xf icu4c-*-src.tgz
+curl -LO "https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/${ICU_TGZ}"
+tar xf "$ICU_TGZ"
 
 pushd icu/source
-
-CFLAGS="-O3 -fPIC" \
-CXXFLAGS="-O3 -fPIC" \
 ./configure \
   --disable-shared \
   --enable-static \
   --prefix="$ICU_ROOT"
-
 make -j$(nproc)
 make install
-
 popd
 
-# -----------------------------
-# Build Tokenizer (C++)
-# -----------------------------
-pip install "cmake<4"
-
+# Build Tokenizer C++ library
 rm -rf build
 mkdir build
-cd build
+pushd build
 
 cmake \
   -DLIB_ONLY=ON \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DICU_ROOT="$ICU_ROOT" \
   ..
 
 make -j$(nproc)
-make install
+make install DESTDIR="$ROOT_DIR/build"
 
-cd "$ROOT_DIR"
-
-echo "Linux build complete"
+popd
 
