@@ -31,7 +31,13 @@ pip install cmake
 rm -rf build
 mkdir build
 cd build
-cmake -DLIB_ONLY=ON -DICU_ROOT="$ICU_ROOT" $CMAKE_EXTRA_ARGS ..
+cmake \
+  -DLIB_ONLY=ON \
+  -DICU_ROOT="$ICU_ROOT" \
+  -DCMAKE_INSTALL_PREFIX="$ROOT_DIR/build/install" \
+  $CMAKE_EXTRA_ARGS \
+  ..
+
 VERBOSE=1 make -j2 install
 cd "$ROOT_DIR"
 
