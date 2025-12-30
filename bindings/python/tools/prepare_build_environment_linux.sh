@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-ROOT_DIR="$PWD"
+# Use /project as the root since that's where cibuildwheel mounts the repo
+ROOT_DIR="/project"
 ICU_ROOT="$ROOT_DIR/icu"
-INSTALL_DIR="${ROOT_DIR}/build/install"
+INSTALL_DIR="$ROOT_DIR/build/install"
 
 # manylinux compiler flags (required)
 export CFLAGS="-O3 -fPIC"
@@ -24,16 +25,16 @@ make install
 popd
 
 # Build Tokenizer C++ library
-rm -rf build
-mkdir -p build
-pushd build
+rm -rf "$ROOT_DIR/build"
+mkdir -p "$ROOT_DIR/build"
+pushd "$ROOT_DIR/build"
 cmake \
   -DLIB_ONLY=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
   -DICU_ROOT="$ICU_ROOT" \
-  ..
+  "$ROOT_DIR"
 make -j$(nproc)
 make install
 popd
