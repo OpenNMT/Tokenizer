@@ -1,19 +1,17 @@
 import os
 import sys
-
 import pybind11
-
 from setuptools import Extension, find_packages, setup
 
 include_dirs = [pybind11.get_include()]
 library_dirs = []
-
+libraries = []
+extra_objects = []
 
 def _get_long_description():
     readme_path = "README.md"
     with open(readme_path, encoding="utf-8") as readme_file:
         return readme_file.read()
-
 
 def _get_project_version():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,25 +21,50 @@ def _get_project_version():
         exec(fp.read(), version)
     return version["__version__"]
 
-
 def _maybe_add_library_root(lib_name, header_only=False):
     root = os.environ.get("%s_ROOT" % lib_name)
     if root is None:
-        return
+        return None
     include_dirs.append(os.path.join(root, "include"))
     if not header_only:
         for lib_subdir in ("lib64", "lib"):
             lib_dir = os.path.join(root, lib_subdir)
             if os.path.isdir(lib_dir):
                 library_dirs.append(lib_dir)
+                return lib_dir
+    return root
+
+tokenizer_root = _maybe_add_library_root("TOKENIZER")
+icu_root = os.environ.get("ICU_ROOT")
+
+# Handle static linking on Linux (manylinux)
+if sys.platform == "linux" and tokenizer_root:
+    # Link statically against OpenNMTTokenizer
+    tokenizer_lib = os.path.join(tokenizer_root, "lib", "libOpenNMTTokenizer.a")
+    if os.path.exists(tokenizer_lib):
+        extra_objects.append(tokenizer_lib)
+    else:
+        libraries.append("OpenNMTTokenizer")
+    
+    # Link statically against ICU libraries
+    if icu_root:
+        for lib_subdir in ("lib64", "lib"):
+            icu_lib_dir = os.path.join(icu_root, lib_subdir)
+            if os.path.isdir(icu_lib_dir):
+                # ICU libraries must be linked in the correct order
+                for icu_lib in ["icui18n", "icuuc", "icudata"]:
+                    icu_lib_path = os.path.join(icu_lib_dir, f"lib{icu_lib}.a")
+                    if os.path.exists(icu_lib_path):
+                        extra_objects.append(icu_lib_path)
                 break
-
-
-_maybe_add_library_root("TOKENIZER")
+else:
+    # Dynamic linking for macOS and Windows
+    libraries.append("OpenNMTTokenizer")
 
 cflags = ["-std=c++17", "-fvisibility=hidden"]
 ldflags = []
 package_data = {}
+
 if sys.platform == "darwin":
     cflags.append("-mmacosx-version-min=10.14")
     ldflags.append("-Wl,-rpath,/usr/local/lib")
@@ -56,7 +79,8 @@ tokenizer_module = Extension(
     extra_link_args=ldflags,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
-    libraries=["OpenNMTTokenizer"],
+    libraries=libraries,
+    extra_objects=extra_objects,
 )
 
 setup(
@@ -78,12 +102,10 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Text Processing :: Linguistic",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
@@ -94,7 +116,7 @@ setup(
     keywords="tokenization opennmt unicode bpe sentencepiece subword",
     packages=find_packages(),
     package_data=package_data,
-    python_requires=">=3.6",
+    python_requires=">=3.9",
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     ext_modules=[tokenizer_module],

@@ -24,7 +24,7 @@ make -j$(nproc)
 make install
 popd
 
-# Build Tokenizer C++ library
+# Build Tokenizer C++ library as static
 rm -rf "$ROOT_DIR/build"
 mkdir -p "$ROOT_DIR/build"
 pushd "$ROOT_DIR/build"
