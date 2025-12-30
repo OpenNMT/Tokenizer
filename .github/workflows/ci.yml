@@ -121,7 +121,7 @@ jobs:
           CIBW_BEFORE_BUILD: pip install pybind11==2.10.1
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
-          CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
+          CIBW_BUILD: "cp310-* cp311-* cp312-*"
           CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
           CIBW_TEST_REQUIRES: pytest
           CIBW_ARCHS: ${{ matrix.arch }}
