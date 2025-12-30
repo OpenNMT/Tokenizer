@@ -8,10 +8,12 @@ library_dirs = []
 libraries = []
 extra_objects = []
 
+
 def _get_long_description():
     readme_path = "README.md"
     with open(readme_path, encoding="utf-8") as readme_file:
         return readme_file.read()
+
 
 def _get_project_version():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +22,7 @@ def _get_project_version():
     with open(version_path, encoding="utf-8") as fp:
         exec(fp.read(), version)
     return version["__version__"]
+
 
 def _maybe_add_library_root(lib_name, header_only=False):
     root = os.environ.get("%s_ROOT" % lib_name)
@@ -34,6 +37,7 @@ def _maybe_add_library_root(lib_name, header_only=False):
                 return lib_dir
     return root
 
+
 tokenizer_root = _maybe_add_library_root("TOKENIZER")
 icu_root = os.environ.get("ICU_ROOT")
 
@@ -45,7 +49,7 @@ if sys.platform == "linux" and tokenizer_root:
         extra_objects.append(tokenizer_lib)
     else:
         libraries.append("OpenNMTTokenizer")
-    
+
     # Link statically against ICU libraries
     if icu_root:
         for lib_subdir in ("lib64", "lib"):
