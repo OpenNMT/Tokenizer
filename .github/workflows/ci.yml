@@ -57,10 +57,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -112,17 +112,22 @@ jobs:
           package-dir: bindings/python
           output-dir: wheelhouse
         env:
-          CIBW_ENVIRONMENT_WINDOWS: TOKENIZER_ROOT='${{ github.workspace }}\install'
-          CIBW_BEFORE_ALL: bindings/python/tools/prepare_build_environment.sh
+          CIBW_ENVIRONMENT_LINUX: TOKENIZER_ROOT=/project/build/install ICU_ROOT=/project/icu
+          CIBW_ENVIRONMENT_MACOS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
+          CIBW_ENVIRONMENT_WINDOWS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
+          CIBW_BEFORE_ALL_LINUX: bindings/python/tools/prepare_build_environment_linux.sh
+          CIBW_BEFORE_ALL_MACOS: bindings/python/tools/prepare_build_environment_macos.sh
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
           CIBW_BEFORE_BUILD: pip install pybind11==2.10.1
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
+          CIBW_BUILD: "cp310-* cp311-* cp312-*"
           CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
           CIBW_TEST_REQUIRES: pytest
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: pp* *-musllinux_*
           CIBW_TEST_SKIP: "*-macosx_arm64"
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
 
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4

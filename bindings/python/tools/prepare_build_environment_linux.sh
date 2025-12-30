@@ -1,0 +1,29 @@
+#! /bin/bash
+
+set -e
+set -x
+
+ROOT_DIR=$PWD
+ICU_ROOT=$ROOT_DIR/icu
+CMAKE_EXTRA_ARGS=""
+
+# Download and compile ICU from sources.
+ICU_VERSION=${ICU_VERSION:-73.2}
+curl -L -O https://github.com/unicode-org/icu/releases/download/release-${ICU_VERSION/./-}/icu4c-${ICU_VERSION/./_}-src.tgz
+tar xf icu4c-*-src.tgz
+cd icu/source
+CFLAGS="-O3 -fPIC" CXXFLAGS="-O3 -fPIC" ./configure --disable-shared --enable-static --prefix=$ICU_ROOT
+make -j2 install
+
+cd $ROOT_DIR
+
+# Install cmake.
+pip install cmake
+
+# Build Tokenizer.
+rm -rf build
+mkdir build
+cd build
+cmake -DLIB_ONLY=ON -DICU_ROOT=$ICU_ROOT $CMAKE_EXTRA_ARGS ..
+VERBOSE=1 make -j2 install
+cd $ROOT_DIR
