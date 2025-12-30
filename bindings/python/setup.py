@@ -7,6 +7,7 @@ include_dirs = [pybind11.get_include()]
 library_dirs = []
 libraries = []
 extra_objects = []
+extra_link_args = []
 
 
 def _get_long_description():
@@ -42,25 +43,38 @@ tokenizer_root = _maybe_add_library_root("TOKENIZER")
 icu_root = os.environ.get("ICU_ROOT")
 
 # Handle static linking on Linux (manylinux)
-if sys.platform == "linux" and tokenizer_root:
+if sys.platform.startswith("linux") and tokenizer_root and icu_root:
+    print(f"Using static linking for Linux")
+    print(f"TOKENIZER_ROOT: {tokenizer_root}")
+    print(f"ICU_ROOT: {icu_root}")
+
     # Link statically against OpenNMTTokenizer
     tokenizer_lib = os.path.join(tokenizer_root, "lib", "libOpenNMTTokenizer.a")
     if os.path.exists(tokenizer_lib):
+        print(f"Found tokenizer static lib: {tokenizer_lib}")
         extra_objects.append(tokenizer_lib)
     else:
+        print(
+            f"Tokenizer static lib not found at {tokenizer_lib}, using dynamic linking"
+        )
         libraries.append("OpenNMTTokenizer")
 
-    # Link statically against ICU libraries
-    if icu_root:
-        for lib_subdir in ("lib64", "lib"):
-            icu_lib_dir = os.path.join(icu_root, lib_subdir)
-            if os.path.isdir(icu_lib_dir):
-                # ICU libraries must be linked in the correct order
-                for icu_lib in ["icui18n", "icuuc", "icudata"]:
-                    icu_lib_path = os.path.join(icu_lib_dir, f"lib{icu_lib}.a")
-                    if os.path.exists(icu_lib_path):
-                        extra_objects.append(icu_lib_path)
-                break
+    # Link statically against ICU libraries in correct order
+    for lib_subdir in ("lib64", "lib"):
+        icu_lib_dir = os.path.join(icu_root, lib_subdir)
+        if os.path.isdir(icu_lib_dir):
+            # ICU libraries must be linked in this specific order
+            for icu_lib in ["icui18n", "icuuc", "icudata"]:
+                icu_lib_path = os.path.join(icu_lib_dir, f"lib{icu_lib}.a")
+                if os.path.exists(icu_lib_path):
+                    print(f"Found ICU static lib: {icu_lib_path}")
+                    extra_objects.append(icu_lib_path)
+                else:
+                    print(f"WARNING: ICU lib not found: {icu_lib_path}")
+            break
+
+    # Add necessary system libraries for static linking
+    libraries.extend(["stdc++", "m", "dl", "pthread"])
 else:
     # Dynamic linking for macOS and Windows
     libraries.append("OpenNMTTokenizer")
@@ -76,11 +90,20 @@ elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]
 
+# Combine ldflags with extra_link_args
+extra_link_args.extend(ldflags)
+
+print(f"include_dirs: {include_dirs}")
+print(f"library_dirs: {library_dirs}")
+print(f"libraries: {libraries}")
+print(f"extra_objects: {extra_objects}")
+print(f"extra_link_args: {extra_link_args}")
+
 tokenizer_module = Extension(
     "pyonmttok._ext",
     sources=["pyonmttok/Python.cc"],
     extra_compile_args=cflags,
-    extra_link_args=ldflags,
+    extra_link_args=extra_link_args,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
     libraries=libraries,
