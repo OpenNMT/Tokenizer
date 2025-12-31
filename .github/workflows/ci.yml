@@ -147,9 +147,13 @@ jobs:
         with:
           path: dist
 
+      - name: Collect wheels
+        run: |
+          find dist -name "*.whl" -exec mv {} dist/ \;
+          
       - name: Publish Python wheels to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          packages-dir: dist
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
-          packages_dir: .
