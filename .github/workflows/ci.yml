@@ -142,14 +142,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Python wheels
+      - name: Download all wheels
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: artifacts
 
       - name: Collect wheels
         run: |
-          find dist -name "*.whl" -exec mv {} dist/ \;
+          mkdir -p dist
+          find artifacts -name "*.whl" -exec cp {} dist/ \;
           
       - name: Publish Python wheels to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
