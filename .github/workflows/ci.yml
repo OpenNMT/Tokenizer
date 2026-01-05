@@ -142,9 +142,13 @@ jobs:
             TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
             ICU_ROOT=${GITHUB_WORKSPACE}/icu   # ensure ICU path is exported
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
-            # Copy ICU dylibs into wheel folder
-            mkdir -p pyonmttok/icu/lib
-            cp -a "$ICU_ROOT/lib/"*.dylib pyonmttok/icu/lib/
+            ICU_ROOT="${ICU_ROOT:-${GITHUB_WORKSPACE}/icu}"
+            if compgen -G "$ICU_ROOT/lib/*.dylib" > /dev/null; then
+                mkdir -p pyonmttok/icu/lib
+                cp -a "$ICU_ROOT/lib/"*.dylib pyonmttok/icu/lib/
+            else
+                echo "Warning: No ICU dylibs found in $ICU_ROOT/lib. Skipping copy."
+            fi
 
           # ---- Windows ----
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
