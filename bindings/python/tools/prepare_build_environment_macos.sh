@@ -1,5 +1,4 @@
-#! /bin/bash
-
+#!/bin/bash
 set -e
 set -x
 
@@ -9,33 +8,28 @@ CMAKE_EXTRA_ARGS=""
 
 mkdir -p "$ICU_ROOT"
 
-# Install ICU via Homebrew
 brew install icu4c
 ICU_PREFIX="$(brew --prefix icu4c)"
-
-# Copy ICU into local prefix
 rsync -a "$ICU_PREFIX/" "$ICU_ROOT/"
 
-# Explicit Apple Silicon handling
 if [[ "$(uname -m)" == "arm64" ]]; then
     CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64"
 fi
 
-# Install cmake
 pip install cmake
 
-# Build Tokenizer as static library
-rm -rf build
-mkdir build
-cd build
+# Build Tokenizer as static lib
+rm -rf "$ROOT_DIR/build"
+mkdir -p "$ROOT_DIR/build"
+
 cmake \
+  -S "$ROOT_DIR" \
+  -B "$ROOT_DIR/build" \
   -DLIB_ONLY=ON \
-  -DBUILD_SHARED_LIBS=OFF \       # << STATIC LIB
+  -DBUILD_SHARED_LIBS=OFF \
   -DICU_ROOT="$ICU_ROOT" \
   -DCMAKE_INSTALL_PREFIX="$ROOT_DIR/build/install" \
-  $CMAKE_EXTRA_ARGS \
-  ..
+  $CMAKE_EXTRA_ARGS
 
-VERBOSE=1 make -j2 install
-cd "$ROOT_DIR"
+cmake --build "$ROOT_DIR/build" --target install -j2
 
