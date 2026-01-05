@@ -44,7 +44,7 @@ ldflags = []
 package_data = {}
 if sys.platform == "darwin":
     cflags.append("-mmacosx-version-min=10.14")
-    ldflags.append("-Wl,-rpath,/usr/local/lib")
+    ldflags.append("-Wl,-rpath,@loader_path")
 elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]
