@@ -51,9 +51,14 @@ if sys.platform == "darwin":
     if icu_lib_dir:
         icu_libs = ["icuuc", "icudata", "icui18n", "icuio"]
         libraries.extend(icu_libs)
+
+        # Link ICU with full paths so delocate can see it
         for lib in icu_libs:
-            ldflags.append(f"-l{lib}")
-        # Ensure _ext uses relative rpath to wheel ICU
+            full_lib_path = os.path.join(icu_lib_dir, f"lib{lib}.dylib")
+            if os.path.isfile(full_lib_path):
+                ldflags.append(full_lib_path)
+
+        # rpath for runtime
         ldflags.append("-Wl,-rpath,@loader_path/../icu/lib")
 
 elif sys.platform == "win32":
