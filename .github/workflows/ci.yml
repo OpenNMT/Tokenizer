@@ -146,8 +146,27 @@ jobs:
             export ICU_ROOT="${ICU_ROOT:-${GITHUB_WORKSPACE}/icu}"
             export DYLD_LIBRARY_PATH="$ICU_ROOT/lib:${DYLD_LIBRARY_PATH}"
             
-            # Run delocate with the ICU library path so it can find and bundle ICU
+            echo "=== Checking wheel dependencies before repair ==="
+            unzip -l {wheel}
+            otool -L {wheel}/*.so 2>/dev/null || true
+            
+            echo "=== ICU libraries available at $ICU_ROOT/lib ==="
+            ls -la "$ICU_ROOT/lib/" || true
+            
+            echo "=== Running delocate-wheel ==="
             delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
+            
+            echo "=== Checking repaired wheel ==="
+            REPAIRED_WHEEL=$(ls {dest_dir}/*.whl)
+            unzip -l "$REPAIRED_WHEEL"
+            
+            echo "=== Checking bundled libraries ==="
+            unzip -q "$REPAIRED_WHEEL" -d /tmp/wheel_check
+            find /tmp/wheel_check -name "*.dylib" -o -name "*.so" | while read lib; do
+              echo "Library: $lib"
+              otool -L "$lib" || true
+            done
+            rm -rf /tmp/wheel_check
 
           # ---- Windows ----
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh

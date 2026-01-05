@@ -2,15 +2,19 @@ import os
 import sys
 
 import pybind11
+
 from setuptools import Extension, find_packages, setup
 
 include_dirs = [pybind11.get_include()]
 library_dirs = []
+libraries = ["OpenNMTTokenizer"]
+
 
 def _get_long_description():
     readme_path = "README.md"
     with open(readme_path, encoding="utf-8") as readme_file:
         return readme_file.read()
+
 
 def _get_project_version():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -19,6 +23,7 @@ def _get_project_version():
     with open(version_path, encoding="utf-8") as fp:
         exec(fp.read(), version)
     return version["__version__"]
+
 
 def _maybe_add_library_root(lib_name, header_only=False):
     root = os.environ.get("%s_ROOT" % lib_name)
@@ -32,6 +37,7 @@ def _maybe_add_library_root(lib_name, header_only=False):
                 library_dirs.append(lib_dir)
                 break
 
+
 _maybe_add_library_root("TOKENIZER")
 _maybe_add_library_root("ICU")
 
@@ -41,6 +47,9 @@ package_data = {}
 
 if sys.platform == "darwin":
     cflags.append("-mmacosx-version-min=10.14")
+    # Explicitly link ICU libraries
+    icu_libs = ["icuuc", "icudata", "icui18n", "icuio"]
+    libraries.extend(icu_libs)
 elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]
@@ -52,7 +61,7 @@ tokenizer_module = Extension(
     extra_link_args=ldflags,
     include_dirs=include_dirs,
     library_dirs=library_dirs,
-    libraries=["OpenNMTTokenizer"],
+    libraries=libraries,
 )
 
 setup(
