@@ -51,13 +51,11 @@ if sys.platform == "darwin":
     if icu_lib_dir:
         icu_libs = ["icuuc", "icudata", "icui18n", "icuio"]
         libraries.extend(icu_libs)
-
+        for lib in icu_libs:
+            ldflags.append(f"-l{lib}")
         # Ensure _ext uses relative rpath to wheel ICU
-        ldflags.append(f"-Wl,-rpath,@loader_path/../icu/lib")
-        # Force linking against ICU libraries in ICU_ROOT
-        ldflags.extend(
-            [f"-L{icu_lib_dir}", "-licuuc", "-licudata", "-licui18n", "-licuio"]
-        )
+        ldflags.append("-Wl,-rpath,@loader_path/../icu/lib")
+
 elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]

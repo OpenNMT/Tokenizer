@@ -144,22 +144,16 @@ jobs:
             DYLD_LIBRARY_PATH=${GITHUB_WORKSPACE}/icu/lib:${DYLD_LIBRARY_PATH}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
             set -e
-
-            echo "=== Starting wheel repair ==="
-            echo "Wheel: {wheel}"
-            echo "Destination: {dest_dir}"
-            echo "ICU path: ${ICU_ROOT}/lib"
-
-            # Use delocate to bundle ICU dylibs into the wheel
+            echo "=== Bundling ICU into wheel ==="
             delocate-wheel -v -w {dest_dir} {wheel}
 
-            echo "=== Inspect repaired wheel ==="
             REPAIRED_WHEEL=$(ls {dest_dir}/*.whl)
+            echo "=== Inspecting repaired wheel ==="
             unzip -q "$REPAIRED_WHEEL" -d /tmp/wheel_check
             SO_FILE=$(find /tmp/wheel_check -name "_ext*.so" | head -n1)
             otool -L "$SO_FILE"
             rm -rf /tmp/wheel_check
-            echo "=== Wheel repair complete: $REPAIRED_WHEEL ==="
+            echo "=== Wheel ready: $REPAIRED_WHEEL ==="
 
 
 

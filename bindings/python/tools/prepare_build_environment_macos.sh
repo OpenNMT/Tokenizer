@@ -8,7 +8,7 @@ CMAKE_EXTRA_ARGS=""
 
 mkdir -p "$ICU_ROOT"
 
-# Only copy ICU if not already present
+# Copy ICU only if not present
 if [ ! -d "$ICU_ROOT/lib" ]; then
     brew install icu4c
     ICU_PREFIX="$(brew --prefix icu4c)"
@@ -23,7 +23,6 @@ fi
 
 pip install cmake
 
-# Build Tokenizer as static lib
 rm -rf "$ROOT_DIR/build"
 mkdir -p "$ROOT_DIR/build"
 
