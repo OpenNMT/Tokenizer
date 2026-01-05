@@ -138,8 +138,18 @@ jobs:
 
           # ---- macOS ----
           CIBW_BEFORE_ALL_MACOS: bindings/python/tools/prepare_build_environment_macos.sh
-          CIBW_ENVIRONMENT_MACOS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+          CIBW_ENVIRONMENT_MACOS: |
+            TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
+            ICU_ROOT=${GITHUB_WORKSPACE}/icu   # ensure ICU path is exported
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
+            # Copy ICU dylibs into wheel package so rpath works
+            for whl in dist/*.whl; do
+              tmpdir=$(mktemp -d)
+              unzip -q "$whl" -d "$tmpdir"
+              mkdir -p "$tmpdir/pyonmttok/icu/lib"
+              cp -a $ICU_ROOT/lib/*.dylib "$tmpdir/pyonmttok/icu/lib/"
+              (cd "$tmpdir" && zip -qr "$GITHUB_WORKSPACE/wheelhouse/$(basename "$whl")" .)
+            done
 
           # ---- Windows ----
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
