@@ -96,10 +96,10 @@ jobs:
             arch: aarch64
 
           # macOS
-          - os: macos-latest
-            arch: x86_64
-          - os: macos-latest
-            arch: arm64
+          #- os: macos-latest
+          #  arch: x86_64
+          #- os: macos-latest
+          #  arch: arm64
 
           # Windows
           - os: windows-2019
