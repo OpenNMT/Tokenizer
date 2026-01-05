@@ -2,7 +2,6 @@ import os
 import sys
 
 import pybind11
-
 from setuptools import Extension, find_packages, setup
 
 include_dirs = [pybind11.get_include()]
@@ -42,9 +41,15 @@ _maybe_add_library_root("TOKENIZER")
 cflags = ["-std=c++17", "-fvisibility=hidden"]
 ldflags = []
 package_data = {}
+
 if sys.platform == "darwin":
     cflags.append("-mmacosx-version-min=10.14")
-    ldflags.append("-Wl,-rpath,@loader_path/../icu/lib")
+    # Set rpath to look for ICU libraries in the icu/lib directory
+    ldflags.extend(
+        ["-Wl,-rpath,@loader_path/icu/lib", "-Wl,-rpath,@loader_path/../icu/lib"]
+    )
+    # Include ICU dylibs in the wheel
+    package_data["pyonmttok"] = ["icu/lib/*.dylib"]
 elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]
@@ -58,10 +63,6 @@ tokenizer_module = Extension(
     library_dirs=library_dirs,
     libraries=["OpenNMTTokenizer"],
 )
-
-# Include ICU dylibs in the wheel for macOS
-if sys.platform == "darwin":
-    package_data["pyonmttok"] = ["icu/lib/*.dylib"]
 
 setup(
     name="pyonmttok",
