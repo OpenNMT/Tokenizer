@@ -26,7 +26,7 @@ def _get_project_version():
 
 
 def _maybe_add_library_root(lib_name, header_only=False):
-    root = os.environ.get("%s_ROOT" % lib_name)
+    root = os.environ.get(f"{lib_name}_ROOT")
     if root is None:
         return None
     include_dirs.append(os.path.join(root, "include"))
@@ -51,7 +51,13 @@ if sys.platform == "darwin":
     if icu_lib_dir:
         icu_libs = ["icuuc", "icudata", "icui18n", "icuio"]
         libraries.extend(icu_libs)
+
+        # Ensure _ext uses relative rpath to wheel ICU
         ldflags.append(f"-Wl,-rpath,@loader_path/../icu/lib")
+        # Force linking against ICU libraries in ICU_ROOT
+        ldflags.extend(
+            [f"-L{icu_lib_dir}", "-licuuc", "-licudata", "-licui18n", "-licuio"]
+        )
 elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]

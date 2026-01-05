@@ -8,9 +8,13 @@ CMAKE_EXTRA_ARGS=""
 
 mkdir -p "$ICU_ROOT"
 
-brew install icu4c
-ICU_PREFIX="$(brew --prefix icu4c)"
-rsync -a "$ICU_PREFIX/" "$ICU_ROOT/"
+# Only copy ICU if not already present
+if [ ! -d "$ICU_ROOT/lib" ]; then
+    brew install icu4c
+    ICU_PREFIX="$(brew --prefix icu4c)"
+    rsync -a "$ICU_PREFIX/" "$ICU_ROOT/"
+fi
+
 export DYLD_LIBRARY_PATH="$ICU_ROOT/lib:$DYLD_LIBRARY_PATH"
 
 if [[ "$(uname -m)" == "arm64" ]]; then
@@ -30,7 +34,6 @@ cmake \
   -DBUILD_SHARED_LIBS=OFF \
   -DICU_ROOT="$ICU_ROOT" \
   -DCMAKE_INSTALL_PREFIX="$ROOT_DIR/build/install" \
-  -DCMAKE_OSX_ARCHITECTURES=arm64 \
   -DCMAKE_MACOSX_RPATH=ON \
   -DCMAKE_INSTALL_RPATH="$ICU_ROOT/lib" \
   $CMAKE_EXTRA_ARGS
