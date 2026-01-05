@@ -28,18 +28,19 @@ def _get_project_version():
 def _maybe_add_library_root(lib_name, header_only=False):
     root = os.environ.get("%s_ROOT" % lib_name)
     if root is None:
-        return
+        return None
     include_dirs.append(os.path.join(root, "include"))
     if not header_only:
         for lib_subdir in ("lib64", "lib"):
             lib_dir = os.path.join(root, lib_subdir)
             if os.path.isdir(lib_dir):
                 library_dirs.append(lib_dir)
-                break
+                return lib_dir
+    return None
 
 
 _maybe_add_library_root("TOKENIZER")
-_maybe_add_library_root("ICU")
+icu_lib_dir = _maybe_add_library_root("ICU")
 
 cflags = ["-std=c++17", "-fvisibility=hidden"]
 ldflags = []
@@ -47,9 +48,12 @@ package_data = {}
 
 if sys.platform == "darwin":
     cflags.append("-mmacosx-version-min=10.14")
-    # Explicitly link ICU libraries
-    icu_libs = ["icuuc", "icudata", "icui18n", "icuio"]
-    libraries.extend(icu_libs)
+    # Explicitly link ICU libraries if ICU_ROOT is set
+    if icu_lib_dir:
+        icu_libs = ["icuuc", "icudata", "icui18n", "icuio"]
+        libraries.extend(icu_libs)
+        # Add rpath for the linker to find ICU during build
+        ldflags.append(f"-Wl,-rpath,{icu_lib_dir}")
 elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]
