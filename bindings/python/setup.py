@@ -48,12 +48,10 @@ package_data = {}
 
 if sys.platform == "darwin":
     cflags.append("-mmacosx-version-min=10.14")
-    # Explicitly link ICU libraries if ICU_ROOT is set
     if icu_lib_dir:
         icu_libs = ["icuuc", "icudata", "icui18n", "icuio"]
         libraries.extend(icu_libs)
-        # Add rpath for the linker to find ICU during build
-        ldflags.append(f"-Wl,-rpath,{icu_lib_dir}")
+        ldflags.append(f"-Wl,-rpath,@loader_path/../icu/lib")
 elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]

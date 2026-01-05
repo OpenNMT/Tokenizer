@@ -143,55 +143,53 @@ jobs:
             ICU_ROOT=${GITHUB_WORKSPACE}/icu
             DYLD_LIBRARY_PATH=${GITHUB_WORKSPACE}/icu/lib:${DYLD_LIBRARY_PATH}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
-            export ICU_ROOT="${ICU_ROOT:-${GITHUB_WORKSPACE}/icu}"
-            export DYLD_LIBRARY_PATH="$ICU_ROOT/lib:${DYLD_LIBRARY_PATH}"
-            
-            echo "=== Extracting wheel to check dependencies ==="
-            mkdir -p /tmp/wheel_inspect
-            cd /tmp/wheel_inspect
-            unzip -q {wheel}
-            
-            echo "=== Finding .so file ==="
-            SO_FILE=$(find . -name "_ext*.so" | head -n 1)
-            echo "Found: $SO_FILE"
-            
-            echo "=== Dependencies of $SO_FILE ==="
-            otool -L "$SO_FILE"
-            
-            echo "=== ICU libraries available ==="
-            ls -lh "$ICU_ROOT/lib/"libicu* 2>/dev/null || echo "No ICU libs found"
-            
-            cd -
-            rm -rf /tmp/wheel_inspect
-            
-            echo "=== Running delocate-listdeps to see what it detects ==="
-            delocate-listdeps {wheel}
-            
-            echo "=== Running delocate-wheel with library search path ==="
-            DYLD_LIBRARY_PATH="$ICU_ROOT/lib:${DYLD_LIBRARY_PATH}" \
-              delocate-wheel --require-archs {delocate_archs} \
-              --dylibs-only -w {dest_dir} -v {wheel}
-            
-            echo "=== Checking repaired wheel ==="
-            REPAIRED_WHEEL=$(ls {dest_dir}/*.whl)
-            echo "Repaired wheel: $REPAIRED_WHEEL"
-            
-            mkdir -p /tmp/repaired_check
-            cd /tmp/repaired_check
-            unzip -q "$REPAIRED_WHEEL"
-            
-            echo "=== Contents of repaired wheel ==="
-            find . -type f -name "*.dylib" -o -name "*.so"
-            
-            echo "=== Checking dependencies in repaired wheel ==="
-            SO_FILE=$(find . -name "_ext*.so" | head -n 1)
-            if [ -n "$SO_FILE" ]; then
-              echo "Dependencies of repaired $SO_FILE:"
-              otool -L "$SO_FILE"
+            set -e
+
+            # Path to ICU libraries
+            ICU_LIB_DIR="${ICU_ROOT}/lib"
+
+            echo "=== Wheel repair start ==="
+            echo "Wheel: {wheel}"
+            echo "Destination dir: {dest_dir}"
+            echo "ICU library path: $ICU_LIB_DIR"
+
+            # Extract wheel for inspection
+            TEMP_DIR=$(mktemp -d)
+            unzip -q {wheel} -d "$TEMP_DIR"
+            cd "$TEMP_DIR"
+
+            # Find the .so extension module
+            SO_FILE=$(find . -name "_ext*.so" | head -n1)
+            if [ -z "$SO_FILE" ]; then
+              echo "Error: no _ext*.so found in wheel!"
+              exit 1
             fi
-            
-            cd -
-            rm -rf /tmp/repaired_check
+            echo "Found extension: $SO_FILE"
+
+            echo "=== Inspect original dependencies ==="
+            otool -L "$SO_FILE"
+
+            # Fix rpath: use @loader_path so ICU dylibs are relative to the wheel
+            echo "=== Adding @loader_path rpath ==="
+            install_name_tool -add_rpath @loader_path/../icu/lib "$SO_FILE"
+
+            # Copy ICU dylibs into the wheel if not already present
+            mkdir -p $(dirname "$SO_FILE")/../icu/lib
+            cp "$ICU_LIB_DIR"/libicu*.dylib $(dirname "$SO_FILE")/../icu/lib/ || true
+
+            echo "=== Running delocate to bundle ICU ==="
+            delocate-wheel -v -w {dest_dir} {wheel}
+
+            echo "=== Inspect repaired wheel ==="
+            REPAIRED_WHEEL=$(ls {dest_dir}/*.whl)
+            unzip -q "$REPAIRED_WHEEL" -d /tmp/wheel_check
+            SO_REPAIRED=$(find /tmp/wheel_check -name "_ext*.so" | head -n1)
+            echo "Dependencies of repaired extension:"
+            otool -L "$SO_REPAIRED"
+            rm -rf /tmp/wheel_check
+
+            echo "=== Wheel repair done: $REPAIRED_WHEEL ==="
+
 
           # ---- Windows ----
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
