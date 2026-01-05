@@ -141,33 +141,13 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: |
             TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
             ICU_ROOT=${GITHUB_WORKSPACE}/icu
+            DYLD_LIBRARY_PATH=${GITHUB_WORKSPACE}/icu/lib:${DYLD_LIBRARY_PATH}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
             export ICU_ROOT="${ICU_ROOT:-${GITHUB_WORKSPACE}/icu}"
+            export DYLD_LIBRARY_PATH="$ICU_ROOT/lib:${DYLD_LIBRARY_PATH}"
             
-            # First run delocate to bundle dependencies
+            # Run delocate with the ICU library path so it can find and bundle ICU
             delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
-            
-            # Then add ICU dylibs to the repaired wheel
-            REPAIRED_WHEEL=$(ls {dest_dir}/*.whl)
-            
-            if [ -d "$ICU_ROOT/lib" ] && compgen -G "$ICU_ROOT/lib/*.dylib" > /dev/null; then
-                echo "Adding ICU dylibs to repaired wheel"
-                
-                # Unpack the repaired wheel
-                wheel unpack "$REPAIRED_WHEEL"
-                WHEEL_DIR=$(find . -maxdepth 1 -type d -name "pyonmttok-*" | head -n 1)
-                
-                # Copy ICU dylibs
-                mkdir -p "$WHEEL_DIR/pyonmttok/icu/lib"
-                cp -a "$ICU_ROOT/lib/"*.dylib "$WHEEL_DIR/pyonmttok/icu/lib/"
-                
-                # Repack wheel (overwrite the repaired one)
-                rm "$REPAIRED_WHEEL"
-                wheel pack "$WHEEL_DIR" -d {dest_dir}
-                rm -rf "$WHEEL_DIR"
-            else
-                echo "Warning: No ICU dylibs found in $ICU_ROOT/lib"
-            fi
 
           # ---- Windows ----
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
