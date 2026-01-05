@@ -92,7 +92,5 @@ setup(
     packages=find_packages(),
     package_data=package_data,
     python_requires=">=3.10",
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
     ext_modules=[tokenizer_module],
 )

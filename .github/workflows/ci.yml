@@ -8,102 +8,164 @@ on:
     branches: [master]
 
 jobs:
-# ---------------------------------------------------------
-# 1. C++ library sanity build (fast, no matrix explosion)
-# ---------------------------------------------------------
-  build-cpp:
-    name: Build C++ library
-    runs-on: ubuntu-latest
+  # ------------------------------------------------------------
+  # C++ library build & test (fast sanity check)
+  # ------------------------------------------------------------
+  build-and-test-cpp:
+    name: Build and test C++ library on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Build C++ library
+      - name: Install ICU (macOS)
+        if: runner.os == 'macOS'
+        run: brew install icu4c
+
+      - name: Build & install (Linux)
+        if: runner.os == 'Linux'
         run: |
-          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON .
-          make -j2
-          test/onmt_tokenizer_test test/data
+          cmake -DBUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=$PWD/install .
+          make -j2 install
 
-# ---------------------------------------------------------
-# 2. Build Python wheels
-# ---------------------------------------------------------
-  build-wheels:
-    name: Build wheels (${{ matrix.os }} / ${{ matrix.arch }})
+      - name: Build & install (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          ICU_PREFIX=$(brew --prefix icu4c)
+          cmake \
+            -DBUILD_TESTS=ON \
+            -DCMAKE_INSTALL_PREFIX=$PWD/install \
+            -DICU_ROOT=$ICU_PREFIX \
+            .
+          make -j2 install
+
+      - name: Run C++ tests
+        run: test/onmt_tokenizer_test test/data
+
+
+  # ------------------------------------------------------------
+  # Python style checks
+  # ------------------------------------------------------------
+  check-python-style:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install linters
+        run: |
+          pip install black==22.* flake8==3.9.* isort==5.*
+
+      - name: Black
+        working-directory: bindings/python
+        run: black --check .
+
+      - name: isort
+        working-directory: bindings/python
+        run: isort --check-only .
+
+      - name: Flake8
+        working-directory: bindings/python
+        run: flake8 .
+
+
+  # ------------------------------------------------------------
+  # Build Python wheels
+  # ------------------------------------------------------------
+  build-python-wheels:
+    name: Wheels – ${{ matrix.os }} / ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Linux
           - os: ubuntu-latest
             arch: x86_64
           - os: ubuntu-latest
             arch: aarch64
+
+          # macOS
+          - os: macos-latest
+            arch: x86_64
           - os: macos-latest
             arch: arm64
-          - os: windows-latest
-            arch: amd64
+
+          # Windows
+          - os: windows-2019
+            arch: AMD64
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: docker/setup-qemu-action@v3
+      - name: Enable QEMU (Linux ARM)
         if: matrix.arch == 'aarch64'
+        uses: docker/setup-qemu-action@v3
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.0
+        uses: pypa/cibuildwheel@v2.11.2
         with:
           package-dir: bindings/python
           output-dir: wheelhouse
         env:
+          # ---- Build selection ----
           CIBW_BUILD: "cp310-* cp311-* cp312-*"
-          CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: "pp* *-musllinux_*"
+          CIBW_ARCHS: ${{ matrix.arch }}
 
+          # ---- Dependencies ----
           CIBW_BEFORE_BUILD: pip install pybind11==2.10.1
-          CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
-          CIBW_TEST_REQUIRES: pytest
 
-          # Linux
-          CIBW_ENVIRONMENT_LINUX: >
+          # ---- Linux ----
+          CIBW_BEFORE_ALL_LINUX: bindings/python/tools/prepare_build_environment_linux.sh
+          CIBW_ENVIRONMENT_LINUX: |
             TOKENIZER_ROOT=/project/build/install
             ICU_ROOT=/project/icu
-          CIBW_BEFORE_ALL_LINUX: bindings/python/tools/prepare_build_environment_linux.sh
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
 
-          # macOS (arm64 only)
-          CIBW_ENVIRONMENT_MACOS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
+          # ---- macOS ----
           CIBW_BEFORE_ALL_MACOS: bindings/python/tools/prepare_build_environment_macos.sh
+          CIBW_ENVIRONMENT_MACOS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
 
-          # Windows
-          CIBW_ENVIRONMENT_WINDOWS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
+          # ---- Windows ----
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
+          CIBW_ENVIRONMENT_WINDOWS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
+
+          # ---- Tests ----
+          CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
+          CIBW_TEST_REQUIRES: pytest
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}-${{ matrix.arch }}
-          path: wheelhouse/*.whl
+          name: python-wheels-${{ matrix.os }}-${{ matrix.arch }}
+          path: wheelhouse
 
-# ---------------------------------------------------------
-# 3. Publish to PyPI (tags only)
-# ---------------------------------------------------------
-  publish:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-cpp, build-wheels]
+
+  # ------------------------------------------------------------
+  # Publish to PyPI (API token, no Trusted Publishing)
+  # ------------------------------------------------------------
+  publish-python-wheels:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: [build-and-test-cpp, build-python-wheels]
     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write  # for Trusted Publishing
-
     steps:
-      - name: Download all wheels
+      - name: Download wheels
         uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -112,7 +174,6 @@ jobs:
         run: |
           mkdir dist
           find artifacts -name "*.whl" -exec cp {} dist/ \;
-          ls -lh dist
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -120,3 +181,4 @@ jobs:
           packages-dir: dist
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+
