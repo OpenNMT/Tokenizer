@@ -115,7 +115,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.11.2
+        uses: pypa/cibuildwheel@v2.16.0
         with:
           package-dir: bindings/python
           output-dir: wheelhouse
@@ -135,8 +135,8 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: |
             TOKENIZER_ROOT=/project/build/install
             ICU_ROOT=/project/icu
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
+          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64:2024-01-10
+          CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux2014_aarch64:2024-01-10
 
           # ---- macOS ----
           CIBW_BEFORE_ALL_MACOS: bindings/python/tools/prepare_build_environment_macos.sh
