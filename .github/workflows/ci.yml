@@ -140,23 +140,7 @@ jobs:
 
           # ---- macOS ----
           CIBW_BEFORE_ALL_MACOS: bindings/python/tools/prepare_build_environment_macos.sh
-          CIBW_BEFORE_BUILD_MACOS: |
-            # Copy ICU dylibs into source tree before build
-            export ICU_ROOT="${ICU_ROOT:-${GITHUB_WORKSPACE}/icu}"
-            mkdir -p {project}/pyonmttok/icu/lib
-            if [ -d "$ICU_ROOT/lib" ] && compgen -G "$ICU_ROOT/lib/*.dylib" > /dev/null; then
-                echo "Copying ICU dylibs to source tree"
-                cp -a "$ICU_ROOT/lib/"*.dylib {project}/pyonmttok/icu/lib/
-                ls -lh {project}/pyonmttok/icu/lib/
-            else
-                echo "ERROR: No ICU dylibs found in $ICU_ROOT/lib"
-                exit 1
-            fi
-          CIBW_ENVIRONMENT_MACOS: |
-            TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
-            ICU_ROOT=${GITHUB_WORKSPACE}/icu
-            DYLD_LIBRARY_PATH=${GITHUB_WORKSPACE}/icu/lib:${DYLD_LIBRARY_PATH}
-          # No repair step for macOS
+          CIBW_ENVIRONMENT_MACOS: TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
 
           # ---- Windows ----
