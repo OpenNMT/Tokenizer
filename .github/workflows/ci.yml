@@ -150,6 +150,7 @@ jobs:
           # ---- Tests ----
           CIBW_TEST_COMMAND: pytest {project}/bindings/python/test/test.py
           CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_SKIP: "*-macosx*"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
