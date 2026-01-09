@@ -1,20 +1,16 @@
 import os
 import sys
-
 import pybind11
-
 from setuptools import Extension, find_packages, setup
 
 include_dirs = [pybind11.get_include()]
 library_dirs = []
 libraries = ["OpenNMTTokenizer"]
 
-
 def _get_long_description():
     readme_path = "README.md"
     with open(readme_path, encoding="utf-8") as readme_file:
         return readme_file.read()
-
 
 def _get_project_version():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +19,6 @@ def _get_project_version():
     with open(version_path, encoding="utf-8") as fp:
         exec(fp.read(), version)
     return version["__version__"]
-
 
 def _maybe_add_library_root(lib_name, header_only=False):
     root = os.environ.get(f"{lib_name}_ROOT")
@@ -38,7 +33,6 @@ def _maybe_add_library_root(lib_name, header_only=False):
                 return lib_dir
     return None
 
-
 _maybe_add_library_root("TOKENIZER")
 icu_lib_dir = _maybe_add_library_root("ICU")
 
@@ -49,18 +43,16 @@ package_data = {}
 if sys.platform == "darwin":
     cflags.append("-mmacosx-version-min=10.14")
     if icu_lib_dir:
+        # Add ICU libraries to the libraries list for linking
         icu_libs = ["icuuc", "icudata", "icui18n", "icuio"]
         libraries.extend(icu_libs)
-
-        # Link ICU with full paths so delocate can see it
-        for lib in icu_libs:
-            full_lib_path = os.path.join(icu_lib_dir, f"lib{lib}.dylib")
-            if os.path.isfile(full_lib_path):
-                ldflags.append(full_lib_path)
-
-        # rpath for runtime
-        ldflags.append("-Wl,-rpath,@loader_path/../icu/lib")
-
+        # Set rpath to look for ICU dylibs in the icu/lib directory within the package
+        ldflags.extend([
+            "-Wl,-rpath,@loader_path/icu/lib",
+            "-Wl,-rpath,@loader_path/../icu/lib"
+        ])
+    # Include ICU dylibs in the wheel package
+    package_data["pyonmttok"] = ["icu/lib/*.dylib"]
 elif sys.platform == "win32":
     cflags = ["/std:c++17", "/d2FH4-"]
     package_data["pyonmttok"] = ["*.dll"]

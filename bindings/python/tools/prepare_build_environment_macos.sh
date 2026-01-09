@@ -23,18 +23,19 @@ fi
 
 pip install cmake
 
+# Build Tokenizer as static lib
 rm -rf "$ROOT_DIR/build"
 mkdir -p "$ROOT_DIR/build"
-
 cmake \
   -S "$ROOT_DIR" \
   -B "$ROOT_DIR/build" \
   -DLIB_ONLY=ON \
-  -DBUILD_SHARED_LIBS=ON \
+  -DBUILD_SHARED_LIBS=OFF \
   -DICU_ROOT="$ICU_ROOT" \
   -DCMAKE_INSTALL_PREFIX="$ROOT_DIR/build/install" \
-  -DCMAKE_INSTALL_RPATH="$ICU_ROOT/lib" \
   $CMAKE_EXTRA_ARGS
 
 cmake --build "$ROOT_DIR/build" --target install -j2
-export DYLD_LIBRARY_PATH="$ROOT_DIR/build/install/lib:$DYLD_LIBRARY_PATH"
+
+# Not needed for static lib, but keep ICU in path for build
+export DYLD_LIBRARY_PATH="$ICU_ROOT/lib:$DYLD_LIBRARY_PATH"

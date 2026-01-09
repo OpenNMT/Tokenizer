@@ -121,12 +121,14 @@ jobs:
           output-dir: wheelhouse
         env:
           # ---- Build selection ----
+          # Linux/Windows: Python 3.10, 3.11, 3.12
+          # macOS: Python 3.10, 3.11 only (skip 3.12)
           CIBW_BUILD: "cp310-* cp311-* cp312-*"
-          CIBW_SKIP: "pp* *-musllinux_*"
+          CIBW_SKIP: "pp* *-musllinux_* cp312-macosx*"
           CIBW_ARCHS: ${{ matrix.arch }}
 
           # ---- Dependencies ----
-          CIBW_BEFORE_BUILD: pip install pybind11>=2.10.4
+          CIBW_BEFORE_BUILD: pip install pybind11==2.10.1
 
           # ---- Linux ----
           CIBW_BEFORE_ALL_LINUX: bindings/python/tools/prepare_build_environment_linux.sh
@@ -138,24 +140,24 @@ jobs:
 
           # ---- macOS ----
           CIBW_BEFORE_ALL_MACOS: bindings/python/tools/prepare_build_environment_macos.sh
+          CIBW_BEFORE_BUILD_MACOS: |
+            # Copy ICU dylibs into source tree before build
+            export ICU_ROOT="${ICU_ROOT:-${GITHUB_WORKSPACE}/icu}"
+            mkdir -p {project}/pyonmttok/icu/lib
+            if [ -d "$ICU_ROOT/lib" ] && compgen -G "$ICU_ROOT/lib/*.dylib" > /dev/null; then
+                echo "Copying ICU dylibs to source tree"
+                cp -a "$ICU_ROOT/lib/"*.dylib {project}/pyonmttok/icu/lib/
+                ls -lh {project}/pyonmttok/icu/lib/
+            else
+                echo "ERROR: No ICU dylibs found in $ICU_ROOT/lib"
+                exit 1
+            fi
           CIBW_ENVIRONMENT_MACOS: |
             TOKENIZER_ROOT=${GITHUB_WORKSPACE}/build/install
             ICU_ROOT=${GITHUB_WORKSPACE}/icu
             DYLD_LIBRARY_PATH=${GITHUB_WORKSPACE}/icu/lib:${DYLD_LIBRARY_PATH}
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
-            set -e
-            echo "=== Bundling ICU into wheel ==="
-            delocate-wheel -v -w {dest_dir} {wheel}
-            
-            REPAIRED_WHEEL=$(ls {dest_dir}/*.whl)
-            echo "=== Inspecting repaired wheel ==="
-            unzip -q "$REPAIRED_WHEEL" -d /tmp/wheel_check
-            SO_FILE=$(find /tmp/wheel_check -name "_ext*.so" | head -n1)
-            otool -L "$SO_FILE"
-            rm -rf /tmp/wheel_check
-            echo "=== Wheel ready: $REPAIRED_WHEEL ==="
-
-
+          # No repair step for macOS
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
 
           # ---- Windows ----
           CIBW_BEFORE_ALL_WINDOWS: bash bindings/python/tools/prepare_build_environment_windows.sh
