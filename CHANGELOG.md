@@ -26,6 +26,12 @@ The project follows [semantic versioning 2.0.0](https://semver.org/). The API co
 
 ### Fixes and improvements
 
+## [v1.38.1](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.38.1) (2026-01-09)
+
+### Fixes and improvements
+
+* python 3.12 was not uploaded in 1.38.0
+
 ## [v1.38.0](https://github.com/OpenNMT/Tokenizer/releases/tag/v1.38.0) (2025-12-30)
 
 ### Fixes and improvements
