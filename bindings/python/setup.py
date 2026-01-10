@@ -2,7 +2,6 @@ import os
 import sys
 
 import pybind11
-
 from setuptools import Extension, find_packages, setup
 
 include_dirs = [pybind11.get_include()]

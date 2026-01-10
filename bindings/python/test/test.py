@@ -3,9 +3,8 @@ import itertools
 import os
 import pickle
 
-import pytest
-
 import pyonmttok
+import pytest
 
 _DATA_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "test", "data"

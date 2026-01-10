@@ -16,20 +16,10 @@ if sys.platform == "win32":
     for library in glob.glob(os.path.join(package_dir, "*.dll")):
         ctypes.CDLL(library)
 
-from pyonmttok._ext import (
-    BPELearner,
-    Casing,
-    SentencePieceLearner,
-    SentencePieceTokenizer,
-    SubwordLearner,
-    Token,
-    Tokenizer,
-    TokenType,
-    Vocab,
-    is_placeholder,
-    is_valid_language,
-    set_random_seed,
-)
+from pyonmttok._ext import (BPELearner, Casing, SentencePieceLearner,
+                            SentencePieceTokenizer, SubwordLearner, Token,
+                            Tokenizer, TokenType, Vocab, is_placeholder,
+                            is_valid_language, set_random_seed)
 from pyonmttok.version import __version__
 
 
