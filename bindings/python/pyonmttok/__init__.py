@@ -15,7 +15,7 @@ if sys.platform == "win32":
 
     for library in glob.glob(os.path.join(package_dir, "*.dll")):
         ctypes.CDLL(library)
-
+# isort: off
 from pyonmttok._ext import (
     BPELearner,
     Casing,
@@ -30,6 +30,8 @@ from pyonmttok._ext import (
     is_valid_language,
     set_random_seed,
 )
+
+# isort: on
 from pyonmttok.version import __version__
 
 
