@@ -119,7 +119,7 @@ jobs:
         with:
           package-dir: bindings/python
           output-dir: wheelhouse
-          only: cp3*
+          only: "*"
         env:
           # ---- Build selection ----
           # Linux/Windows: Python 3.10, 3.11, 3.12
