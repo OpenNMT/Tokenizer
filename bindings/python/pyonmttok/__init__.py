@@ -4,11 +4,10 @@ if sys.platform == "win32":
     import ctypes
     import glob
     import os
+    from importlib import resources
 
-    import pkg_resources
-
-    module_name = sys.modules[__name__].__name__
-    package_dir = pkg_resources.resource_filename(module_name, "")
+    # Get the package directory safely (no setuptools)
+    package_dir = str(resources.files(__package__))
 
     add_dll_directory = getattr(os, "add_dll_directory", None)
     if add_dll_directory is not None:
