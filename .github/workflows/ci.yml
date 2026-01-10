@@ -119,6 +119,7 @@ jobs:
         with:
           package-dir: bindings/python
           output-dir: wheelhouse
+          only: cp3*
         env:
           # ---- Build selection ----
           # Linux/Windows: Python 3.10, 3.11, 3.12
@@ -135,8 +136,6 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: |
             TOKENIZER_ROOT=/project/build/install
             ICU_ROOT=/project/icu
-          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64:2024-01-10
-          CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux2014_aarch64:2024-01-10
 
           # ---- macOS ----
           CIBW_BEFORE_ALL_MACOS: bindings/python/tools/prepare_build_environment_macos.sh
